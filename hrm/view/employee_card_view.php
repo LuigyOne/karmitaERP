@@ -1,0 +1,189 @@
+<?php
+/**********************************************************************
+    Copyright (C) NotrinosERP.
+    Released under the terms of the GNU General Public License, GPL,
+    as published by the Free Software Foundation, either version 3
+    of the License, or (at your option) any later version.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    See the License here <http://www.gnu.org/licenses/gpl-3.0.html>.
+***********************************************************************/
+$page_security = 'SA_EMPLOYEEREP';
+$path_to_root = "../..";
+include($path_to_root . "/includes/session.inc");
+include_once($path_to_root . '/includes/ui.inc');
+include_once($path_to_root . '/hrm/includes/hrm_db.inc');
+include_once($path_to_root . '/hrm/includes/hrm_ui.inc');
+include_once($path_to_root . '/hrm/includes/hrm_security.inc');
+include_once($path_to_root . '/hrm/includes/db/employee_person_worker_db.inc');
+page(_("Employee Card"));
+
+/**
+ * Build employee full name.
+ *
+ * @param array $row
+ * @return string
+ */
+function employee_card_full_name($row) {
+    return trim((isset($row['first_name']) ? $row['first_name'] : '').' '.(isset($row['last_name']) ? $row['last_name'] : ''));
+}
+
+/**
+ * Resolve the authoritative current display name for the employee card.
+ *
+ * Unlinked, unavailable, denied, ambiguous, or tampered Person/Worker evidence
+ * keeps the exact legacy first+last display used by this page. Only an accepted
+ * canonical link permits the card to adopt the canonical Person name.
+ *
+ * @param string $employee_id
+ * @param array $row
+ * @return string
+ */
+function employee_card_authoritative_name($employee_id, $row) {
+    $legacy_name = employee_card_full_name($row);
+    $as_of = hrm_person_worker_utc_now();
+    $identity = $as_of === false
+        ? false
+        : get_hrm_person_worker_report_name_as_of($employee_id, $as_of);
+    if (!is_array($identity) || empty($identity['canonical_linked']))
+        return $legacy_name;
+
+    $first_name = isset($identity['first_name']) ? trim((string)$identity['first_name']) : '';
+    $middle_name = isset($identity['middle_name']) ? trim((string)$identity['middle_name']) : '';
+    $last_name = isset($identity['last_name']) ? trim((string)$identity['last_name']) : '';
+    $canonical_name = trim($first_name.' '.($middle_name !== '' ? $middle_name.' ' : '').$last_name);
+
+    return $canonical_name !== '' ? $canonical_name : $legacy_name;
+}
+
+
+/**
+ * Resolve one Employee Card selector label at the page-level instant.
+ *
+ * The shared employee-list SQL, cohort, search fields and ordering remain
+ * untouched. The exact shared legacy formatter is the fail-closed fallback;
+ * only reviewed canonical-link evidence may replace the visible selector name.
+ *
+ * @param array $row
+ * @return string
+ */
+function employee_card_authoritative_employee_list($row) {
+    global $employee_card_selector_as_of;
+
+    $legacy_label = _format_employee_list($row);
+    if (!is_array($row) || !isset($row[0]) || trim((string)$row[0]) === ''
+        || $employee_card_selector_as_of === false)
+        return $legacy_label;
+
+    $identity = get_hrm_person_worker_report_name_as_of(
+        $row[0], $employee_card_selector_as_of
+    );
+    if (!is_array($identity) || empty($identity['canonical_linked']))
+        return $legacy_label;
+
+    $first_name = isset($identity['first_name']) ? trim((string)$identity['first_name']) : '';
+    $middle_name = isset($identity['middle_name']) ? trim((string)$identity['middle_name']) : '';
+    $last_name = isset($identity['last_name']) ? trim((string)$identity['last_name']) : '';
+    $canonical_name = trim($first_name.' '.($middle_name !== '' ? $middle_name.' ' : '').$last_name);
+    if ($canonical_name === '')
+        return $legacy_label;
+
+    return (user_show_codes() ? ((string)$row[0].' - ') : '').$canonical_name;
+}
+
+/**
+ * Get a single display name from a master table.
+ *
+ * @param string $table
+ * @param string $id_col
+ * @param int $id_val
+ * @param string $name_col
+ * @return string
+ */
+function employee_card_lookup_name($table, $id_col, $id_val, $name_col) {
+    if ((int)$id_val <= 0)
+        return '';
+
+    $sql = "SELECT $name_col AS label FROM ".TB_PREF.$table." WHERE $id_col = ".db_escape((int)$id_val);
+    $result = db_query($sql, 'could not get display name');
+    $row = db_fetch($result);
+
+    return $row ? $row['label'] : '';
+}
+
+if (isset($_GET['employee_id']))
+    $_POST['employee_id'] = $_GET['employee_id'];
+
+$employee_card_selector_as_of = hrm_person_worker_utc_now();
+hrm_log_restricted_employee_projection('employee_card_selector');
+
+start_form();
+
+start_table(TABLESTYLE_NOBORDER);
+start_row();
+employees_list_cells(_('Employee:'), 'employee_id', get_post('employee_id', ''), false, false, false, false,
+    array('format' => 'employee_card_authoritative_employee_list'));
+submit_cells('Show', _('Show'), '', _('Show employee card'), 'default');
+end_row();
+end_table(1);
+
+$employee_id = trim((string)get_post('employee_id', ''));
+if ($employee_id !== '' && $employee_id !== ALL_TEXT) {
+    $employee = get_employee_profile_projection($employee_id);
+    if (!$employee) {
+        display_error(_('Employee was not found.'));
+    } else {
+        hrm_log_restricted_employee_projection('employee_card');
+        $department_name = employee_card_lookup_name('departments', 'department_id', (int)$employee['department_id'], 'department_name');
+        $position_name = employee_card_lookup_name('positions', 'position_id', (int)$employee['position_id'], 'position_name');
+        $grade_name = employee_card_lookup_name('pay_grades', 'grade_id', isset($employee['grade_id']) ? (int)$employee['grade_id'] : 0, 'grade_name');
+
+        start_table(TABLESTYLE2, "width='65%'");
+        label_row(_('Employee ID:'), $employee['employee_id']);
+        label_row(_('Name:'), employee_card_authoritative_name($employee_id, $employee));
+        label_row(_('Department:'), $department_name);
+        label_row(_('Position:'), $position_name);
+        if (isset($employee['grade_id']))
+            label_row(_('Grade:'), $grade_name);
+        if (!empty($employee['hire_date']))
+            label_row(_('Hire Date:'), sql2date($employee['hire_date']));
+        if (!empty($employee['email']))
+            label_row(_('Email:'), $employee['email']);
+        if (!empty($employee['mobile']))
+            label_row(_('Mobile:'), $employee['mobile']);
+        label_row(_('Status:'), !empty($employee['inactive']) ? _('Inactive') : _('Active'));
+        end_table(1);
+
+        if (function_exists('display_employee_documents')) {
+            display_heading(_('Documents'));
+            display_employee_documents($employee_id, array(
+                'allow_edit' => false,
+                'allow_delete' => false,
+                'allow_view' => false,
+            ));
+        }
+
+        $history = get_employee_history($employee_id);
+        if ($history && db_num_rows($history) > 0) {
+            display_heading(_('Recent History'));
+            start_table(TABLESTYLE, "width='95%'");
+            table_header(array(_('Date'), _('Change Type'), _('Department'), _('Position'), _('Reason')));
+            $k = 0;
+            while ($row = db_fetch($history)) {
+                alt_table_row_color($k);
+                label_cell(sql2date($row['effective_date']));
+                label_cell($row['change_type']);
+                label_cell($row['new_department_name']);
+                label_cell($row['new_position_name']);
+                label_cell($row['reason']);
+                end_row();
+            }
+            end_table(1);
+        }
+    }
+}
+
+end_form();
+
+end_page();

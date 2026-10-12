@@ -1,0 +1,188 @@
+<?php
+/**********************************************************************
+    Copyright (C) NotrinosERP.
+    Released under the terms of the GNU General Public License, GPL,
+    as published by the Free Software Foundation, either version 3
+    of the License, or (at your option) any later version.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    See the License here <http://www.gnu.org/licenses/gpl-3.0.html>.
+***********************************************************************/
+$page_security = 'SA_PAYSLIPINQUIRY';
+$path_to_root = "../..";
+include_once($path_to_root . '/includes/db_pager.inc');
+include($path_to_root . "/includes/session.inc");
+include_once($path_to_root . '/includes/ui.inc');
+include_once($path_to_root . '/hrm/includes/hrm_ui.inc');
+include_once($path_to_root . '/hrm/includes/hrm_security.inc');
+include_once($path_to_root . '/hrm/includes/db/employee_person_worker_db.inc');
+include_once($path_to_root . '/hrm/includes/db/payslip_db.inc');
+
+$js = '';
+if (user_use_date_picker())
+	$js .= get_js_date_picker();
+
+page(_("Payslip History"), false, false, '', $js);
+
+if (!isset($_POST['from_date']))
+    $_POST['from_date'] = begin_month(Today());
+if (!isset($_POST['to_date']))
+    $_POST['to_date'] = end_month(Today());
+
+/**
+ * Resolve one Payslip History inquiry Employee label at the page-level instant.
+ *
+ * The exact legacy pager cell remains the fallback. Only accepted canonical-link
+ * evidence may replace its name suffix, while the legacy employee identifier
+ * prefix remains unchanged.
+ *
+ * @param array $row
+ * @param string $cell
+ * @return string
+ */
+function payslip_inquiry_authoritative_employee($row, $cell) {
+    global $payslip_inquiry_as_of;
+
+    $legacy_label = (string)$cell;
+    if (!is_array($row) || !isset($row['employee_id'])
+        || trim((string)$row['employee_id']) === '')
+        return $legacy_label;
+
+    $identity = $payslip_inquiry_as_of === false
+        ? false
+        : get_hrm_person_worker_report_name_as_of(
+            $row['employee_id'], $payslip_inquiry_as_of
+        );
+    if (!is_array($identity) || empty($identity['canonical_linked']))
+        return $legacy_label;
+
+    $first_name = isset($identity['first_name']) ? trim((string)$identity['first_name']) : '';
+    $middle_name = isset($identity['middle_name']) ? trim((string)$identity['middle_name']) : '';
+    $last_name = isset($identity['last_name']) ? trim((string)$identity['last_name']) : '';
+    $canonical_name = trim($first_name.' '.($middle_name !== '' ? $middle_name.' ' : '').$last_name);
+    if ($canonical_name === '')
+        return $legacy_label;
+
+    return (string)$row['employee_id'].' '.$canonical_name;
+}
+
+/**
+ * Resolve one Payslip Inquiry Employee filter label at the page instant.
+ *
+ * SA_PAYSLIPINQUIRY remains intentionally outside Person/Worker identity-read
+ * authority. The exact shared employee-list label is the fail-closed fallback;
+ * accepted canonical identity may change presentation only when the same
+ * principal independently holds an approved identity-read capability. Shared
+ * selector cohort/search/order and submitted employee_id remain unchanged.
+ *
+ * @param array $row
+ * @return string
+ */
+function payslip_inquiry_authoritative_employee_list($row) {
+    global $payslip_inquiry_as_of;
+
+    $legacy_label = _format_employee_list($row);
+    if (!is_array($row) || !isset($row[0]) || trim((string)$row[0]) === ''
+        || $payslip_inquiry_as_of === false)
+        return $legacy_label;
+
+    $identity = get_hrm_person_worker_report_name_as_of(
+        $row[0], $payslip_inquiry_as_of
+    );
+    if (!is_array($identity) || empty($identity['canonical_linked']))
+        return $legacy_label;
+
+    $first_name = isset($identity['first_name']) ? trim((string)$identity['first_name']) : '';
+    $middle_name = isset($identity['middle_name']) ? trim((string)$identity['middle_name']) : '';
+    $last_name = isset($identity['last_name']) ? trim((string)$identity['last_name']) : '';
+    $canonical_name = trim($first_name.' '.($middle_name !== '' ? $middle_name.' ' : '').$last_name);
+    if ($canonical_name === '')
+        return $legacy_label;
+
+    return (user_show_codes() ? ((string)$row[0].' - ') : '').$canonical_name;
+}
+
+$payslip_inquiry_as_of = hrm_person_worker_utc_now();
+hrm_log_restricted_employee_projection('payslip_inquiry_selector');
+
+start_form();
+start_table(TABLESTYLE_NOBORDER);
+start_row();
+employees_list_cells(_('Employee:'), 'employee_id', null, true, false, false, false, array(
+    'format' => 'payslip_inquiry_authoritative_employee_list'
+));
+date_cells(_('From Date:'), 'from_date');
+date_cells(_('To Date:'), 'to_date');
+submit_cells('Search', _('Apply Filter'));
+end_row();
+end_table(1);
+
+$table_name = payslip_header_table();
+if (!$table_name) {
+    display_note(_('No payslip records found.'), 0, 1);
+    end_form();
+    end_page();
+    return;
+}
+
+$employee_filter = get_post('employee_id', '');
+$employee_col = payslip_has_column($table_name, 'employee_id') ? 'employee_id' : (payslip_has_column($table_name, 'emp_id') ? 'emp_id' : '');
+$id_col = payslip_has_column($table_name, 'payslip_id') ? 'payslip_id' : (payslip_has_column($table_name, 'payslip_no') ? 'payslip_no' : '');
+
+if ($employee_col === '' || $id_col === '') {
+    display_error(_('Payslip inquiry cannot run because required columns are missing.'));
+    end_form();
+    end_page();
+    return;
+}
+
+$from_expr = payslip_has_column($table_name, 'from_date') ? 'p.from_date' : "''";
+$to_expr = payslip_has_column($table_name, 'to_date') ? 'p.to_date' : "''";
+$gross_expr = payslip_has_column($table_name, 'gross_salary') ? 'p.gross_salary' : (payslip_has_column($table_name, 'salary_amount') ? 'p.salary_amount' : '0');
+$ded_expr = payslip_has_column($table_name, 'total_deductions') ? 'p.total_deductions' : '0';
+$net_expr = payslip_has_column($table_name, 'net_salary') ? 'p.net_salary' : (payslip_has_column($table_name, 'payable_amount') ? 'p.payable_amount' : '0');
+$ref_expr = payslip_has_column($table_name, 'reference') ? 'p.reference' : "''";
+
+$where = array('1=1', payslip_non_voided_condition($table_name, 'p'));
+if ($employee_filter != '' && $employee_filter != ALL_TEXT)
+    $where[] = "p.$employee_col = ".db_escape($employee_filter);
+$where[] = payslip_period_overlap_condition($table_name, $_POST['from_date'], $_POST['to_date'], 'p');
+
+$sql = "SELECT p.$id_col AS payslip_no,
+        CONCAT(p.$employee_col, ' ', TRIM(CONCAT(COALESCE(e.first_name,''), ' ', COALESCE(e.last_name,'')))) employee_label,
+        p.$employee_col AS employee_id,
+        $from_expr AS from_date,
+        $to_expr AS to_date,
+        $gross_expr AS gross_amount,
+        $ded_expr AS deduction_amount,
+        $net_expr AS net_amount,
+        $ref_expr AS reference
+    FROM ".TB_PREF.$table_name." p
+    LEFT JOIN ".TB_PREF."employees e ON e.employee_id = p.$employee_col
+    WHERE ".implode(' AND ', $where);
+
+if (payslip_has_column($table_name, 'from_date'))
+    $sql .= " ORDER BY p.from_date DESC, p.$id_col DESC";
+else
+    $sql .= " ORDER BY p.$id_col DESC";
+
+hrm_log_restricted_employee_projection('payslip_inquiry');
+
+$cols = array(
+    _('Payslip #') => array('name' => 'payslip_no', 'ord' => 'desc'),
+    _('Employee') => array('name' => 'employee_label', 'fun' => 'payslip_inquiry_authoritative_employee', 'ord' => ''),
+    _('From') => array('name' => 'from_date', 'type' => 'date', 'ord' => ''),
+    _('To') => array('name' => 'to_date', 'type' => 'date', 'ord' => ''),
+    _('Gross') => array('name' => 'gross_amount', 'type' => 'amount'),
+    _('Deductions') => array('name' => 'deduction_amount', 'type' => 'amount'),
+    _('Net') => array('name' => 'net_amount', 'type' => 'amount'),
+    _('Reference') => array('name' => 'reference', 'ord' => '')
+);
+
+$table =& new_db_pager('payslip_inquiry_tbl', $sql, $cols);
+$table->width = '100%';
+display_db_pager($table);
+end_form();
+
+end_page();

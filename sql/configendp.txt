@@ -1,0 +1,11 @@
+// Comprobar que el token existe antes de hacer la petición
+if (isset($_SESSION['api_token'])) {
+    $headers = [
+        'Content-Type: application/json',
+        'Accept: application/json',
+        'Authorization: ' . $_SESSION['api_token_type'] . ' ' . $_SESSION['api_token']
+    ];
+    
+    // Asignar los headers a tu nueva petición cURL
+    // curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+}

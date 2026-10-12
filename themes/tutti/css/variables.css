@@ -1,0 +1,44 @@
+:root {
+	/* Paleta de Colores Oficiales Tutti para Controles y Botones */
+	--modern-color-primary: #001b69;         /* Azul principal profundo */
+	--modern-color-primary-light: #e6ebf7;   /* Tono azul muy claro para fondos de selección */
+	--modern-color-primary-50: #ccd6ef;      /* Variante suave para hovers intermedios */
+	--modern-color-primary-100: #99addf;     /* Variante intermedia */
+	--modern-color-primary-strong: #001142;  /* Azul oscuro/marino para hovers intensos */
+	--modern-color-primary-dark: #000c30;    /* Tono oscuro para degradados secundarios */
+	--modern-color-accent: #ffe200;          /* Amarillo vibrante oficial de acento */
+	
+	/* Estructura de Superficies y Fondos */
+	--modern-color-surface: #ffffff;
+	--modern-color-surface-soft: #fafafa;
+	--modern-color-bg: #f4f4f5;
+	--modern-color-text: #18181b;
+	--modern-color-muted: #71717b;
+	--modern-color-border: #e4e4e7;
+	
+	/* Alertas y Estados */
+	--modern-color-success: #00c951;
+	--modern-color-warning: #ffe200;         /* Acoplado al amarillo de la marca */
+	--modern-color-danger: #e30613;          /* Rojo corporativo opcional para errores */
+	
+	/* Parámetros de Diseño Estables del Sistema */
+	--modern-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+	--modern-shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.05);
+	--modern-radius-sm: 8px;
+	--modern-control-radius: 6px;
+	--modern-radius-md: 12px;
+	--modern-radius-lg: 16px;
+	--modern-space-1: 4px;
+	--modern-space-2: 8px;
+	--modern-space-3: 12px;
+	--modern-space-4: 16px;
+	--modern-space-5: 20px;
+	--modern-space-6: 24px;
+	--modern-space-8: 32px;
+	--modern-sidebar-width: 320px;
+	--modern-transition: 180ms ease;
+
+	/* Enlaces requeridos para acoplar el CSS con el core del ERP */
+	--modern-app-accent: var(--modern-color-primary);
+	--modern-app-accent-soft: var(--modern-color-primary-light);
+}

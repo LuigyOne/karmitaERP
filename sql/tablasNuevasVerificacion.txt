@@ -1,0 +1,114 @@
+-- =================================================================
+-- 1. MÓDULO CRM (Gestión de Relaciones con Clientes y Prospectos)
+-- =================================================================
+
+CREATE TABLE IF NOT EXISTS `crm_leads` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `person_name` varchar(100) NOT NULL,
+  `company_name` varchar(100) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `phone` varchar(50) DEFAULT NULL,
+  `status` varchar(50) NOT NULL DEFAULT 'new' COMMENT 'new, contacted, qualified, lost, converted',
+  `source` varchar(50) DEFAULT NULL,
+  `assigned_to` int(11) DEFAULT NULL,
+  `custom_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{}' CHECK (json_valid(`custom_data`)),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `crm_activities` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `lead_id` int(11) NOT NULL,
+  `activity_type` varchar(50) NOT NULL COMMENT 'call, email, meeting, note',
+  `description` text NOT NULL,
+  `activity_date` datetime NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `lead_id` (`lead_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- =================================================================
+-- 2. MÓDULO DE RECURSOS HUMANOS Y NÓMINA
+-- =================================================================
+
+CREATE TABLE IF NOT EXISTS `employees` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `first_name` varchar(50) NOT NULL,
+  `last_name` varchar(50) NOT NULL,
+  `identification_number` varchar(20) NOT NULL COMMENT 'Cédula o Pasaporte',
+  `email` varchar(100) DEFAULT NULL,
+  `phone` varchar(50) DEFAULT NULL,
+  `department_id` int(11) DEFAULT NULL,
+  `position` varchar(100) DEFAULT NULL,
+  `hire_date` date NOT NULL,
+  `status` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1=Active, 0=Inactive',
+  `custom_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{}' CHECK (json_valid(`custom_data`)),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `identification_number` (`identification_number`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `employee_salary` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `employee_id` int(11) NOT NULL,
+  `base_salary` double NOT NULL DEFAULT 0,
+  `currency` varchar(3) NOT NULL DEFAULT 'USD',
+  `payment_frequency` varchar(20) NOT NULL DEFAULT 'mensual',
+  `effective_date` date NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `employee_id` (`employee_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `attendance` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `employee_id` int(11) NOT NULL,
+  `date` date NOT NULL,
+  `check_in` time DEFAULT NULL,
+  `check_out` time DEFAULT NULL,
+  `status` varchar(20) DEFAULT 'present',
+  `notes` text DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `employee_id_date` (`employee_id`,`date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- =================================================================
+-- 3. MÓDULO DE TRAZABILIDAD (FSMA / Gestión de Lotes Avanzada)
+-- =================================================================
+
+CREATE TABLE IF NOT EXISTS `fsma_tracking_events` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `event_type` varchar(50) NOT NULL COMMENT 'receiving, transformation, shipping',
+  `item_code` varchar(20) NOT NULL,
+  `batch_id` int(11) DEFAULT NULL,
+  `lot_number` varchar(50) NOT NULL,
+  `quantity` double NOT NULL,
+  `event_date` datetime NOT NULL,
+  `location_id` varchar(10) NOT NULL,
+  `reference_document` varchar(50) DEFAULT NULL COMMENT 'Referencia a GRN, Orden de Trabajo o Despacho',
+  `custom_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{}' CHECK (json_valid(`custom_data`)),
+  PRIMARY KEY (`id`),
+  KEY `lot_number` (`lot_number`),
+  KEY `item_code` (`item_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- =================================================================
+-- 4. MÓDULO DE FLUJOS DE APROBACIÓN (Workflows)
+-- =================================================================
+
+CREATE TABLE IF NOT EXISTS `approval_workflows` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `document_type` int(11) NOT NULL COMMENT 'Tipo de documento ej. PO, Sales Order',
+  `document_id` int(11) NOT NULL,
+  `step_number` int(11) NOT NULL,
+  `approver_id` int(11) NOT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'pending' COMMENT 'pending, approved, rejected',
+  `comments` text DEFAULT NULL,
+  `action_date` datetime DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `doc_lookup` (`document_type`,`document_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

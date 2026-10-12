@@ -1,0 +1,51 @@
+-- Desactivar restricciones de claves foráneas temporalmente
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- 1. Contabilidad, Bancos y Auditoría
+TRUNCATE TABLE gl_trans;
+TRUNCATE TABLE bank_trans;
+TRUNCATE TABLE audit_trail;
+TRUNCATE TABLE comments;
+TRUNCATE TABLE budget_trans;
+TRUNCATE TABLE journal;
+
+-- 2. Ventas y Clientes
+TRUNCATE TABLE debtor_trans;
+TRUNCATE TABLE debtor_trans_details;
+TRUNCATE TABLE cust_allocations;
+TRUNCATE TABLE sales_orders;
+TRUNCATE TABLE sales_order_details;
+
+-- 3. Compras y Proveedores
+TRUNCATE TABLE supp_trans;
+TRUNCATE TABLE supp_allocations;
+TRUNCATE TABLE supp_invoice_items;
+TRUNCATE TABLE purch_orders;
+TRUNCATE TABLE purch_order_details;
+TRUNCATE TABLE grn_batch;
+TRUNCATE TABLE grn_items;
+TRUNCATE TABLE purch_agreements;
+TRUNCATE TABLE purch_agreement_lines;
+
+-- 4. Inventario y Producción
+TRUNCATE TABLE stock_moves;
+TRUNCATE TABLE batch_movements;
+TRUNCATE TABLE workorders;
+TRUNCATE TABLE wo_issues;
+TRUNCATE TABLE wo_requirements;
+TRUNCATE TABLE wo_manufacture;
+TRUNCATE TABLE production_traceability;
+TRUNCATE TABLE dscsa_transactions;
+
+-- 5. Flujos de Aprobación (Limpieza de borradores de prueba)
+TRUNCATE TABLE approval_actions;
+TRUNCATE TABLE approval_drafts;
+
+-- Reactivar restricciones
+SET FOREIGN_KEY_CHECKS = 1;
+
+
+Para limpiar el historial transaccional en Notrinos ERP / FrontAccounting y arrancar en limpio sin perder tu data maestra (clientes, catálogo de cuentas, ítems, sucursales), la estrategia es hacer un TRUNCATE sobre las tablas de registro operativo.   En esta arquitectura, los saldos contables y los niveles de inventario no se guardan como un valor estático; se calculan dinámicamente al vuelo sumando los registros de gl_trans y stock_moves. Al vaciar estas tablas, automáticamente todas las cuentas de mayor y los inventarios quedan en cero.   Ejecuta el siguiente bloque SQL. El uso de TRUNCATE en lugar de DELETE es crítico para reiniciar los contadores AUTO_INCREMENT (como el trans_no) y asegurar que tu primera factura en producción empiece desde 1:   
+
+Nota sobre tablas que NO debes tocar:
+No trunques loc_stock ni item_codes. La primera mantiene la relación lógica entre el ítem y la bodega (sus niveles de reorden), y la segunda define los códigos de barras/referencia. Al vaciar stock_moves y batch_movements, el inventario real en las bodegas ya se reflejará como cero.

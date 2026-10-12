@@ -1,0 +1,182 @@
+<?php
+/**********************************************************************
+	Copyright (C) NotrinosERP.
+	Released under the terms of the GNU General Public License, GPL, 
+	as published by the Free Software Foundation, either version 3 
+	of the License, or (at your option) any later version.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+	See the License here <http://www.gnu.org/licenses/gpl-3.0.html>.
+***********************************************************************/
+
+$page_security = 'SA_SETUPDISPLAY';
+$path_to_root = '..';
+
+include_once($path_to_root.'/includes/session.inc');
+include_once($path_to_root.'/includes/ui.inc');
+include_once($path_to_root.'/reporting/includes/class.graphic.inc');
+include_once($path_to_root.'/dashboard/includes/dashboard_classes.inc');
+
+$js = '';
+if ($SysPrefs->use_popup_windows)
+	$js .= get_js_open_window(800, 500);
+
+page(_($help_context = 'Dashboard'), false, false, '', $js);
+
+if (isset($_GET['sel_app'])) {
+
+	$selected_app = $_GET['sel_app'];
+
+	$app = $_SESSION['App']->get_application($selected_app);
+	if (!$app || !$_SESSION['wa_current_user']->check_application_access($app))
+		return;
+
+	$dir = company_path().'/pdf_files';
+
+	if ($d = @opendir($dir)) {
+		while (($file = readdir($d)) !== false) {
+			if (!is_file($dir.'/'.$file) || $file == 'index.php')
+				continue;
+			$ftime = filemtime($dir.'/'.$file);
+
+			if (time()-$ftime > 180)
+				unlink($dir.'/'.$file);
+		}
+		closedir($d);
+	}
+	
+	$dashboard = new Dashboard;
+
+	$dashboard->addDashboard(_('Customer'), DA_CUSTOMER);
+	$dashboard->addWidgetWithClass(DA_CUSTOMER, 111, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_CUSTOMER, 112, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_CUSTOMER, 113, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_CUSTOMER, 114, WIDGET_QUARTER, 'widget-small-stat');
+	// Sales dashboard widgets (115-120)
+	$dashboard->addWidgetWithClass(DA_CUSTOMER, 115, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_CUSTOMER, 116, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_CUSTOMER, 117, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_CUSTOMER, 118, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidget(DA_CUSTOMER, 101, WIDGET_HALF);
+	$dashboard->addWidget(DA_CUSTOMER, 102, WIDGET_HALF);
+	$dashboard->addWidget(DA_CUSTOMER, 103, WIDGET_HALF);
+	$dashboard->addWidget(DA_CUSTOMER, 104, WIDGET_HALF);
+	$dashboard->addWidget(DA_CUSTOMER, 119, WIDGET_HALF);
+	$dashboard->addWidget(DA_CUSTOMER, 120, WIDGET_HALF);
+
+	$dashboard->addDashboard(_('Supplier'), DA_SUPPLIER);
+	$dashboard->addWidgetWithClass(DA_SUPPLIER, 211, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_SUPPLIER, 212, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_SUPPLIER, 213, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_SUPPLIER, 214, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_SUPPLIER, 215, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_SUPPLIER, 216, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_SUPPLIER, 217, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_SUPPLIER, 218, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidget(DA_SUPPLIER, 201, WIDGET_HALF);
+	$dashboard->addWidget(DA_SUPPLIER, 202, WIDGET_HALF);
+	$dashboard->addWidget(DA_SUPPLIER, 203, WIDGET_HALF);
+	$dashboard->addWidget(DA_SUPPLIER, 204, WIDGET_HALF);
+	$dashboard->addWidget(DA_SUPPLIER, 219, WIDGET_HALF);
+	$dashboard->addWidget(DA_SUPPLIER, 220, WIDGET_HALF);
+	$dashboard->addWidget(DA_SUPPLIER, 221, WIDGET_HALF);
+	$dashboard->addWidget(DA_SUPPLIER, 222, WIDGET_HALF);
+	$dashboard->addWidget(DA_SUPPLIER, 223, WIDGET_HALF);
+	$dashboard->addWidget(DA_SUPPLIER, 224, WIDGET_HALF);
+	$dashboard->addWidget(DA_SUPPLIER, 225, WIDGET_HALF);
+
+	$dashboard->addDashboard(_('Inventory'), DA_INVENTORY);
+	$dashboard->addWidgetWithClass(DA_INVENTORY, 311, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_INVENTORY, 312, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_INVENTORY, 313, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_INVENTORY, 314, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidget(DA_INVENTORY, 301, WIDGET_HALF);
+	$dashboard->addWidget(DA_INVENTORY, 302, WIDGET_HALF);
+	$dashboard->addWidget(DA_INVENTORY, 303, WIDGET_HALF);
+	$dashboard->addWidget(DA_INVENTORY, 304, WIDGET_HALF);
+
+	$dashboard->addDashboard(_('Manufaturing'), DA_MANUFACTURE);
+	$dashboard->addWidgetWithClass(DA_MANUFACTURE, 411, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_MANUFACTURE, 412, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_MANUFACTURE, 413, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_MANUFACTURE, 414, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidget(DA_MANUFACTURE, 401, WIDGET_HALF);
+	$dashboard->addWidget(DA_MANUFACTURE, 402, WIDGET_HALF);
+
+	$dashboard->addDashboard(_('Fixed Assets'), DA_FIXEDASSETS);
+	$dashboard->addWidgetWithClass(DA_FIXEDASSETS, 511, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_FIXEDASSETS, 512, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_FIXEDASSETS, 513, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_FIXEDASSETS, 514, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidget(DA_FIXEDASSETS, 501, WIDGET_HALF);
+	$dashboard->addWidget(DA_FIXEDASSETS, 502, WIDGET_HALF);
+
+	$dashboard->addDashboard(_('Dimensions'), DA_DIMENSIONS);
+	$dashboard->addWidgetWithClass(DA_DIMENSIONS, 611, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_DIMENSIONS, 612, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_DIMENSIONS, 613, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_DIMENSIONS, 614, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidget(DA_DIMENSIONS, 601, WIDGET_HALF);
+	$dashboard->addWidget(DA_DIMENSIONS, 602, WIDGET_HALF);
+
+	$dashboard->addDashboard(_('General Ledger'), DA_GL);
+	$dashboard->addWidgetWithClass(DA_GL, 711, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_GL, 712, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_GL, 713, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_GL, 714, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidget(DA_GL, 703, WIDGET_HALF);
+	$dashboard->addWidget(DA_GL, 701, WIDGET_HALF);
+	$dashboard->addWidget(DA_GL, 702, WIDGET_HALF);
+	$dashboard->addWidget(DA_GL, 704, WIDGET_HALF);
+
+	$dashboard->addDashboard(_('Human Resources'), DA_HRM);
+	$dashboard->addWidgetWithClass(DA_HRM, 911, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_HRM, 912, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_HRM, 913, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_HRM, 914, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidget(DA_HRM, 901, WIDGET_HALF);
+	$dashboard->addWidget(DA_HRM, 902, WIDGET_HALF);
+	$dashboard->addWidget(DA_HRM, 903, WIDGET_HALF);
+	$dashboard->addWidget(DA_HRM, 904, WIDGET_HALF);
+
+	// ────────────────────── CRM DASHBOARD ────────────────────────
+	$dashboard->addDashboard(_('CRM'), DA_CRM);
+	$dashboard->addWidgetWithClass(DA_CRM, 1011, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_CRM, 1012, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_CRM, 1013, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_CRM, 1014, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidget(DA_CRM, 1001, WIDGET_HALF);
+	$dashboard->addWidget(DA_CRM, 1002, WIDGET_HALF);
+	$dashboard->addWidget(DA_CRM, 1003, WIDGET_FULL);
+	$dashboard->addWidget(DA_CRM, 1004, WIDGET_HALF);
+
+	$dashboard->addDashboard(_('Setup'), DA_SETUP);
+	$dashboard->addWidgetWithClass(DA_SETUP, 821, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_SETUP, 822, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_SETUP, 823, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidgetWithClass(DA_SETUP, 824, WIDGET_QUARTER, 'widget-small-stat');
+	$dashboard->addWidget(DA_SETUP, 801, WIDGET_HALF);
+	$dashboard->addWidget(DA_SETUP, 802, WIDGET_HALF);
+	$dashboard->addWidget(DA_SETUP, 803, WIDGET_HALF);
+	$dashboard->addWidget(DA_SETUP, 804, WIDGET_HALF);
+	$dashboard->addWidget(DA_SETUP, 805, WIDGET_HALF);
+	$dashboard->addWidget(DA_SETUP, 806, WIDGET_HALF);
+	$dashboard->addWidget(DA_SETUP, 807, WIDGET_HALF);
+	$dashboard->addWidget(DA_SETUP, 808, WIDGET_HALF);
+	$dashboard->addWidget(DA_SETUP, 809, WIDGET_HALF);
+	$dashboard->addWidget(DA_SETUP, 810, WIDGET_HALF);
+	$dashboard->addWidget(DA_SETUP, 811, WIDGET_HALF);
+	$dashboard->addWidget(DA_SETUP, 812, WIDGET_HALF);
+
+	$dashboard->addDashboard(_('Applications Store'), DA_STORE);
+	$dashboard->addWidget(DA_STORE, 2000, WIDGET_FULL);
+
+	add_custom_dashboards($dashboard);
+
+	echo $dashboard->display();
+}
+else
+	display_error(_('Mising context data'));
+
+end_page();

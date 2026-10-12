@@ -1,0 +1,505 @@
+<?php
+/**********************************************************************
+    Copyright (C) NotrinosERP.
+    Released under the terms of the GNU General Public License, GPL,
+    as published by the Free Software Foundation, either version 3
+    of the License, or (at your option) any later version.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    See the License here <http://www.gnu.org/licenses/gpl-3.0.html>.
+***********************************************************************/
+/*
+	Security sections groups various areas on both functionality and privilege levels.
+	Often analytic inquires are available only for management, and configuration
+	for administration or management staff. This is why we have those three
+	section type inside near every NotrinosERP module.
+
+	Section codes 0-99 are reserved for core NotrinosERP functionalities.
+	Every security section can contain up to 256 different areas.
+	External modules can extend security roles system by adding rows to 
+	$security_sections and $security_areas using section codes >=100.
+	Security areas and sections created by extension modules/plugins
+	have dynamically assigned 3-byte integer codes. The highest byte is zero
+	for sections/areas defined in this file, and extid+1 for those defined 
+	by extensions 
+*/
+define('SS_SADMIN',	1<<8);	// site admin
+define('SS_SETUP',	2<<8);	// company level setup
+define('SS_SPEC',	3<<8);	// special administration
+
+define('SS_SALES_C',11<<8); // configuration
+define('SS_SALES',	12<<8);	// transactions
+define('SS_SALES_A',13<<8); // analytic functions/reports/inquires
+
+define('SS_PURCH_C',21<<8);
+define('SS_PURCH',	22<<8);
+define('SS_PURCH_A',23<<8);
+
+define('SS_ITEMS_C',31<<8);
+define('SS_ITEMS',	32<<8);
+define('SS_ITEMS_A',33<<8);
+
+define('SS_ASSETS_C',36<<8);
+define('SS_ASSETS',	37<<8);
+define('SS_ASSETS_A',38<<8);
+
+define('SS_MANUF_C',41<<8);
+define('SS_MANUF',	42<<8);
+define('SS_MANUF_A',43<<8);
+
+define('SS_DIM_C',	51<<8);
+define('SS_DIM',	52<<8);
+define('SS_DIM_A',	53<<8);
+
+define('SS_GL_C',	61<<8);
+define('SS_GL',		62<<8);
+define('SS_GL_A',	63<<8);
+
+define('SS_HRM_C',	71<<8);
+define('SS_HRM',	72<<8);
+define('SS_HRM_A',	73<<8);
+
+define('SS_CRM_C',	81<<8);
+define('SS_CRM',	82<<8);
+define('SS_CRM_A',	83<<8);
+
+$security_sections = array(
+	SS_SADMIN => _('System administration'),
+	SS_SETUP => _('Company setup'),
+	SS_SPEC => _('Special maintenance'),
+	SS_SALES_C => _('Sales configuration'),
+	SS_SALES => _('Sales transactions'),
+	SS_SALES_A => _('Sales related reports'),
+	SS_PURCH_C => _('Purchase configuration'),
+	SS_PURCH => _('Purchase transactions'),
+	SS_PURCH_A => _('Purchase analytics'),
+	SS_ITEMS_C => _('Inventory configuration'),
+	SS_ITEMS => _('Inventory operations'),
+	SS_ITEMS_A => _('Inventory analytics'),
+	SS_ASSETS_C => _('Fixed Assets configuration'),
+	SS_ASSETS => _('Fixed Assets operations'),
+	SS_ASSETS_A => _('Fixed Assets analytics'),
+	SS_MANUF_C => _('Manufacturing configuration'),
+	SS_MANUF => _('Manufacturing transactions'),
+	SS_MANUF_A => _('Manufacturing analytics'),
+	SS_DIM_C => _('Dimensions configuration'),
+	SS_DIM => _('Dimensions'),
+	SS_GL_C => _('Banking & GL configuration'),
+	SS_GL => _('Banking & GL transactions'),
+	SS_GL_A => _('Banking & GL analytics'),
+	SS_HRM_C => _('Human Resources configuration'),
+	SS_HRM => _('Human Resources transactions'),
+	SS_HRM_A => _('Human Resources analytics'),
+	SS_CRM_C => _('CRM configuration'),
+	SS_CRM => _('CRM transactions'),
+	SS_CRM_A => _('CRM analytics'),
+);
+
+/*
+	This table stores security areas available in NotrinosERP. 
+	Key is area identifier used to check user rights, values are
+	codes stored for each role in security_roles table and description used
+	in roles editor.
+
+	Set of allowed access areas codes is retrieved during user login from
+	security_roles table, and cached in user profile.
+
+	Special value 'SA_OPEN' is used for publicly available pages like login/logout.
+*/
+$security_areas =array(
+
+	//	Site administration
+	'SA_CREATECOMPANY' =>array(SS_SADMIN|1, _('Install/update companies')),
+	'SA_CREATELANGUAGE' => array(SS_SADMIN|2, _('Install/update languages')),
+	'SA_CREATEMODULES' => array(SS_SADMIN|3, _('Install/upgrade modules')),
+	'SA_SOFTWAREUPGRADE' => array(SS_SADMIN|4, _('Software upgrades')),
+
+	//	Company setup
+	'SA_SETUPCOMPANY' => array(SS_SETUP|1, _('Company parameters')),
+	'SA_SECROLES' => array(SS_SETUP|2, _('Access levels edition')),
+	'SA_USERS' => array(SS_SETUP|3, _('Users setup')),
+	'SA_POSSETUP' => array(SS_SETUP|4, _('Point of sales definitions')),
+	'SA_PRINTERS' => array(SS_SETUP|5, _('Printers configuration')),
+	'SA_PRINTPROFILE' => array(SS_SETUP|6, _('Print profiles')),
+	'SA_PAYTERMS' => array(SS_SETUP|7, _('Payment terms')),
+	'SA_SHIPPING' => array(SS_SETUP|8, _('Shipping ways')),
+	'SA_CRSTATUS' => array(SS_SETUP|9, _('Credit status definitions changes')),
+	'SA_INVENTORYLOCATION' => array(SS_SETUP|10, _('Inventory locations changes')),
+	'SA_INVENTORYMOVETYPE'  => array(SS_SETUP|11, _('Inventory movement types')),
+	'SA_WORKCENTRES' => array(SS_SETUP|12, _('Manufacture work centres')),
+	'SA_FORMSETUP' => array(SS_SETUP|13, _('Forms setup')),
+	'SA_CRMCATEGORY' => array(SS_SETUP|14, _('Contact categories')),
+	'SA_APPROVALRULES' => array(SS_SETUP|15, _('Approval workflow configuration')),
+
+	// Special and common functions
+	'SA_VOIDTRANSACTION' => array(SS_SPEC|1, _('Voiding transactions')),
+	'SA_BACKUP' => array(SS_SPEC|2, _('Database backup/restore')),
+	'SA_VIEWPRINTTRANSACTION' => array(SS_SPEC|3, _('Common view/print transactions interface')),
+	'SA_ATTACHDOCUMENT' => array(SS_SPEC|4, _('Attaching documents')),
+	'SA_SETUPDISPLAY' => array(SS_SPEC|5, _('Display preferences')),
+	'SA_CHGPASSWD' => array(SS_SPEC|6, _('Password changes')),
+	'SA_EDITOTHERSTRANS' => array(SS_SPEC|7, _('Edit other users transactions')),
+	'SA_APPROVALBATCH' => array(SS_SPEC|8, _('Batch approval processing')),
+	'SA_APPROVALDIRECT' => array(SS_SPEC|9, _('Direct posting (bypass approval)')),
+	'SA_APPROVALDASHBOARD' => array(SS_SPEC|10, _('Approval dashboard')),
+	'SA_APPROVALINQUIRY' => array(SS_SPEC|11, _('Approval history inquiry')),
+
+	// Sales related functionality
+	'SA_SALESTYPES' => array(SS_SALES_C|1, _('Sales types')),
+	'SA_SALESPRICE' => array(SS_SALES_C|2, _('Sales prices edition')),
+	'SA_SALESMAN' => array(SS_SALES_C|3, _('Sales staff maintenance')),
+	'SA_SALESAREA' => array(SS_SALES_C|4, _('Sales areas maintenance')),
+	'SA_SALESGROUP' => array(SS_SALES_C|5, _('Sales groups changes')),
+	'SA_STEMPLATE' => array(SS_SALES_C|6, _('Sales templates')),
+	'SA_SRECURRENT' => array(SS_SALES_C|7, _('Recurrent invoices definitions')),
+	'SA_SALESPRICELIST' => array(SS_SALES_C|8, _('Sales pricelists')),
+	'SA_SALESQUOTETPL' => array(SS_SALES_C|9, _('Quotation templates')),
+	'SA_SALESAGREEMENT' => array(SS_SALES_C|10, _('Sales agreements')),
+	'SA_SALESDISCOUNT'   => array(SS_SALES_C|11, _('Discount programs management')),   // Phase 4
+	'SA_SALESCOMMISSION' => array(SS_SALES_C|12, _('Commission plans management')),    // Phase 6
+
+	'SA_SALESRETURN'    => array(SS_SALES|11, _('Sales RMA entry')),                   // Phase 5
+
+	'SA_SALESTRANSVIEW' => array(SS_SALES|1,  _('Sales transactions view')),
+	'SA_CUSTOMER' => array(SS_SALES|2,  _('Sales customer and branches changes')),
+	'SA_SALESQUOTE' => array(SS_SALES|10, _('Sales quotations')),
+	'SA_SALESORDER' => array(SS_SALES|3, _('Sales orders edition')),
+	'SA_SALESDELIVERY' => array(SS_SALES|4, _('Sales deliveries edition')),
+	'SA_SALESINVOICE' => array(SS_SALES|5, _('Sales invoices edition')),
+	'SA_SALESCREDITINV' => array(SS_SALES|6, _('Sales credit notes against invoice')),
+	'SA_SALESCREDIT' => array(SS_SALES|7, _('Sales freehand credit notes')),
+	'SA_SALESPAYMNT' => array(SS_SALES|8, _('Customer payments entry')),
+	'SA_SALESALLOC' => array(SS_SALES|9, _('Customer payments allocation')),
+
+	'SA_SALESANALYTIC' => array(SS_SALES_A|1, _('Sales analytical reports')),
+	'SA_SALESBULKREP' => array(SS_SALES_A|2, _('Sales document bulk reports')),
+	'SA_PRICEREP' => array(SS_SALES_A|3, _('Sales prices listing')),
+	'SA_SALESMANREP' => array(SS_SALES_A|4, _('Sales staff listing')),
+	'SA_CUSTBULKREP' => array(SS_SALES_A|5, _('Customer bulk listing')),
+	'SA_CUSTSTATREP' => array(SS_SALES_A|6, _('Customer status report')),
+	'SA_CUSTPAYMREP' => array(SS_SALES_A|7, _('Customer payments report')),
+
+	// === SALES MODULE ENHANCEMENTS (Phase 7) ===
+	'SA_SALESDASHBOARD'  => array(SS_SALES_A|8,  _('Sales dashboard')),                // Phase 7
+	'SA_SALESREPORT'     => array(SS_SALES_A|9,  _('Advanced sales reports')),         // Phase 7
+
+	// === SALES MODULE ENHANCEMENTS (Phase 8: Credit Control) ===
+	'SA_CREDITCONTROL'   => array(SS_SALES|12, _('Credit control management')),        // Phase 8
+	'SA_CREDITOVERRIDE'  => array(SS_SALES|13, _('Credit limit override')),            // Phase 8
+
+	// Purchase related functions
+	'SA_PURCHASEPRICING' => array(SS_PURCH_C|1, _('Purchase price changes')),
+
+	// === PURCHASING SOURCING WORKFLOW ===
+	'SA_PURCHREQUISITION' => array(SS_PURCH_C|2, _('Purchase requisition entry and inquiry')),
+	'SA_PURCHRFQ' => array(SS_PURCH_C|3, _('Purchase RFQ entry and inquiry')),
+	'SA_PURCHAGREEMENT' => array(SS_PURCH_C|4, _('Purchase agreement entry and inquiry')),
+	'SA_VENDOREVALUATION' => array(SS_PURCH_C|5, _('Vendor evaluation, scorecard, and criteria maintenance')),
+	'SA_VENDORPRICELIST' => array(SS_PURCH_C|6, _('Vendor pricelist maintenance and comparison')),
+	'SA_PURCHTEMPLATE' => array(SS_PURCH_C|7, _('Purchase order template maintenance')),
+	'SA_PURCHMATCHCONFIG' => array(SS_PURCH_C|8, _('Purchase matching and bill control configuration')),
+	'SA_REORDERRULES' => array(SS_PURCH_C|9, _('Purchasing reorder rules and supplier overlays')),
+
+	'SA_SUPPTRANSVIEW' => array(SS_PURCH|1, _('Supplier transactions view')),
+	'SA_SUPPLIER' => array(SS_PURCH|2, _('Suppliers changes')),
+	'SA_PURCHASEORDER' => array(SS_PURCH|3, _('Purchase order entry')),
+	'SA_GRN' => array(SS_PURCH|4, _('Purchase receive')),
+	'SA_SUPPLIERINVOICE' => array(SS_PURCH|5, _('Supplier invoices')),
+	'SA_GRNDELETE' => array(SS_PURCH|9, _('Deleting GRN items during invoice entry')),
+	'SA_SUPPLIERCREDIT' => array(SS_PURCH|6, _('Supplier credit notes')),
+	'SA_SUPPLIERPAYMNT' => array(SS_PURCH|7, _('Supplier payments')),
+	'SA_SUPPLIERALLOC' => array(SS_PURCH|8, _('Supplier payments allocations')),
+	'SA_PURCHMATCHEXCEPTIONS' => array(SS_PURCH|10, _('Purchase matching exception review and resolution')),
+	'SA_PROCUREMENTPLAN' => array(SS_PURCH|11, _('Procurement planning and batch PO generation')),
+
+	'SA_SUPPLIERANALYTIC' => array(SS_PURCH_A|1, _('Supplier analytical reports')),
+	'SA_SUPPBULKREP' => array(SS_PURCH_A|2, _('Supplier document bulk reports')),
+	'SA_SUPPPAYMREP' => array(SS_PURCH_A|3, _('Supplier payments report')),
+	'SA_PURCHDASHBOARD' => array(SS_PURCH_A|4, _('Purchase dashboard')),
+	'SA_PURCHREPORT' => array(SS_PURCH_A|5, _('Advanced purchase reports')),
+
+	// Inventory 
+	'SA_ITEM' => array(SS_ITEMS_C|1, _('Stock items add/edit')),
+	'SA_SALESKIT' => array(SS_ITEMS_C|2, _('Sales kits')),
+	'SA_ITEMCATEGORY' => array(SS_ITEMS_C|3, _('Item categories')),
+	'SA_UOM' => array(SS_ITEMS_C|4, _('Units of measure')),
+
+	'SA_ITEMSSTATVIEW' => array(SS_ITEMS|1, _('Stock status view')),
+	'SA_ITEMSTRANSVIEW' => array(SS_ITEMS|2, _('Stock transactions view')),
+	'SA_FORITEMCODE' => array(SS_ITEMS|3, _('Foreign item codes entry')),
+	'SA_LOCATIONTRANSFER' => array(SS_ITEMS|4, _('Inventory location transfers')),
+	'SA_INVENTORYADJUSTMENT' => array(SS_ITEMS|5, _('Inventory adjustments')),
+
+	'SA_ITEMTRACKING' => array(SS_ITEMS_C|5, _('Item tracking configuration')),
+	'SA_TRACKINGSETTINGS' => array(SS_ITEMS_C|6, _('Tracking global settings')),
+	'SA_WAREHOUSE_SETUP' => array(SS_ITEMS_C|7, _('Warehouse locations and hierarchy setup')),
+	'SA_WAREHOUSE_STORAGE' => array(SS_ITEMS_C|8, _('Storage categories management')),
+	'SA_SERIALNUMBER' => array(SS_ITEMS_C|9, _('Serial number management')),
+	'SA_SERIALINQUIRY' => array(SS_ITEMS_A|4, _('Serial number inquiry')),
+	'SA_BATCHNUMBER' => array(SS_ITEMS_C|10, _('Batch/Lot number management')),
+	'SA_BATCHINQUIRY' => array(SS_ITEMS_A|5, _('Batch/Lot number inquiry')),
+	'SA_ABC_ANALYSIS' => array(SS_ITEMS_C|11, _('ABC classification analysis')),
+	'SA_BARCODELABELS' => array(SS_ITEMS_C|12, _('Barcode labels and scanner')),
+	'SA_WAREHOUSE_PUTAWAY' => array(SS_ITEMS_C|13, _('Putaway rules management')),
+	'SA_WAREHOUSE_REMOVAL' => array(SS_ITEMS_C|14, _('Removal strategies management')),
+	'SA_WAREHOUSE_OPERATIONS' => array(SS_ITEMS_C|15, _('Warehouse receipt operations')),
+	'SA_DISPATCH_OPERATIONS' => array(SS_ITEMS_C|16, _('Warehouse dispatch operations')),
+	'SA_TRANSFERORDERS' => array(SS_ITEMS_C|17, _('Warehouse transfer orders management')),
+	'SA_WAREHOUSE_ROUTES' => array(SS_ITEMS_C|18, _('Warehouse routes and rules management')),
+	'SA_WAREHOUSE_PICKING' => array(SS_ITEMS_C|19, _('Warehouse picking operations')),
+	'SA_WAREHOUSE_PACKING' => array(SS_ITEMS_C|20, _('Warehouse packing operations')),
+	'SA_WAREHOUSE_SHIPPING' => array(SS_ITEMS_C|21, _('Warehouse shipping management')),
+	'SA_WAREHOUSE_CYCLE_COUNT' => array(SS_ITEMS_C|22, _('Warehouse cycle counting')),
+	'SA_WAREHOUSE_DASHBOARD' => array(SS_ITEMS_A|7, _('Warehouse dashboard and real-time visibility')),
+	'SA_QC_PARAMETERS' => array(SS_ITEMS_C|23, _('Quality inspection parameters setup')),
+	'SA_QC_INSPECTIONS' => array(SS_ITEMS_C|24, _('Quality inspections entry and management')),
+	'SA_WARRANTY' => array(SS_ITEMS_C|25, _('Warranty claim management')),
+	'SA_RECALL' => array(SS_ITEMS_C|26, _('Recall campaign management')),
+	'SA_TRACEABILITY' => array(SS_ITEMS_A|6, _('Lifecycle traceability and audit trail')),
+	'SA_WAREHOUSE_REPLENISHMENT' => array(SS_ITEMS_C|27, _('Replenishment engine and rules management')),
+	'SA_MATERIALREQUEST' => array(SS_ITEMS_C|28, _('Material request entry and management')),
+	'SA_MATERIALREQ_INQUIRY' => array(SS_ITEMS_A|8, _('Material request inquiry and reports')),
+	'SA_WAREHOUSE_SCRAP' => array(SS_ITEMS_C|29, _('Scrap entry and management')),
+	'SA_WAREHOUSE_RETURNS' => array(SS_ITEMS_C|30, _('Return order processing and disposition')),
+	'SA_CROSSDOCK_DROPSHIP' => array(SS_ITEMS_C|31, _('Cross-dock and drop-ship management')),
+	'SA_CONSIGNMENT' => array(SS_ITEMS_C|32, _('Consignment and VMI management')),
+	'SA_REGULATORY' => array(SS_ITEMS_C|33, _('Regulatory compliance management')),
+	'SA_CUSTOMER_EQUIPMENT' => array(SS_ITEMS_A|9, _('Customer equipment register inquiry')),
+	'SA_WARRANTY_PROVISION' => array(SS_ITEMS_A|10, _('Warranty provision inquiry and reports')),
+
+	'SA_REORDER' => array(SS_ITEMS_A|1, _('Reorder levels')),
+	'SA_ITEMSANALYTIC' => array(SS_ITEMS_A|2, _('Items analytical reports and inquiries')),
+	'SA_ITEMSVALREP' => array(SS_ITEMS_A|3, _('Inventory valuation report')),
+
+	// Fixed Assets
+	'SA_ASSET' => array(SS_ASSETS_C|1, _('Fixed Asset items add/edit')),
+	'SA_ASSETCATEGORY' => array(SS_ASSETS_C|2, _('Fixed Asset categories')),
+	'SA_ASSETCLASS' => array(SS_ASSETS_C|4, _('Fixed Asset classes')),
+
+	'SA_ASSETSTRANSVIEW' => array(SS_ASSETS|1, _('Fixed Asset transactions view')),
+	'SA_ASSETTRANSFER' => array(SS_ASSETS|2, _('Fixed Asset location transfers')),
+	'SA_ASSETDISPOSAL' => array(SS_ASSETS|3, _('Fixed Asset disposals')),
+	'SA_DEPRECIATION' => array(SS_ASSETS|4, _('Depreciation')),
+
+	'SA_ASSETSANALYTIC' => array(SS_ASSETS_A|1, _('Fixed Asset analytical reports and inquiries')),
+
+	// Manufacturing module 
+	'SA_BOM' => array(SS_MANUF_C|1, _('Bill of Materials')),
+
+	'SA_MANUFTRANSVIEW' => array(SS_MANUF|1, _('Manufacturing operations view')),
+	'SA_WORKORDERENTRY' => array(SS_MANUF|2, _('Work order entry')),
+	'SA_MANUFISSUE' => array(SS_MANUF|3, _('Material issues entry')),
+	'SA_MANUFRECEIVE' => array(SS_MANUF|4, _('Final product receive')),
+	'SA_MANUFRELEASE' => array(SS_MANUF|5, _('Work order releases')),
+
+	'SA_WORKORDERANALYTIC' => array(SS_MANUF_A|1, _('Work order analytical reports and inquiries')),
+	'SA_WORKORDERCOST' => array(SS_MANUF_A|2, _('Manufacturing cost inquiry')),
+	'SA_MANUFBULKREP' => array(SS_MANUF_A|3, _('Work order bulk reports')),
+	'SA_BOMREP' => array(SS_MANUF_A|4, _('Bill of materials reports')),
+
+	// Dimensions
+	'SA_DIMTAGS' => array(SS_DIM_C|1, _('Dimension tags')),
+
+	'SA_DIMTRANSVIEW' => array(SS_DIM|1, _('Dimension view')),
+
+	'SA_DIMENSION' => array(SS_DIM|2, _('Dimension entry')),
+
+	'SA_DIMENSIONREP' => array(SS_DIM|3, _('Dimension reports')),
+
+	// Banking and General Ledger
+	'SA_ITEMTAXTYPE' => array(SS_GL_C|1, _('Item tax type definitions')),
+	'SA_GLACCOUNT' => array(SS_GL_C|2, _('GL accounts edition')),
+	'SA_GLACCOUNTGROUP' => array(SS_GL_C|3, _('GL account groups')),
+	'SA_GLACCOUNTCLASS' => array(SS_GL_C|4, _('GL account classes')),
+	'SA_QUICKENTRY' => array(SS_GL_C|5, _('Quick GL entry definitions')),
+	'SA_CURRENCY' => array(SS_GL_C|6, _('Currencies')),
+	'SA_BANKACCOUNT' => array(SS_GL_C|7, _('Bank accounts')),
+	'SA_TAXRATES' => array(SS_GL_C|8, _('Tax rates')),
+	'SA_TAXGROUPS' => array(SS_GL_C|12, _('Tax groups')),
+	'SA_FISCALYEARS' => array(SS_GL_C|9, _('Fiscal years maintenance')),
+	'SA_GLSETUP' => array(SS_GL_C|10, _('Company GL setup')),
+	'SA_GLACCOUNTTAGS' => array(SS_GL_C|11, _('GL Account tags')),
+	'SA_GLCLOSE' => array(SS_GL_C|14, _('Closing GL transactions')),
+	'SA_GLREOPEN' => array(SS_GL_C|15, _('Reopening GL transactions')), // see below
+	'SA_MULTIFISCALYEARS' => array(SS_GL_C|13, _('Allow entry on non closed Fiscal years')),
+
+	'SA_BANKTRANSVIEW' => array(SS_GL|1, _('Bank transactions view')),
+	'SA_GLTRANSVIEW' => array(SS_GL|2, _('GL postings view')),
+	'SA_EXCHANGERATE' => array(SS_GL|3, _('Exchange rate table changes')),
+	'SA_PAYMENT' => array(SS_GL|4, _('Bank payments')),
+	'SA_DEPOSIT' => array(SS_GL|5, _('Bank deposits')),
+	'SA_BANKTRANSFER' => array(SS_GL|6, _('Bank account transfers')),
+	'SA_RECONCILE' => array(SS_GL|7, _('Bank reconciliation')),
+	'SA_JOURNALENTRY' => array(SS_GL|8, _('Manual journal entries')),
+	'SA_BANKJOURNAL' => array(SS_GL|11, _('Journal entries to bank related accounts')),
+	'SA_BUDGETENTRY' => array(SS_GL|9, _('Budget edition')),
+	'SA_STANDARDCOST' => array(SS_GL|10, _('Item standard costs')),
+	'SA_ACCRUALS' => array(SS_GL|12, _('Revenue / Cost Accruals')),
+
+	'SA_GLANALYTIC' => array(SS_GL_A|1, _('GL analytical reports and inquiries')),
+	'SA_TAXREP' => array(SS_GL_A|2, _('Tax reports and inquiries')),
+	'SA_BANKREP' => array(SS_GL_A|3, _('Bank reports and inquiries')),
+	'SA_GLREP' => array(SS_GL_A|4, _('GL reports and inquiries')),
+
+	// Payroll & Human Resources — Configuration (SS_HRM_C)
+	'SA_EMPLOYEE'         => array(SS_HRM_C|1,  _('Add/Edit Employee information')),
+	'SA_DEPARTMENT'       => array(SS_HRM_C|2,  _('Manage departments')),
+	'SA_LEAVETYPE'        => array(SS_HRM_C|3,  _('Leave types')),
+	'SA_POSITION'         => array(SS_HRM_C|4,  _('Manage positions')),
+	'SA_PAYGRADE'         => array(SS_HRM_C|5,  _('Manage pay grades')),
+	'SA_OVERTIME'         => array(SS_HRM_C|6,  _('Overtime types')),
+	'SA_JOBCLASS'         => array(SS_HRM_C|7,  _('Job classification')),
+	'SA_PAYELEMENT'       => array(SS_HRM_C|8,  _('Pay elements')),
+	'SA_PAYELEMENTALLOC'  => array(SS_HRM_C|9,  _('Pay elements allocation')),
+	'SA_SALARYSTRUCTURE'  => array(SS_HRM_C|10, _('Salary structure')),
+	'SA_LEAVEPOLICY'      => array(SS_HRM_C|11, _('Leave policies')),
+	'SA_HOLIDAY'          => array(SS_HRM_C|12, _('Holiday calendar')),
+	'SA_WORKSHIFT'        => array(SS_HRM_C|13, _('Work shifts')),
+	'SA_WORKINGDAYS'      => array(SS_HRM_C|14, _('Working days configuration')),
+	'SA_LOANTYPE'         => array(SS_HRM_C|15, _('Loan/advance types')),
+	'SA_TAXBRACKET'       => array(SS_HRM_C|16, _('Income tax brackets')),
+	'SA_STATUTORY'        => array(SS_HRM_C|17, _('Statutory deductions')),
+	'SA_DEDUCTIONCODE'    => array(SS_HRM_C|18, _('Deduction codes')),
+	'SA_DOCTYPE'          => array(SS_HRM_C|19, _('Employee document types')),
+	'SA_HRSETTINGS'       => array(SS_HRM_C|20, _('HR module settings')),
+	'SA_ATTDEDUCTRULE'    => array(SS_HRM_C|21, _('Attendance deduction rules')),
+	'SA_EOSCALC'          => array(SS_HRM_C|22, _('End of service calculation tiers')),
+	'SA_IMPORTEMP'        => array(SS_HRM_C|23, _('Import/export employees')),
+	'SA_IMPORTATT'        => array(SS_HRM_C|24, _('Import/export attendance')),
+	'SA_WORKLOCATION'      => array(SS_HRM_C|25, _('Manage HR work locations')),
+	'SA_ESTABLISHMENT'     => array(SS_HRM_C|26, _('Manage HR establishments')),
+	'SA_JOB'               => array(SS_HRM_C|27, _('Manage HR jobs')),
+
+	// Payroll & Human Resources — Transactions (SS_HRM)
+	'SA_ATTENDANCE'       => array(SS_HRM|1,  _('Attendance entry')),
+	'SA_PAYSLIP'          => array(SS_HRM|2,  _('Payslip entry')),
+	'SA_EMPLOYEEPAYMENT'  => array(SS_HRM|3,  _('Employee payment advice')),
+	'SA_LEAVEREQUEST'     => array(SS_HRM|4,  _('Leave request submission')),
+	'SA_LEAVEAPPROVE'     => array(SS_HRM|5,  _('Leave request approval')),
+	'SA_OVERTIMEREQUEST'  => array(SS_HRM|6,  _('Overtime entry/request')),
+	'SA_OVERTIMEAPPROVE'  => array(SS_HRM|7,  _('Overtime approval')),
+	'SA_PAYROLL'          => array(SS_HRM|8,  _('Payroll batch processing')),
+	'SA_PAYROLLAPPROVE'   => array(SS_HRM|9,  _('Payroll batch approval')),
+	'SA_PAYMENTBATCH'     => array(SS_HRM|10, _('Batch bank payment')),
+	'SA_LOAN'             => array(SS_HRM|11, _('Loan/advance management')),
+	'SA_EMPTRANSFER'      => array(SS_HRM|12, _('Employee position/dept transfer')),
+	'SA_SALARYREVISION'   => array(SS_HRM|13, _('Salary revision with history')),
+	'SA_EMPSEPARATION'    => array(SS_HRM|14, _('Employee separation/EOS')),
+	'SA_VOIDPAYSLIP'      => array(SS_HRM|15, _('Void/cancel payslips')),
+	'SA_PAYROLLPOST'      => array(SS_HRM|16, _('Post approved payroll batches')),
+	'SA_PAYROLLREVERSE'   => array(SS_HRM|17, _('Reverse posted payroll batches')),
+	'SA_HRM_VERIFY_IDENTITY_LINK' => array(SS_HRM|18, _('Approve reviewed employee identity links')),
+	'SA_HRM_CHANGE_BANK_DETAILS' => array(SS_HRM|19, _('Propose governed employee bank-detail supersession')),
+	'SA_HRM_MANAGE_PAYMENT_ELECTION' => array(SS_HRM|20, _('Manage governed employee bank payment elections')), // no automatic role grant
+
+	// Payroll & Human Resources — Analytics (SS_HRM_A)
+	'SA_EMPLOYEETRANSVIEW' => array(SS_HRM_A|1,  _('Employee transactions view')),
+	'SA_EMPLOYEEREP'       => array(SS_HRM_A|2,  _('Employee reports and inquiries')),
+	'SA_ATTINQUIRY'        => array(SS_HRM_A|3,  _('Attendance inquiry')),
+	'SA_LEAVEINQUIRY'      => array(SS_HRM_A|4,  _('Leave balance inquiry')),
+	'SA_PAYSLIPINQUIRY'    => array(SS_HRM_A|5,  _('Payslip inquiry / history')),
+	'SA_PAYROLLSUMMARY'    => array(SS_HRM_A|6,  _('Payroll period summary')),
+	'SA_EMPHISTORY'        => array(SS_HRM_A|7,  _('Employee change history')),
+	'SA_LOANREPORT'        => array(SS_HRM_A|8,  _('Loan outstanding report')),
+	'SA_DEPTCOST'          => array(SS_HRM_A|9,  _('Department payroll cost')),
+	'SA_HRMREPORTS'        => array(SS_HRM_A|10, _('HRM print reports')),
+	'SA_HRM_VIEW_SALARY'   => array(SS_HRM_A|11, _('View restricted employee compensation')),
+	'SA_HRM_VIEW_BANK_DETAILS' => array(SS_HRM_A|12, _('View masked employee bank details')),
+	'SA_HRM_VIEW_IDENTITY_DETAILS' => array(SS_HRM_A|13, _('View masked employee identity and tax details')),
+
+	// CRM — Configuration (SS_CRM_C)
+	'SA_CRM_SETTINGS'      => array(SS_CRM_C|1,  _('CRM module settings')),
+	'SA_CRM_TEAM'          => array(SS_CRM_C|2,  _('Sales team management')),
+
+	// CRM — Transactions (SS_CRM)
+	'SA_CRM_LEAD'          => array(SS_CRM|1,  _('Lead management')),
+	'SA_CRM_OPPORTUNITY'   => array(SS_CRM|2,  _('Opportunity management')),
+	'SA_CRM_ACTIVITY'      => array(SS_CRM|3,  _('Activity scheduling')),
+	'SA_CRM_CAMPAIGN'      => array(SS_CRM|4,  _('Campaign management')),
+	'SA_CRM_CONTRACT'      => array(SS_CRM|5,  _('Contract management')),
+	'SA_CRM_APPOINTMENT'   => array(SS_CRM|6,  _('Appointment management')),
+
+	// CRM — Analytics (SS_CRM_A)
+	'SA_CRM_PIPELINE'      => array(SS_CRM_A|1,  _('Pipeline view and inquiry')),
+	'SA_CRM_REPORT'        => array(SS_CRM_A|2,  _('CRM reports and analytics')),
+);
+
+if (!@$SysPrefs->allow_gl_reopen)
+	unset($security_areas['SA_GLREOPEN']);
+/*
+	This function should be called whenever we want to extend core access level system
+	with new security areas and/or sections i.e.: 
+	. on any page with non-standard security areas
+	. in security roles editor
+	The call should be placed between session.inc inclusion and page() call.
+	Up to 155 security sections and 155 security areas for any extension can be installed.
+*/
+function add_access_extensions() {
+	global $security_areas, $security_sections, $installed_extensions;
+
+	foreach($installed_extensions as $extid => $ext) {
+		$accext = hook_invoke($ext['package'], 'install_access', $dummy);
+		if ($accext == null) continue;
+
+		$scode = 100;
+		$acode = 100;
+		$extsections = $accext[1];
+		$extareas = $accext[0];
+		$extcode = $extid<<16;
+		
+		$trans = array();
+		foreach($extsections as $code =>$name) {
+			$trans[$code] = $scode<<8;
+			// reassign section codes
+			$security_sections[$trans[$code]|$extcode] = $name;
+			$scode++;
+		}
+		foreach($extareas as $code => $area) {
+			$section = $area[0]&0xff00;
+			// extension modules:
+			// if area belongs to nonstandard section
+			// use translated section codes and
+			// preserve lower part of area code
+			if (isset($trans[$section]))
+				$section = $trans[$section];
+				// otherwise assign next available
+				// area code >99
+			$area[0] = $extcode | $section | ($acode++);
+			$security_areas[$code] = $area;
+		}
+	}
+}
+
+function check_edit_access($name) {
+	global $input_security;
+
+	$access = @$input_security[$name];
+
+	if (!$access)
+		$access = @$input_security['']; // default access level
+
+	if (!$access)
+		return true; // if constraint is not defined edit access is allowed
+
+	return  user_check_access($access);
+}
+/*
+	Returns POST value or null if edit access to $name control is forbidden.
+*/
+function access_post($name, $dflt=null) {
+	if (!check_edit_access($name))
+		return $dflt;
+	else
+		return get_post($name, $dflt);
+}
+
+/*
+	Returns numeric input value or null if edit access to $name control is forbidden.
+*/
+function access_num($name, $dflt=null) {
+	if (!check_edit_access($name))
+		return $dflt;
+	else
+		return input_num($name, $dflt);
+}

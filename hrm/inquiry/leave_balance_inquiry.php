@@ -1,0 +1,164 @@
+<?php
+/**********************************************************************
+    Copyright (C) NotrinosERP.
+    Released under the terms of the GNU General Public License, GPL,
+    as published by the Free Software Foundation, either version 3
+    of the License, or (at your option) any later version.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    See the License here <http://www.gnu.org/licenses/gpl-3.0.html>.
+***********************************************************************/
+$page_security = 'SA_LEAVEINQUIRY';
+$path_to_root = "../..";
+include_once($path_to_root . '/includes/db_pager.inc');
+include($path_to_root . "/includes/session.inc");
+include_once($path_to_root . '/includes/ui.inc');
+include_once($path_to_root . '/hrm/includes/hrm_ui.inc');
+include_once($path_to_root . '/hrm/includes/hrm_security.inc');
+include_once($path_to_root . '/hrm/includes/db/employee_person_worker_db.inc');
+include_once($path_to_root . '/hrm/includes/db/leave_balance_db.inc');
+
+page(_("Leave Balance"));
+
+/**
+ * Resolve one Leave Balance Inquiry Employee label at the page-level instant.
+ *
+ * The exact legacy pager cell remains the fallback. Only accepted canonical-link
+ * evidence may replace its name suffix, while the legacy employee identifier
+ * prefix remains unchanged.
+ *
+ * @param array $row
+ * @param string $cell
+ * @return string
+ */
+function leave_balance_inquiry_authoritative_employee($row, $cell) {
+    global $leave_balance_inquiry_as_of;
+
+    $legacy_label = (string)$cell;
+    if (!is_array($row) || !isset($row['employee_id'])
+        || trim((string)$row['employee_id']) === '')
+        return $legacy_label;
+
+    $identity = $leave_balance_inquiry_as_of === false
+        ? false
+        : get_hrm_person_worker_report_name_as_of(
+            $row['employee_id'], $leave_balance_inquiry_as_of
+        );
+    if (!is_array($identity) || empty($identity['canonical_linked']))
+        return $legacy_label;
+
+    $first_name = isset($identity['first_name']) ? trim((string)$identity['first_name']) : '';
+    $middle_name = isset($identity['middle_name']) ? trim((string)$identity['middle_name']) : '';
+    $last_name = isset($identity['last_name']) ? trim((string)$identity['last_name']) : '';
+    $canonical_name = trim($first_name.' '.($middle_name !== '' ? $middle_name.' ' : '').$last_name);
+    if ($canonical_name === '')
+        return $legacy_label;
+
+    return (string)$row['employee_id'].' '.$canonical_name;
+}
+
+/**
+ * Resolve one Leave Balance Inquiry Employee selector label at the page instant.
+ *
+ * The shared employee-list formatter remains the exact fail-closed fallback.
+ * SA_LEAVEINQUIRY itself is not identity-read authority; canonical identity is
+ * presentation-only for principals that independently hold an approved
+ * Person/Worker read capability.
+ *
+ * @param array $row
+ * @return string
+ */
+function leave_balance_inquiry_authoritative_employee_list($row) {
+    global $leave_balance_inquiry_as_of;
+
+    $legacy_label = _format_employee_list($row);
+    if (!is_array($row) || !isset($row[0]) || trim((string)$row[0]) === ''
+        || $leave_balance_inquiry_as_of === false)
+        return $legacy_label;
+
+    $identity = get_hrm_person_worker_report_name_as_of(
+        $row[0], $leave_balance_inquiry_as_of
+    );
+    if (!is_array($identity) || empty($identity['canonical_linked']))
+        return $legacy_label;
+
+    $first_name = isset($identity['first_name']) ? trim((string)$identity['first_name']) : '';
+    $middle_name = isset($identity['middle_name']) ? trim((string)$identity['middle_name']) : '';
+    $last_name = isset($identity['last_name']) ? trim((string)$identity['last_name']) : '';
+    $canonical_name = trim($first_name.' '.($middle_name !== '' ? $middle_name.' ' : '').$last_name);
+    if ($canonical_name === '')
+        return $legacy_label;
+
+    return (user_show_codes() ? ((string)$row[0].' - ') : '').$canonical_name;
+}
+
+$default_fiscal_year = get_leave_balance_fiscal_year_for_date(date('Y-m-d'));
+$fiscal_year = (int)get_post('fiscal_year', $default_fiscal_year);
+$employee_id = get_post('employee_id', '');
+$leave_id = (int)get_post('leave_id', 0);
+
+ensure_leave_balance_entitlements_for_filters($fiscal_year, $employee_id, $leave_id);
+
+$leave_balance_inquiry_as_of = hrm_person_worker_utc_now();
+hrm_log_restricted_employee_projection('leave_balance_inquiry_selector');
+
+start_form();
+start_table(TABLESTYLE_NOBORDER);
+start_row();
+
+years_list_cells(_('Fiscal Year:'), 'fiscal_year', null);
+employees_list_cells(_('Employee:'), 'employee_id', null, true, false, false, false, array(
+    'format' => 'leave_balance_inquiry_authoritative_employee_list'
+));
+filter_cell_open(_('Leave Type:'));
+echo leave_types_list('leave_id', null, true, false);
+filter_cell_close();
+submit_cells('Search', _('Apply Filter'));
+end_row();
+end_table(1);
+
+$where = array('1=1');
+if ($fiscal_year > 0)
+    $where[] = 'lb.fiscal_year = '.db_escape($fiscal_year);
+if ($employee_id !== '' && $employee_id !== ALL_TEXT)
+    $where[] = 'lb.employee_id = '.db_escape($employee_id);
+if ($leave_id > 0)
+    $where[] = 'lb.leave_id = '.db_escape($leave_id);
+
+$sql = "SELECT CONCAT(lb.employee_id, ' ', TRIM(CONCAT(COALESCE(e.first_name,''), ' ', COALESCE(e.last_name,'')))) employee_label,
+        lt.leave_name,
+        lb.fiscal_year,
+        lb.entitled,
+        lb.carried_forward,
+        lb.adjusted,
+        lb.taken,
+        lb.pending,
+        (IFNULL(lb.entitled,0) + IFNULL(lb.carried_forward,0) + IFNULL(lb.adjusted,0) - IFNULL(lb.taken,0) - IFNULL(lb.pending,0)) available,
+        lb.employee_id
+    FROM ".TB_PREF."leave_balances lb
+    LEFT JOIN ".TB_PREF."leave_types lt ON lt.leave_id = lb.leave_id
+    LEFT JOIN ".TB_PREF."employees e ON e.employee_id = lb.employee_id
+    WHERE ".implode(' AND ', $where)."
+    ORDER BY lb.employee_id, lb.fiscal_year DESC, lb.leave_id";
+
+hrm_log_restricted_employee_projection('leave_balance_inquiry');
+
+$cols = array(
+    _('Employee') => array('name' => 'employee_label', 'fun' => 'leave_balance_inquiry_authoritative_employee', 'ord' => 'asc'),
+    _('Leave Type') => array('name' => 'leave_name', 'ord' => ''),
+    _('Year') => array('name' => 'fiscal_year', 'ord' => ''),
+    _('Entitled') => array('name' => 'entitled', 'type' => 'qty'),
+    _('Carry Forward') => array('name' => 'carried_forward', 'type' => 'qty'),
+    _('Adjusted') => array('name' => 'adjusted', 'type' => 'qty'),
+    _('Taken') => array('name' => 'taken', 'type' => 'qty'),
+    _('Pending') => array('name' => 'pending', 'type' => 'qty'),
+    _('Available') => array('name' => 'available', 'type' => 'qty')
+);
+
+$table =& new_db_pager('leave_balance_inquiry_tbl', $sql, $cols);
+$table->width = '100%';
+display_db_pager($table);
+end_form();
+
+end_page();

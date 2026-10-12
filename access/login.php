@@ -1,0 +1,220 @@
+<?php
+/**********************************************************************
+	Copyright (C) NotrinosERP.
+	Released under the terms of the GNU General Public License, GPL, 
+	as published by the Free Software Foundation, either version 3 
+	of the License, or (at your option) any later version.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+	See the License here <http://www.gnu.org/licenses/gpl-3.0.html>.
+***********************************************************************/
+if (!isset($path_to_root) || isset($_GET['path_to_root']) || isset($_POST['path_to_root']))
+	die(_('Restricted access'));
+include_once($path_to_root.'/includes/ui.inc');
+include_once($path_to_root.'/includes/page/header.inc');
+
+$js = "<script>
+	function defaultCompany() {
+		document.forms[0].company_login_name.options[".user_company()."].selected = true;
+	}
+</script>";
+
+add_js_file('login.js');
+$show_invalid_login_message = isset($_POST['SubmitUser'])
+	&& isset($_POST['user_name_entry_field'])
+	&& $_POST['user_name_entry_field'] != '';
+// Display demo user name and password within login form if allow_demo_mode option is true
+if ($SysPrefs->allow_demo_mode == true)
+	$demo_text = _('Login as user: demouser and password: password');
+else {
+	$demo_text = _('Please login here');
+}
+
+if (check_faillog()) {
+	$blocked = true;
+
+	$js .= "<script>setTimeout(function() {
+		document.getElementsByName('SubmitUser')[0].disabled=0;
+		document.getElementById('log_msg').innerHTML='$demo_text'}, 1000*".$SysPrefs->login_delay.");</script>";
+	$demo_text = '<span class="redfg">'._('Too many failed login attempts.<br>Please wait a while or try later.').'</span>';
+}
+elseif ($show_invalid_login_message && $_SESSION['wa_current_user']->login_attempt > 1)
+	$demo_text = '<span class="redfg">'._('Invalid password or username. Please, try again.').'</span>';
+
+// PAY-SEC-004: fixed public federation completion messages; no callback/provider value is reflected.
+$federation_status_present = isset($_GET['federation']);
+$federation_status = $federation_status_present && is_string($_GET['federation'])
+	? (string)$_GET['federation'] : '';
+$recognized_federation_statuses = array('link_required', 'retry', 'restart', 'failed');
+$federation_status_is_recognized = in_array($federation_status, $recognized_federation_statuses, true);
+if (!isset($blocked) && !$show_invalid_login_message && $federation_status_is_recognized) {
+	include_once($path_to_root.'/includes/federation_first_link_administration.inc');
+	if ($federation_status === 'link_required') {
+		$request = federation_first_link_pending_request();
+		if (is_array($request) && isset($request['verifier_decision_id']))
+			$demo_text = '<span class="redfg">'._('Federated sign-in is verified but is not linked to a local user. Link request ID: ').(int)$request['verifier_decision_id'].'<br>'._('Ask an administrator to create the explicit federation link, then start Federated login again.').'</span>';
+		else
+			$demo_text = '<span class="redfg">'._('Federated sign-in requires an explicit administrator-created local-user link. Start Federated login again to obtain a fresh link request.').'</span>';
+	} elseif ($federation_status === 'retry') {
+		$demo_text = '<span class="redfg">'._('Federated sign-in could not complete safely. Please retry Federated login.').'</span>';
+	} elseif ($federation_status === 'restart') {
+		$demo_text = '<span class="redfg">'._('Federated sign-in must be restarted. Please start Federated login again.').'</span>';
+	} elseif ($federation_status === 'failed') {
+		$demo_text = '<span class="redfg">'._('Federated sign-in failed. No local account was linked or authenticated.').'</span>';
+	}
+}
+
+flush_dir(user_js_cache());
+if (!isset($def_coy))
+	$def_coy = 0;
+
+$def_theme = 'default';
+$login_timeout = $_SESSION['wa_current_user']->last_act;
+$title = $login_timeout ? _('Authorization timeout') : $SysPrefs->app_title.' '.$version.' - '._('Login');
+$encoding = isset($_SESSION['language']->encoding) ? $_SESSION['language']->encoding : 'iso-8859-1';
+$rtl = isset($_SESSION['language']->dir) ? $_SESSION['language']->dir : 'ltr';
+$onload = !$login_timeout ? "onload='defaultCompany()'" : '';
+
+if (!headers_sent())
+	header("X-Frame-Options: SAMEORIGIN");
+
+echo "<!DOCTYPE html>\n";
+echo "<html dir='".$rtl."' >\n";
+echo "<head profile=\"http://www.w3.org/2005/10/profile\"><title>".$title."</title>\n";
+echo "<meta charset='".$encoding."' >\n";
+echo "<meta name='viewport' content='width=device-width,initial-scale=1'>";
+echo "<link href='".$path_to_root."/themes/".$def_theme."/default.css' rel='stylesheet'> \n";
+echo "<link href='".$path_to_root."/themes/".$def_theme."/local_style/access.css' rel='stylesheet'> \n";
+echo "<link href='".$path_to_root."/themes/default/images/favicon.ico' rel='icon' type='image/x-icon'> \n";
+send_scripts();
+
+if (!$login_timeout)
+	echo $js;
+
+echo "</head>\n";
+echo "<body id='loginscreen' ".$onload.">\n";
+
+echo "<div class='login-title-bar'>" . htmlspecialchars($title) . "</div>\n";
+
+echo "<div class='login-card'>\n";
+$login_form_action = $_SESSION['timeout']['uri'];
+if ($federation_status_present) {
+	// Do not carry an arbitrary federation query into the generated form action.
+	$login_form_action = $path_to_root.'/index.php';
+	if ($federation_status_is_recognized)
+		$login_form_action .= '?federation='.urlencode($federation_status);
+}
+start_form(false, $login_form_action, 'loginform');
+
+// Logo
+echo "<div class='login-logo'>";
+if (!$login_timeout)
+	echo "<a target='_blank' href='".$SysPrefs->power_url."'><img src='".$path_to_root."/themes/default/images/notrinos_erp.png' alt='NotrinosERP' height='50'></a>";
+else
+	echo "<h2 style='margin:0;color:#b91c1c'>"._('Authorization timeout')."</h2>";
+echo "</div>\n";
+
+// Subtitle
+if (!$login_timeout)
+	echo "<div class='login-subtitle'>"._('Version').' '.$version.'   Build '.$SysPrefs->build_version."</div>\n";
+
+$value = $login_timeout ? $_SESSION['wa_current_user']->loginname : ($SysPrefs->allow_demo_mode ? 'demouser' : '');
+
+// Username field
+echo "<div class='login-field'><div class='input_container'>".default_theme_icon('user', '', _('User'));
+echo "<input required class='input' id='user' name='user_name_entry_field' type='text' placeholder='"._('User name')."' value='".htmlspecialchars($value)."'></div></div>\n";
+
+// Password field
+$password = $SysPrefs->allow_demo_mode ? 'password' : '';
+echo "<div class='login-field'><div class='input_container'>".default_theme_icon('key', '', _('Password'));
+echo "<input required class='input' id='pass' name='password' type='password' placeholder='"._('Password')."' value='".htmlspecialchars($password)."'></div></div>\n";
+
+// Company selector
+if ($login_timeout)
+	hidden('company_login_name', user_company());
+else {
+	$coy = user_company();
+	if (!isset($coy))
+		$coy = $def_coy;
+
+	echo "<div class='login-field'><div class='input_container'>".default_theme_icon('building', '', _('Company'));
+	if (isset($db_connections)) {
+		if (!@$SysPrefs->text_company_selection) {
+			echo "<select name='company_login_name'>\n";
+			for ($i = 0; $i < count($db_connections); $i++)
+				echo "<option value=".$i.' '.($i==$coy ? 'selected' : '').'>'.$db_connections[$i]['name'].'</option>';
+			echo "</select>\n";
+		}
+		else
+			echo "<input required type='text' name='company_login_nickname' placeholder='"._('Company')."'>";
+	}
+	echo "</div></div>\n";
+}
+
+// Status message
+echo "<div class='login-message' id='log_msg'>".$demo_text."</div>\n";
+
+// Submit
+echo "<input type='hidden' id='ui_mode' name='ui_mode' value='".!fallback_mode()."'>\n";
+echo "<div class='login-submit'><input type='submit' value='"._('Login')." &#8250;' name='SubmitUser'"." onclick='".(in_ajax() ? 'retry();': 'set_fullmode();')."'".(isset($blocked) ? " disabled" : '')." ></div>\n";
+
+foreach($_SESSION['timeout']['post'] as $p => $val) {
+	// add all request variables to be resend together with login data
+	if (!in_array($p, array('ui_mode', 'user_name_entry_field', 'password', 'SubmitUser', 'company_login_name')))
+		if (!is_array($val))
+			echo "<input type='hidden' name='".htmlspecialchars($p)."' value='".htmlspecialchars($val)."'>";
+		else
+			foreach($val as $i => $v)
+				echo "<input type='hidden' name='".htmlspecialchars($p)."[".htmlspecialchars($i)."]' value='".htmlspecialchars($v)."'>";
+}
+end_form(1);
+
+// PAY-SEC-004: explicit existing-link federation start. Provider/configuration are server-selected.
+if (!$login_timeout && isset($db_connections) && is_array($db_connections) && count($db_connections) > 0) {
+    include_once($path_to_root.'/includes/federation_oidc_existing_link_authorization_start_route.inc');
+    $federation_csrf = federation_oidc_authorization_start_issue_csrf();
+    if (is_string($federation_csrf)) {
+        echo "<form method='post' action='".$path_to_root."/access/oidc_login.php' autocomplete='off'>\n";
+        echo "<div class='login-field'><div class='input_container'>".default_theme_icon('building', '', _('Company'));
+        echo "<select name='company_login_name' required>\n";
+        foreach ($db_connections as $i => $connection) {
+            if (!is_int($i) && !ctype_digit((string)$i)) continue;
+            $name = isset($connection['name']) ? (string)$connection['name'] : (string)$i;
+            echo "<option value='".(int)$i."'>".htmlspecialchars($name)."</option>";
+        }
+        echo "</select></div></div>\n";
+        echo "<input type='hidden' name='federation_csrf' value='".htmlspecialchars($federation_csrf)."'>\n";
+        echo "<div class='login-submit'><input type='submit' value='"._('Federated login')." &#8250;'></div>\n";
+        echo "</form>\n";
+    }
+}
+
+// PAY-SEC-004: public recovery-redemption route. Legacy email reset remains retired.
+if (!$login_timeout)
+    echo "<div class='login-message'><a href='".$path_to_root."/access/account_recovery.php'>"._('Recover account')."</a></div>\n";
+
+echo "</div>\n"; // end login-card
+
+$Ajax->addScript(true, "if (document.forms.length) document.forms[0].password.focus();");
+
+echo "<script>
+	//<![CDATA[
+		<!--
+		document.forms[0].user_name_entry_field.select();
+		document.forms[0].user_name_entry_field.focus();
+		//-->
+	//]]>
+</script>";
+
+// Footer
+if (isset($_SESSION['wa_current_user']))
+	$date = Today().' | '.Now();
+else
+	$date = date('m/d/Y').' | '.date('h.i am');
+echo "<div class='login-footer'>";
+echo htmlspecialchars($date)."<br>";
+echo "<a target='_blank' href='".$SysPrefs->power_url."' tabindex='-1'>".$SysPrefs->app_title.' '.$version."</a><br>";
+echo "<a target='_blank' href='".$SysPrefs->power_url."' tabindex='-1'>".$SysPrefs->power_by."</a>";
+echo "</div>\n";
+echo "</body></html>\n";

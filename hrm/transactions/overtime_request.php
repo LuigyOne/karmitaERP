@@ -1,0 +1,337 @@
+<?php
+/**********************************************************************
+    Copyright (C) NotrinosERP.
+    Released under the terms of the GNU General Public License, GPL,
+    as published by the Free Software Foundation, either version 3
+    of the License, or (at your option) any later version.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    See the License here <http://www.gnu.org/licenses/gpl-3.0.html>.
+***********************************************************************/
+$page_security = 'SA_OVERTIMEREQUEST';
+$path_to_root = "../..";
+include($path_to_root . "/includes/session.inc");
+include_once($path_to_root . '/includes/ui.inc');
+include_once($path_to_root . '/hrm/includes/db/overtime_request_db.inc');
+include_once($path_to_root . '/hrm/includes/hrm_security.inc');
+include_once($path_to_root . '/hrm/includes/db/employee_person_worker_db.inc');
+
+/**
+ * Resolve one Overtime Request history Employee name at the page-level instant.
+ *
+ * Overtime Request remains authorized by SA_OVERTIMEREQUEST, which is
+ * deliberately not a Person/Worker identity-read capability. Canonical naming
+ * is additive only when the same principal independently holds an existing
+ * approved identity-read area. Approval draft, request persistence and all
+ * terminal workflow paths continue using exact legacy identity values.
+ *
+ * @param string $employee_ref
+ * @param string $legacy_name
+ * @return string
+ */
+function overtime_request_authoritative_history_name($employee_ref, $legacy_name) {
+    global $overtime_request_history_as_of;
+
+    $legacy_name = (string)$legacy_name;
+    if (trim((string)$employee_ref) === '' || $overtime_request_history_as_of === false)
+        return $legacy_name;
+
+    $identity = get_hrm_person_worker_report_name_as_of(
+        $employee_ref, $overtime_request_history_as_of
+    );
+    if (!is_array($identity) || empty($identity['canonical_linked']))
+        return $legacy_name;
+
+    $first_name = isset($identity['first_name']) ? trim((string)$identity['first_name']) : '';
+    $middle_name = isset($identity['middle_name']) ? trim((string)$identity['middle_name']) : '';
+    $last_name = isset($identity['last_name']) ? trim((string)$identity['last_name']) : '';
+    $canonical_name = trim($first_name.' '.($middle_name !== '' ? $middle_name.' ' : '').$last_name);
+
+    return $canonical_name === '' ? $legacy_name : $canonical_name;
+}
+
+/**
+ * Resolve one Overtime Request Employee selector label at the page-level instant.
+ *
+ * Overtime Request remains authorized by SA_OVERTIMEREQUEST, which deliberately
+ * does not grant Person/Worker identity-read access. Canonical naming is
+ * additive only when the same principal independently holds an approved
+ * identity-read capability. The shared selector cohort/search/order, submitted
+ * employee_id, approval draft and all overtime/workflow mutation keys remain
+ * exact legacy values; this helper changes selector presentation only.
+ *
+ * @param array $row
+ * @return string
+ */
+function overtime_request_authoritative_employee_list($row) {
+    global $overtime_request_history_as_of;
+
+    $legacy_label = _format_employee_list($row);
+    if (!is_array($row) || !isset($row[0]) || trim((string)$row[0]) === ''
+        || $overtime_request_history_as_of === false)
+        return $legacy_label;
+
+    $identity = get_hrm_person_worker_report_name_as_of(
+        $row[0], $overtime_request_history_as_of
+    );
+    if (!is_array($identity) || empty($identity['canonical_linked']))
+        return $legacy_label;
+
+    $first_name = isset($identity['first_name']) ? trim((string)$identity['first_name']) : '';
+    $middle_name = isset($identity['middle_name']) ? trim((string)$identity['middle_name']) : '';
+    $last_name = isset($identity['last_name']) ? trim((string)$identity['last_name']) : '';
+    $canonical_name = trim($first_name.' '.($middle_name !== '' ? $middle_name.' ' : '').$last_name);
+    if ($canonical_name === '')
+        return $legacy_label;
+
+    return (user_show_codes() ? ((string)$row[0].' - ') : '').$canonical_name;
+}
+
+$js = '';
+
+if (user_use_date_picker())
+	$js .= get_js_date_picker();
+
+page(_($help_context = "Overtime Entry/Request"), false, false, '', $js);
+
+simple_page_mode(false);
+
+$status_labels = array(
+    0 => _('Pending'),
+    1 => _('Approved'),
+    2 => _('Rejected'),
+    3 => _('Cancelled'),
+);
+
+if ($Mode == 'ADD_ITEM' || $Mode == 'UPDATE_ITEM') {
+    // Sanitize and validate input
+    $employee_id = $_POST['employee_id'];
+    $overtime_id = (int)$_POST['overtime_id'];
+    $date = $_POST['date'];
+    $hours = input_num('hours');
+    $reason = isset($_POST['reason']) ? trim($_POST['reason']) : '';
+    $encoding = isset($_SESSION['language']->encoding) && $_SESSION['language']->encoding == 'iso-8859-2'
+        ? 'ISO-8859-1'
+        : (isset($_SESSION['language']->encoding) ? $_SESSION['language']->encoding : 'UTF-8');
+    $reason = html_entity_decode($reason, ENT_QUOTES, $encoding);
+    $reason = strip_tags($reason); // Remove HTML tags from decoded input
+    $reason = str_replace(array('<', '>'), '', $reason);
+    $reason = preg_replace('/[\x00-\x1F\x7F]/u', '', $reason); // Remove control chars
+    if (strlen($reason) > 255) {
+        $reason = substr($reason, 0, 255);
+    }
+
+    if ($employee_id == '' || $employee_id == ALL_TEXT) {
+        display_error(_('Employee is required.'));
+        set_focus('employee_id');
+    } elseif ($overtime_id <= 0) {
+        display_error(_('Overtime type is required.'));
+        set_focus('overtime_id');
+    } elseif (!is_date($date)) {
+        display_error(_('Date is required.'));
+        set_focus('date');
+    } elseif ($hours <= 0) {
+        display_error(_('Hours must be greater than zero.'));
+        set_focus('hours');
+    } elseif ($hours > 24) {
+        display_error(_('Hours cannot exceed 24 in a single request.'));
+        set_focus('hours');
+    } elseif ($reason == '') {
+        display_error(_('Reason is required.'));
+        set_focus('reason');
+    } else {
+        // Check for duplicate request (pending/approved for same employee/date/type)
+        $dup_sql = "SELECT COUNT(*) FROM ".TB_PREF."overtime_requests WHERE employee_id=".db_escape($employee_id)." AND overtime_id=".db_escape($overtime_id)." AND date=".db_escape(date2sql($date))." AND status IN (0,1)";
+        if ($Mode == 'UPDATE_ITEM' && $selected_id != '') {
+            $dup_sql .= " AND request_id <> ".db_escape((int)$selected_id);
+        }
+        $dup_res = db_query($dup_sql, 'Could not check duplicate overtime request');
+        $dup_row = db_fetch_row($dup_res);
+        if ($dup_row && $dup_row[0] > 0) {
+            display_error(_('Duplicate overtime request for this employee, date, and type already exists.'));
+            set_focus('employee_id');
+        } else {
+            if ($selected_id != '') {
+                update_overtime_request($selected_id, $overtime_id, $date, $hours, $reason);
+                display_notification(_('Overtime request has been updated.'));
+            } else {
+                begin_transaction();
+                $request_id = add_overtime_request($employee_id, $overtime_id, $date, $hours, $reason);
+
+                // Check if approval workflow is required for overtime requests
+                $overtime_draft_data = array(
+                    'request_id'  => $request_id,
+                    'employee_id' => $employee_id,
+                    'overtime_id' => $overtime_id,
+                    'date'        => $date,
+                    'hours'       => $hours,
+                    'reason'      => $reason,
+                );
+
+                // Fetch names for display
+                $overtime_request_row = get_overtime_request($request_id);
+                if ($overtime_request_row) {
+                    $overtime_draft_data['employee_name'] = $overtime_request_row['employee_name'];
+                    $overtime_draft_data['overtime_name'] = $overtime_request_row['overtime_name'];
+                }
+
+                $approval_service = get_approval_workflow_service();
+                $approval_result = $approval_service->isApprovalRequired(
+                    ST_OVERTIME_REQUEST,
+                    $hours
+                ) ? $approval_service->submit(
+                    ST_OVERTIME_REQUEST,
+                    $overtime_draft_data,
+                    $hours,
+                    array('summary' => sprintf(_('Overtime: %s, %.1f hours'), $date, $hours))
+                ) : false;
+
+                if ($approval_result !== false && $approval_result['status'] === 'auto_approved') {
+                    commit_transaction();
+                    display_notification(_('Overtime request has been created and automatically approved.'));
+                    $Mode = 'RESET';
+                } elseif ($approval_result !== false) {
+                    if ($approval_result['status'] === 'pending') {
+                        commit_transaction();
+                        display_notification(sprintf(
+                            _('Overtime request has been submitted for approval. Draft #%d, Reference: %s'),
+                            $approval_result['draft_id'],
+                            $approval_result['reference']
+                        ));
+                    } else {
+                        cancel_transaction();
+                        display_error(_('Overtime approval submission failed. No overtime request was created.'));
+                    }
+                } else {
+                    if (execute_approved_overtime_request($overtime_draft_data, 0, 0) === false) {
+                        cancel_transaction();
+                        display_error(_('Overtime approval failed. No overtime request was created.'));
+                    } else {
+                        commit_transaction();
+                        display_notification(_('Overtime request has been created and auto-approved under the direct policy.'));
+                    }
+                }
+            }
+            $Mode = 'RESET';
+        }
+    }
+}
+
+if ($Mode == 'Delete') {
+    $request = get_overtime_request($selected_id);
+    if ($request && (int)$request['status'] != 0) {
+        display_error(_('Only pending requests can be cancelled.'));
+    } elseif ($request) {
+        $core_draft = find_approval_draft_for_hrm_request(
+            ST_OVERTIME_REQUEST,
+            (int)$selected_id
+        );
+        if ($core_draft) {
+            $approval_service = get_approval_workflow_service();
+            $result = $approval_service->cancel(
+                (int)$core_draft['draft_id'],
+                _('Cancelled from the overtime request page.')
+            );
+            if (!isset($result['status']) || $result['status'] === 'error')
+                display_error(isset($result['message'])
+                    ? $result['message']
+                    : _('The overtime request could not be cancelled.'));
+            else
+                display_notification($result['message']);
+        } else {
+            if (delete_overtime_request((int)$selected_id, 0))
+                display_notification(
+                    _('Selected pending request without an approval draft has been deleted.')
+                );
+            else
+                display_error(
+                    _('The pending overtime request could not be deleted.')
+                );
+        }
+    } else {
+        display_error(_('Overtime request was not found.'));
+    }
+    if (isset($Ajax))
+        $Ajax->activate('_page_body');
+    $Mode = 'RESET';
+}
+
+if ($Mode == 'RESET') {
+    $selected_id = '';
+    $_POST['selected_id'] = '';
+    $_POST['employee_id'] = '';
+    $_POST['overtime_id'] = 0;
+    $_POST['date'] = Today();
+    $_POST['hours'] = 0;
+    $_POST['reason'] = '';
+}
+
+$overtime_request_history_as_of = hrm_person_worker_utc_now();
+hrm_log_restricted_employee_projection('employee_overtime_request_history');
+hrm_log_restricted_employee_projection('employee_overtime_request_selector');
+
+start_form();
+
+start_outer_table();
+if ($selected_id != '' && $Mode == 'Edit') {
+    $myrow = get_overtime_request($selected_id);
+    if ($myrow && (int)$myrow['status'] == 0) {
+        $_POST['employee_id'] = $myrow['employee_id'];
+        $_POST['overtime_id'] = $myrow['overtime_id'];
+        $_POST['date'] = sql2date($myrow['date']);
+        $_POST['hours'] = qty_format($myrow['hours']);
+        $_POST['reason'] = $myrow['reason'];
+        hidden('selected_id', $selected_id);
+    }
+}
+
+table_section(1);
+employees_list_row(_('Employee:'), 'employee_id', null, false, false, false, false, array(
+    'format' => 'overtime_request_authoritative_employee_list'
+));
+
+$sql = "SELECT overtime_id, overtime_name FROM ".TB_PREF."overtime WHERE !inactive";
+label_row(_('Overtime Type:'), combo_input('overtime_id', get_post('overtime_id', 0), $sql, 'overtime_id', 'overtime_name', array('spec_option' => _('Select overtime'), 'spec_id' => 0)));
+
+date_row(_('Date:'), 'date');
+
+table_section(2);
+amount_row(_('Hours:'), 'hours');
+textarea_row(_('Reason:'), 'reason', null, 50, 4);
+end_outer_table();
+submit_add_or_update_center($selected_id == '', '', 'both');
+br();
+
+start_table(TABLESTYLE_DATA, "");
+$th = array(_('ID'), _('Employee'), _('Type'), _('Date'), _('Hours'), _('Reason'), _('Status'), _('Requested On'), '', '');
+table_header($th);
+
+$result = get_overtime_requests(null, '', '', '');
+$k = 0;
+while ($row = db_fetch($result)) {
+    alt_table_row_color($k);
+    label_cell($row['request_id']);
+    label_cell($row['employee_id'] . ' ' . overtime_request_authoritative_history_name(
+        $row['employee_id'], $row['employee_name']
+    ));
+    label_cell($row['overtime_name']);
+    label_cell(sql2date($row['date']));
+    qty_cell($row['hours']);
+    label_cell($row['reason']);
+    label_cell($status_labels[(int)$row['status']]);
+    label_cell(sql2date(substr($row['request_date'], 0, 10)));
+    if ((int)$row['status'] == 0) {
+        edit_button_cell('Edit' . $row['request_id'], _('Edit'));
+        delete_button_cell('Delete' . $row['request_id'], _('Cancel'));
+    } else {
+        label_cell('');
+        label_cell('');
+    }
+    end_row();
+}
+end_table(1);
+
+end_form();
+
+end_page();

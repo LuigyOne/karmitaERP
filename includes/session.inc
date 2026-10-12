@@ -1,0 +1,758 @@
+<?php
+/**********************************************************************
+	Copyright (C) NotrinosERP.
+	Released under the terms of the GNU General Public License, GPL,
+	as published by the Free Software Foundation, either version 3
+	of the License, or (at your option) any later version.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+	See the License here <http://www.gnu.org/licenses/gpl-3.0.html>.
+***********************************************************************/
+define('VARLIB_PATH', $path_to_root.'/tmp');
+define('VARLOG_PATH', $path_to_root.'/tmp');
+include_once($path_to_root.'/includes/session_security.inc');
+
+class SessionManager {
+	function sessionStart($name, $limit=0, $path='/', $domain=null, $secure=null) {
+		if (!session_https_transport_allowed($secure)) {
+			if (!headers_sent())
+				header('HTTP/1.1 426 Upgrade Required');
+			echo 'HTTPS is required for this deployment.';
+			exit;
+		}
+
+		// Set the cookie name
+		session_name($name);
+
+		// Set SSL level
+		$https = session_transport_is_https($secure);
+
+		// Set the browser cookie and HTTPS transport policy before session output.
+		session_configure_cookie_policy($limit, $path, $domain, $https);
+		session_send_transport_security_header($https);
+
+		session_start();
+
+		// Make sure the session hasn't expired, and destroy it if it has
+		if ($this->validateSession()) {
+			// Check to see if the session is new or a hijacking attempt
+			if(!$this->preventHijacking()) {
+				// Reset session data and regenerate id
+				$_SESSION = array();
+				$_SESSION['IPaddress'] = $_SERVER['REMOTE_ADDR'];
+				$_SESSION['userAgent'] = @$_SERVER['HTTP_USER_AGENT'];
+				$this->regenerateSession();
+
+			// Give a 5% chance of the session id changing on any request
+			}
+			elseif (rand(1, 100) <= 5)
+				$this->regenerateSession();
+		}
+		else {
+			$_SESSION = array();
+			session_destroy();
+			session_start();
+		}
+	}
+
+	function preventHijacking() {
+		if (!isset($_SESSION['IPaddress']) || !isset($_SESSION['userAgent']))
+			return false;
+		if ($_SESSION['IPaddress'] != $_SERVER['REMOTE_ADDR'])
+			return false;
+		if ( $_SESSION['userAgent'] != @$_SERVER['HTTP_USER_AGENT'])
+			return false;
+
+		return true;
+	}
+
+	function regenerateSession($invalidate_old_session = false) {
+		if ($invalidate_old_session) {
+			unset($_SESSION['OBSOLETE']);
+			unset($_SESSION['EXPIRES']);
+			if (!session_regenerate_id(true))
+				return false;
+
+			$_SESSION['IPaddress'] = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
+			$_SESSION['userAgent'] = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+			return true;
+		}
+
+		// If this session is obsolete it means there already is a new id
+		if (isset($_SESSION['OBSOLETE']) && ($_SESSION['OBSOLETE'] == true))
+			return true;
+
+		// Set current session to expire in 10 seconds
+		$_SESSION['OBSOLETE'] = true;
+		$_SESSION['EXPIRES'] = time() + 10;
+
+		// Create new session without destroying the old one
+		session_regenerate_id();
+		// Grab current session ID and close both sessions to allow other scripts to use them
+		$newSession = session_id();
+		session_write_close();
+		// Set session ID to the new one, and start it back up again
+
+		session_id($newSession);
+		session_start();
+		
+		// Now we unset the obsolete and expiration values for the session we want to keep
+		unset($_SESSION['OBSOLETE']);
+		unset($_SESSION['EXPIRES']);
+		return true;
+	}
+
+	function validateSession() {
+		if (isset($_SESSION['OBSOLETE']) && !isset($_SESSION['EXPIRES']) )
+			return false;
+		if (isset($_SESSION['EXPIRES']) && $_SESSION['EXPIRES'] < time())
+			return false;
+
+		return true;
+	}
+}
+
+function output_html($text) {
+	global $before_box, $Ajax, $messages;
+	// Fatal errors are not send to error_handler,
+	// so we must check the output
+	if ($text && preg_match('/\bFatal error(<.*?>)?:(.*)/i', $text, $m)) {
+		$Ajax->aCommands = array();  // Don't update page via ajax on errors
+		$text = preg_replace('/\bFatal error(<.*?>)?:(.*)/i','', $text);
+		$messages[] = array(E_ERROR, $m[2], null, null);
+	}
+	$Ajax->run();
+	return  in_ajax() ? fmt_errors() : ($before_box.fmt_errors().$text);
+}
+
+//----------------------------------------------------------------------------------------
+
+function kill_login() {
+	session_unset();
+	session_destroy();
+	session_expire_browser_cookie();
+}
+
+//----------------------------------------------------------------------------------------
+
+function login_fail() {
+	global $path_to_root;
+
+	header('HTTP/1.1 401 Authorization Required');
+	echo "<center><br><br><font size='5' color='red'><b>"._('Incorrect Password').'<b></font><br><br>';
+	echo '<b>' . _('The user and password combination is not valid for the system.') . '<b><br><br>';
+	echo _('If you are not an authorized user, please contact your system administrator to obtain an account to enable you to use the system.');
+	echo "<br><a href='".$path_to_root."/index.php'>"._('Try again').'</a>';
+	echo '</center>';
+	kill_login();
+	die();
+}
+
+//----------------------------------------------------------------------------------------
+
+/**
+ * Fail closed when an authenticated session cannot be rotated.
+ *
+ * @return void
+ */
+function login_session_rotation_fail() {
+	global $path_to_root;
+
+	header('HTTP/1.1 500 Internal Server Error');
+	echo '<center><br><br><b>'._('The secure login session could not be created.').'</b><br><br>';
+	echo _('Please try again. If the problem continues, contact your system administrator.');
+	echo "<br><a href='".$path_to_root."/index.php'>"._('Try again').'</a></center>';
+	kill_login();
+	die();
+}
+
+function check_faillog() {
+	global $SysPrefs, $login_faillog;
+
+	$user = $_SESSION['wa_current_user']->user;
+
+	$_SESSION['wa_current_user']->login_attempt++;
+	if (@$SysPrefs->login_delay && (@$login_faillog[$user][$_SERVER['REMOTE_ADDR']] >= @$SysPrefs->login_max_attempts) && (time() < $login_faillog[$user]['last'] + $SysPrefs->login_delay))
+		return true;
+
+	return false;
+}
+
+/*
+	Ensure file is re-read on next request if php caching is active
+*/
+function cache_invalidate($filename) {
+	if (function_exists('opcache_invalidate'))	// OpCode extension
+		opcache_invalidate($filename);
+}
+
+/*
+	Simple brute force attack detection is performed before connection to company database is open. Therefore access counters have to be stored in file.
+	Login attempts counter is created for every new user IP, which partialy prevent DOS attacks.
+*/
+function write_login_filelog($login, $result) {
+	global $login_faillog, $SysPrefs, $path_to_root;
+
+	$user = $_SESSION['wa_current_user']->user;
+
+	$ip = $_SERVER['REMOTE_ADDR'];
+
+	if (!isset($login_faillog[$user][$ip]) || $result) // init or reset on successfull login
+		$login_faillog[$user] = array($ip => 0, 'last' => '');
+
+	if (!$result) {
+		if ($login_faillog[$user][$ip] < @$SysPrefs->login_max_attempts) {
+
+			$login_faillog[$user][$ip]++;
+		} else {
+			$login_faillog[$user][$ip] = 0; // comment out to restart counter only after successfull login.
+			error_log(sprintf(_("Brute force attack on account '%s' detected. Access for non-logged users temporarily blocked."	), $login));
+		}
+		$login_faillog[$user]['last'] = time();
+	}
+
+	$msg = "<?php\n";
+	$msg .= "/*\n";
+	$msg .= "Login attempts info.\n";
+	$msg .= "*/\n";
+	$msg .= "\$login_faillog = " .var_export($login_faillog, true). ";\n";
+
+	$filename = VARLIB_PATH.'/faillog.php';
+
+	if ((!file_exists($filename) && is_writable(VARLIB_PATH)) || is_writable($filename)) {
+		file_put_contents($filename, $msg);
+		cache_invalidate($filename);
+	}
+}
+
+//----------------------------------------------------------------------------------------
+
+function check_page_security($page_security) {
+	global $SysPrefs;
+	
+	$msg = '';
+	
+	if (!$_SESSION['wa_current_user']->check_user_access()) {
+		// notification after upgrade from pre-2.2 version
+		$msg = $_SESSION['wa_current_user']->old_db ? _('Security settings have not been defined for your user account.').'<br>'._('Please contact your system administrator.')	: _("Please remove \$security_groups and \$security_headings arrays from config.php file!");
+	}
+	elseif (!$SysPrefs->db_ok && !$_SESSION['wa_current_user']->can_access('SA_SOFTWAREUPGRADE')) 
+		$msg = _('Access to application has been blocked until database upgrade is completed by system administrator.');
+	
+	if ($msg){
+		display_error($msg);
+		end_page(@$_REQUEST['popup']);
+		kill_login();
+		exit;
+	}
+
+	if (!$_SESSION['wa_current_user']->can_access_page($page_security)) {
+
+		echo '<center><br><br><br><b>';
+		echo _('La configuración de seguridad de su cuenta no le permite acceder a esta función');
+		echo '</b>';
+		echo '<br><br><br><br></center>';
+		end_page(@$_REQUEST['popup']);
+		exit;
+	}
+	if (!$SysPrefs->db_ok && !in_array($page_security, array('SA_SOFTWAREUPGRADE', 'SA_OPEN', 'SA_BACKUP'))) {
+		display_error(_('System is blocked after source upgrade until database is updated on System/Software Upgrade page'));
+		end_page();
+		exit;
+	}
+
+}
+/*
+	Helper function for setting page security level depeding on 
+	GET start variable and/or some value stored in session variable.
+	Before the call $page_security should be set to default page_security value.
+*/
+function set_page_security($value=null, $trans = array(), $gtrans = array()) {
+	global $page_security;
+
+	// first check is this is not start page call
+	foreach($gtrans as $key => $area)
+		if (isset($_GET[$key])) {
+			$page_security = $area;
+			return;
+		}
+
+	// then check session value
+	if (isset($trans[$value])) {
+		$page_security = $trans[$value];
+		return;
+	}
+}
+
+//-----------------------------------------------------------------------------
+//	Removing magic quotes from nested arrays/variables
+//
+function strip_quotes($data) {
+	if(version_compare(phpversion(), '5.4', '<') && get_magic_quotes_gpc()) {
+		if(is_array($data)) {
+			foreach($data as $k => $v) {
+				$data[$k] = strip_quotes($data[$k]);
+			}
+		}
+		else
+			return stripslashes($data);
+	}
+	return $data;
+}
+
+/*
+	htmlspecialchars does not support certain encodings.
+	ISO-8859-2 fortunately has the same special characters positions as 
+	ISO-8859-1, so fix is easy. If any other unsupported encoding is used,
+	add workaround here.
+*/
+function html_specials_encode($str) {
+	return htmlspecialchars($str, ENT_QUOTES, $_SESSION['language']->encoding=='iso-8859-2' ? 'ISO-8859-1' : $_SESSION['language']->encoding);
+}
+
+function html_cleanup(&$parms) {
+	foreach($parms as $name => $value) {
+		if (is_array($value))
+			html_cleanup($parms[$name]);
+		else
+			$parms[$name] = html_specials_encode($value);
+	}
+	reset($parms); // needed for direct key() usage later throughout the sources
+}
+
+//============================================================================
+//
+//
+function login_timeout() {
+	// skip timeout on logout page
+	if ($_SESSION['wa_current_user']->logged) {
+		$tout = $_SESSION['wa_current_user']->timeout;
+		if ($tout && (time() > $_SESSION['wa_current_user']->last_act + $tout))
+			$_SESSION['wa_current_user']->logged = false;
+		$_SESSION['wa_current_user']->last_act = time();
+	}
+}
+
+//============================================================================
+if (!isset($path_to_root))
+	$path_to_root = '.';
+
+// Prevent register_globals vulnerability
+if (isset($_GET['path_to_root']) || isset($_POST['path_to_root']))
+	die('Restricted access');
+
+include_once($path_to_root.'/includes/errors.inc');
+// colect all error msgs
+set_error_handler('error_handler' /*, errtypes */);
+set_exception_handler('exception_handler');
+
+include_once($path_to_root.'/includes/current_user.inc');
+include_once($path_to_root.'/NotrinosERP.php');
+include_once($path_to_root.'/admin/db/security_db.inc');
+include_once($path_to_root.'/includes/lang/language.inc');
+include_once($path_to_root.'/config_db.php');
+if (!defined('SECURE_ONLY'))
+	define('SECURE_ONLY', null);
+include_once($path_to_root.'/includes/ajax.inc');
+include_once($path_to_root.'/includes/ui/ui_msgs.inc');
+include_once($path_to_root.'/includes/prefs/sysprefs.inc');
+
+include_once($path_to_root.'/includes/hooks.inc');
+//
+// include all extensions hook files.
+//
+foreach ($installed_extensions as $ext) {
+	if (file_exists($path_to_root.'/'.$ext['path'].'/hooks.php'))
+		include_once($path_to_root.'/'.$ext['path'].'/hooks.php');
+}
+
+ini_set('session.gc_maxlifetime', 36000); // moved from below.
+
+$Session_manager = new SessionManager();
+$Session_manager->sessionStart('Notrinos'.md5(dirname(__FILE__)), 0, '/', null, SECURE_ONLY);
+
+$_SESSION['SysPrefs'] = new sys_prefs();
+
+$SysPrefs = &$_SESSION['SysPrefs'];
+
+//----------------------------------------------------------------------------------------
+// set to reasonable values if not set in config file (pre-2.3.12 installations)
+
+if ((!isset($SysPrefs->login_delay)) || ($SysPrefs->login_delay < 0))
+	$SysPrefs->login_delay = 10;
+
+if ((!isset($SysPrefs->login_max_attempts)) || ($SysPrefs->login_max_attempts < 0))
+	$SysPrefs->login_max_attempts = 3; 
+
+if ($SysPrefs->go_debug > 0)
+	$cur_error_level = -1;
+else
+	$cur_error_level = E_USER_WARNING|E_USER_ERROR|E_USER_NOTICE;
+
+error_reporting($cur_error_level);
+ini_set('display_errors', 'On');
+
+if ($SysPrefs->error_logfile != '') {
+	ini_set('error_log', $SysPrefs->error_logfile);
+	ini_set('ignore_repeated_errors', 'On');
+	ini_set('log_errors', 'On');
+}
+
+/*
+	Uncomment the setting below when using NotrinosERP on shared hosting
+	to avoid unexpeced session timeouts.
+	Make sure this directory exists and is writable!
+*/
+// ini_set('session.save_path', VARLIB_PATH.'/');
+
+// ini_set('session.gc_maxlifetime', 36000); // 10hrs - moved to before session_manager
+
+hook_session_start(@$_POST['company_login_name']);
+
+// this is to fix the 'back-do-you-want-to-refresh' issue - thanx PHPFreaks
+header('Cache-control: private');
+
+get_text_init();
+
+if ($SysPrefs->login_delay > 0 && file_exists(VARLIB_PATH.'/faillog.php'))
+	include_once(VARLIB_PATH.'/faillog.php');
+
+// Page Initialisation
+if (isset($dflt_lang) && isset($installed_languages)) {
+	if (!isset($_SESSION['wa_current_user']) || !$_SESSION['wa_current_user']->logged_in()
+		|| !isset($_SESSION['language']) || !method_exists($_SESSION['language'], 'set_language'))
+	{
+		$l = array_search_value($dflt_lang, $installed_languages, 'code');
+		$_SESSION['language'] = new language($l['name'], $l['code'], $l['encoding'],
+	 	(isset($l['rtl']) && $l['rtl'] === true) ? 'rtl' : 'ltr');
+	}
+
+	$_SESSION['language']->set_language($_SESSION['language']->code);
+}
+
+include_once($path_to_root.'/includes/access_levels.inc');
+include_once($path_to_root.'/version.php');
+include_once($path_to_root.'/includes/main.inc');
+include_once($path_to_root.'/includes/session_registry.inc');
+include_once($path_to_root.'/includes/app_entries.inc');
+include_once($path_to_root.'/includes/approval/approval_workflow.inc');
+
+// Register all core module transaction types for approval workflow
+include_once($path_to_root.'/includes/approval/registrations/gl_approval.inc');
+include_once($path_to_root.'/includes/approval/registrations/inventory_approval.inc');
+include_once($path_to_root.'/includes/approval/registrations/manufacturing_approval.inc');
+include_once($path_to_root.'/includes/approval/registrations/sales_approval.inc');
+include_once($path_to_root.'/includes/approval/registrations/purchasing_approval.inc');
+include_once($path_to_root.'/includes/approval/registrations/hrm_approval.inc');
+include_once($path_to_root.'/includes/approval/approval_delegation.inc');
+include_once($path_to_root.'/includes/approval/approval_escalation.inc');
+include_once($path_to_root.'/includes/approval/approval_conditions.inc');
+
+// Notification system
+include_once($path_to_root.'/includes/notification_manager.inc');
+include_once($path_to_root.'/includes/approval_notification_provider.inc');
+include_once($path_to_root.'/includes/purchase_notification_provider.inc');
+include_once($path_to_root.'/includes/sales_notification_provider.inc');
+include_once($path_to_root.'/includes/hrm_notification_provider.inc');
+
+// Ajax communication object
+$Ajax = new Ajax();
+
+// js/php validation rules container
+$Validate = array();
+// bindings for editors
+$Editors = array();
+// page help. Currently help for function keys.
+$Pagehelp = array();
+
+$Refs = new references();
+
+/**
+ * Get the singleton ApprovalWorkflow service instance.
+ *
+ * Creates an ApprovalWorkflow bound to the current session user's role and ID.
+ * The instance is cached per-request to avoid repeated construction.
+ *
+ * @return ApprovalWorkflow
+ */
+function get_approval_workflow_service()
+{
+	static $instance = null;
+	if ($instance === null) {
+		$role_id = isset($_SESSION['wa_current_user']) ? (int)$_SESSION['wa_current_user']->access : 0;
+		$user_id = isset($_SESSION['wa_current_user']) ? (int)$_SESSION['wa_current_user']->user : 0;
+		$instance = new ApprovalWorkflow($role_id, $user_id);
+	}
+	return $instance;
+}
+
+// intercept all output to destroy it in case of ajax call
+register_shutdown_function('end_flush');
+ob_start('output_html',0);
+
+if (!isset($_SESSION['wa_current_user']))
+	$_SESSION['wa_current_user'] = new current_user();
+
+html_cleanup($_GET);
+html_cleanup($_POST);
+html_cleanup($_REQUEST);
+html_cleanup($_SERVER);
+
+// logout.php is the only page we should have always 
+// accessable regardless of access level and current login status.
+if (!defined('FA_LOGOUT_PHP_FILE')){
+
+	login_timeout();
+
+	if (!$_SESSION['wa_current_user']->old_db && file_exists($path_to_root . '/company/'.user_company().'/installed_extensions.php'))
+		include($path_to_root . '/company/'.user_company().'/installed_extensions.php');
+
+	install_hooks();
+
+	if (!$_SESSION['wa_current_user']->logged_in()) {
+		if (isset($_GET['reset']) || isset($_POST['email_entry_field']) || isset($_POST['SubmitReset'])) {
+			session_log_security_event('denied_legacy_password_reset');
+			include($path_to_root.'/access/password_reset.php');
+			exit();
+		}
+		// Show login screen
+		if (!isset($_POST['user_name_entry_field']) or $_POST['user_name_entry_field'] == '') {
+			// strip ajax marker from uri, to force synchronous page reload
+			$_SESSION['timeout'] = array( 'uri'=>preg_replace('/JsHttpRequest=(?:(\d+)-)?([^&]+)/s', '', html_specials_encode($_SERVER['REQUEST_URI'])), 'post' => $_POST);
+			if (in_ajax())
+				$Ajax->popup($path_to_root.'/access/timeout.php');
+			else
+				include($path_to_root.'/access/login.php');
+			exit;
+		}
+		else {
+			if (isset($_POST['company_login_nickname']) && !isset($_POST['company_login_name'])) {
+				for ($i = 0; $i < count($db_connections); $i++) {
+					if ($db_connections[$i]['name'] == $_POST['company_login_nickname']) {
+						$_POST['company_login_name'] = $i;
+						unset($_POST['company_login_nickname']);
+						break 1; // cannot pass variables to break from PHP v5.4 onwards
+					}
+				}
+			}
+			$succeed = isset($db_connections[$_POST['company_login_name']]) && $_SESSION['wa_current_user']->login($_POST['company_login_name'], $_POST['user_name_entry_field'], $_POST['password']);
+			if ($succeed) {
+				if (!$Session_manager->regenerateSession(true)) {
+					session_log_security_event('denied_login_session_rotation_failed');
+					login_session_rotation_fail();
+				}
+				session_log_security_event('login_session_rotated');
+				$registry_result = session_registry_register_current_session();
+				if ($registry_result === false) {
+					session_log_security_event('denied_login_session_registration_failed');
+					login_session_rotation_fail();
+				}
+
+				// ========================================================
+				// AQUÍ SE INSERTA LA LLAMADA A LA API
+				// ========================================================
+				obtener_y_guardar_api_key();
+				// ========================================================				
+				
+			}
+			// select full vs fallback ui mode on login
+			$_SESSION['wa_current_user']->ui_mode = $_POST['ui_mode'];
+			if (!$succeed) {
+			// Incorrect password
+				if (isset($_SESSION['timeout'])) {
+					include($path_to_root.'/access/login.php');
+					exit;
+				}
+				else
+					login_fail();
+			}
+			elseif(isset($_SESSION['timeout']) && !$_SESSION['timeout']['post']) {
+				// in case of GET request redirect to avoid confirmation dialog 
+				// after return from menu option
+				header('HTTP/1.1 307 Temporary Redirect');
+				header('Location: '.$_SESSION['timeout']['uri']);
+				exit();
+			}
+			$lang = &$_SESSION['language'];
+			$lang->set_language($_SESSION['language']->code);
+		}
+	}
+	else {
+		set_global_connection();
+
+		db_set_encoding($_SESSION['language']->encoding);
+
+		$SysPrefs->refresh();
+		$registry_result = session_registry_validate_current_session();
+		if ($registry_result === false) {
+			session_log_security_event('denied_session_invalid_or_revoked');
+			header('HTTP/1.1 401 Authorization Required');
+			kill_login();
+			header('Location: '.$path_to_root.'/index.php');
+			exit;
+		}
+
+		if ($_SERVER['REQUEST_METHOD'] == 'POST' && !check_csrf_token()) {
+			$post_keys = array_keys($_POST);
+			$_POST = array();
+			$_FILES = array();
+			foreach ($post_keys as $post_key)
+				unset($_REQUEST[$post_key]);
+			$Ajax->activate('_page_body');
+		}
+	}
+
+	// Check for extension changes after SysPrefs are loaded from DB,
+	// so init() has access to use_manufacturing, use_fixed_assets, use_hrm etc.
+	$installed_extensions_signature = md5(serialize($installed_extensions));
+	if (!isset($_SESSION['installed_extensions_signature'])
+		|| $_SESSION['installed_extensions_signature'] !== $installed_extensions_signature) {
+		$_SESSION['installed_extensions_signature'] = $installed_extensions_signature;
+		if (isset($_SESSION['App'])) {
+			$selected_application_id = isset($_SESSION['App']->selected_application)
+				? $_SESSION['App']->selected_application
+				: '';
+			$_SESSION['App']->init();
+			if ($selected_application_id != '' && $_SESSION['App']->get_application($selected_application_id))
+				$_SESSION['App']->selected_application = $selected_application_id;
+			else
+				$_SESSION['App']->selected_application = user_startup_tab();
+		}
+	}
+
+	if (!isset($_SESSION['App'])) {
+		$_SESSION['App'] = new NotrinosErp();
+		$_SESSION['App']->init();
+	}
+
+	// Register core notification providers for the logged-in user
+	if ($_SESSION['wa_current_user']->logged_in()) {
+		$notification_manager = get_notification_manager();
+		if (!$notification_manager->hasProvider('approval')) {
+			$notification_manager->registerProvider(
+				new ApprovalNotificationProvider(
+					(int)$_SESSION['wa_current_user']->user,
+					(int)$_SESSION['wa_current_user']->access
+				)
+			);
+		}
+
+		if (!$notification_manager->hasProvider('purchase')) {
+			$notification_manager->registerProvider(
+				new PurchaseNotificationProvider(
+					(int)$_SESSION['wa_current_user']->user,
+					(int)$_SESSION['wa_current_user']->access
+				)
+			);
+		}
+
+		if (!$notification_manager->hasProvider('sales')) {
+			$notification_manager->registerProvider(
+				new SalesNotificationProvider(
+					(int)$_SESSION['wa_current_user']->user,
+					(int)$_SESSION['wa_current_user']->access
+				)
+			);
+		}
+
+		if (!$notification_manager->hasProvider('hrm')) {
+			$notification_manager->registerProvider(
+				new HrmNotificationProvider(
+					(int)$_SESSION['wa_current_user']->user,
+					(int)$_SESSION['wa_current_user']->access
+				)
+			);
+		}
+	}
+}
+
+// POST vars cleanup needed for direct reuse.
+// We quote all values later with db_escape() before db update.
+$_POST = strip_quotes($_POST);
+
+function obtener_y_guardar_api_key() {
+    
+    // Archivo de auditoría y recolección de datos básicos
+    $log_file = VARLOG_PATH . '/api_login_audit.log';
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN_IP';
+    $fecha = date('Y-m-d H:i:s');
+	
+    // Validar la CONSTANTE
+    if (!defined('URL_PLATAFORMA') || URL_PLATAFORMA === '') {
+        file_put_contents($log_file, "[$fecha] [IP: $ip] ERROR: La constante URL_PLATAFORMA no está definida o está vacía.\n", FILE_APPEND);
+        return false;
+    }
+
+    // 1. Forzar la vinculación de la conexión global a la BD de la empresa actual
+    set_global_connection();
+
+    // 2. Corregir el nombre a 'api_password' y utilizar la constante TB_PREF
+    $sql = "SELECT name, value FROM " . TB_PREF . "sys_prefs WHERE name IN ('api_usuario', 'api_password')";
+    $result = db_query($sql, "Error al consultar sys_prefs");
+    
+    $credenciales = [];
+    $nombres_encontrados = []; // Para auditoría
+    
+    while ($row = db_fetch($result)) {
+        $credenciales[$row['name']] = $row['value'];
+        $nombres_encontrados[] = $row['name'];
+    }
+
+    $api_usuario = $credenciales['api_usuario'] ?? '';
+    // Buscamos 'api_password' escrito correctamente
+    $api_password = $credenciales['api_password'] ?? ''; 
+
+    if (empty($api_usuario) || empty($api_password)) {
+        $claves_str = empty($nombres_encontrados) ? 'NINGUNA' : implode(', ', $nombres_encontrados);
+        file_put_contents($log_file, "[$fecha] [IP: $ip] ERROR: Credenciales incompletas en BD. Claves encontradas: [$claves_str]. Valor Usuario: '$api_usuario' | Valor Pass: '***'\n", FILE_APPEND);
+        return false;
+    }
+
+    // Preparar el endpoint y el payload
+    $endpoint = rtrim(URL_PLATAFORMA, '/') . '/auth/login';
+    
+    $payload = json_encode([
+        'email' => $api_usuario,
+        'password' => $api_password
+    ]);
+
+    // Ejecutar cURL
+    $ch = curl_init($endpoint);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json',
+        'Accept: application/json'
+    ]);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10); 
+
+    $response = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curl_error = curl_error($ch);
+    curl_close($ch);
+
+    // Procesar la respuesta y registrar en auditoría
+    if ($http_code >= 200 && $http_code < 300 && $response) {
+        $data = json_decode($response, true);
+        
+        if (isset($data['accessToken'])) { 
+            $_SESSION['api_token'] = $data['accessToken'];
+            $_SESSION['api_token_type'] = $data['tokenType'] ?? 'Bearer';
+            
+            // Registro de éxito
+            file_put_contents($log_file, "[$fecha] [IP: $ip] EXITO: Sesión API iniciada para '$api_usuario'.\n", FILE_APPEND);
+            return true;
+        } else {
+            // Registro de error: JSON válido pero sin token
+            file_put_contents($log_file, "[$fecha] [IP: $ip] ERROR API: Falta accessToken. Respuesta: $response\n", FILE_APPEND);
+            return false;
+        }
+    } else {
+        // Registro de error: Fallo HTTP o de conexión
+        $clean_response = str_replace(array("\r", "\n"), ' ', $response); // Limpiar saltos de línea para el log
+        file_put_contents($log_file, "[$fecha] [IP: $ip] ERROR HTTP $http_code: cURL Error: '$curl_error' | Respuesta: $clean_response\n", FILE_APPEND);
+        return false;
+    }
+}

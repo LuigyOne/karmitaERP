@@ -1,0 +1,1874 @@
+<?php
+/**********************************************************************
+	Copyright (C) NotrinosERP.
+	Released under the terms of the GNU General Public License, GPL,
+	as published by the Free Software Foundation, either version 3
+	of the License, or (at your option) any later version.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+	See the License here <http://www.gnu.org/licenses/gpl-3.0.html>.
+***********************************************************************/
+
+/**
+ * Manage Employees — per HRM_DEVELOPMENT_PLAN.md Section 10.1
+ * 7-Tab interface: Personal, Employment, Salary, Documents, History, Dependents, Transactions
+ */
+
+$page_security = 'SA_EMPLOYEE';
+$path_to_root  = '../..';
+
+include_once($path_to_root.'/includes/db_pager.inc');
+include_once($path_to_root.'/includes/session.inc');
+include($path_to_root.'/reporting/includes/tcpdf.php');
+
+// ---------------------------------------------------------------------------
+// Designer bootstrap — load the Visual Formula Designer when available.
+// When the designer is loaded, an "Open Formula Designer" button appears
+// next to formula fields. The designer renders in a modal; on "Create Formula"
+// the serialized formula is transferred back to the page-level textarea.
+// ---------------------------------------------------------------------------
+
+$designer_available = false;
+$designer_web_base = $path_to_root . '/includes/formula_designer';
+$designer_bootstrap = $designer_web_base . '/designer_bootstrap.inc';
+if (file_exists($designer_bootstrap)) {
+    include_once $designer_bootstrap;
+    if (class_exists('DesignerFacade')) {
+        $designer_available = true;
+        add_css_file($designer_web_base . '/assets/css/formula-designer.css');
+        add_js_ufile($designer_web_base . '/assets/js/formula-designer.js');
+        add_js_ufile($designer_web_base . '/assets/js/formula-dragdrop.js');
+        add_js_ufile($designer_web_base . '/assets/js/formula-preview.js');
+    }
+}
+
+$js = '';
+if ($SysPrefs->use_popup_windows)
+	$js .= get_js_open_window(900, 500);
+if (user_use_date_picker())
+	$js .= get_js_date_picker();
+
+page(_($help_context = 'Manage Employees'), @$_REQUEST['popup'], false, '', $js);
+
+include_once($path_to_root.'/includes/ui.inc');
+include_once($path_to_root.'/hrm/includes/hrm_constants.inc');
+include_once($path_to_root.'/hrm/includes/hrm_security.inc');
+include_once($path_to_root.'/hrm/includes/hrm_hooks.inc');
+include_once($path_to_root.'/hrm/includes/hrm_db.inc');
+include_once($path_to_root.'/hrm/includes/db/employee_salary_audit.inc');
+include_once($path_to_root.'/hrm/includes/db/lifecycle_confirmation_command_db.inc');
+include_once($path_to_root.'/hrm/includes/db/lifecycle_confirmation_browser_db.inc');
+include_once($path_to_root.'/hrm/includes/db/lifecycle_probation_schedule_command_db.inc');
+include_once($path_to_root.'/hrm/includes/db/lifecycle_probation_schedule_browser_db.inc');
+include_once($path_to_root.'/hrm/includes/hrm_ui.inc');
+
+$new_employee = get_post('employee_id') == '' || get_post('cancel');
+
+//======================================================================
+// UTILITY FUNCTIONS
+//======================================================================
+
+/**
+ * Resolve one Manage Employees selector label at the page-level instant.
+ *
+ * The shared employee-list SQL and the maintenance write target remain
+ * unchanged. The exact shared legacy formatter is the fail-closed fallback;
+ * only reviewed canonical-link evidence may replace the visible name.
+ *
+ * @param array $row
+ * @return string
+ */
+function employee_maintenance_authoritative_employee_list($row) {
+	global $employee_maintenance_selector_as_of;
+
+	$legacy_label = _format_employee_list($row);
+	if (!is_array($row) || !isset($row[0]) || trim((string)$row[0]) === ''
+		|| $employee_maintenance_selector_as_of === false)
+		return $legacy_label;
+
+	$identity = get_hrm_person_worker_report_name_as_of(
+		$row[0], $employee_maintenance_selector_as_of
+	);
+	if (!is_array($identity) || empty($identity['canonical_linked']))
+		return $legacy_label;
+
+	$first_name = isset($identity['first_name']) ? trim((string)$identity['first_name']) : '';
+	$middle_name = isset($identity['middle_name']) ? trim((string)$identity['middle_name']) : '';
+	$last_name = isset($identity['last_name']) ? trim((string)$identity['last_name']) : '';
+	$canonical_name = trim($first_name.' '.($middle_name !== '' ? $middle_name.' ' : '').$last_name);
+	if ($canonical_name === '')
+		return $legacy_label;
+
+	return (user_show_codes() ? ((string)$row[0].' - ') : '').$canonical_name;
+}
+
+/**
+ * Resolve one Manage Employees Reports To selector label at the page instant.
+ *
+ * The reporting_to employee key, active-only cohort and exact legacy
+ * "name [employee_id]" fallback remain authoritative. Canonical identity is
+ * presentation-only and may replace only the visible name component.
+ *
+ * @param array $row
+ * @return string
+ */
+function employee_reporting_to_authoritative_employee_list($row) {
+	global $employee_maintenance_selector_as_of;
+
+	$legacy_label = is_array($row) && isset($row[1]) ? (string)$row[1] : '';
+	if (!is_array($row) || !isset($row[0]) || trim((string)$row[0]) === ''
+		|| $employee_maintenance_selector_as_of === false)
+		return $legacy_label;
+
+	$identity = get_hrm_person_worker_report_name_as_of(
+		$row[0], $employee_maintenance_selector_as_of
+	);
+	if (!is_array($identity) || empty($identity['canonical_linked']))
+		return $legacy_label;
+
+	$first_name = isset($identity['first_name']) ? trim((string)$identity['first_name']) : '';
+	$middle_name = isset($identity['middle_name']) ? trim((string)$identity['middle_name']) : '';
+	$last_name = isset($identity['last_name']) ? trim((string)$identity['last_name']) : '';
+	$canonical_name = trim($first_name.' '.($middle_name !== '' ? $middle_name.' ' : '').$last_name);
+	if ($canonical_name === '')
+		return $legacy_label;
+
+	return $canonical_name.' ['.(string)$row[0].']';
+}
+
+/**
+ * Resolve the Manage Employees Salary-tab Employee header at the page instant.
+ *
+ * The selected employee key, salary projection/writers and exact legacy
+ * "first last [employee_id]" header remain authoritative. Canonical identity
+ * is presentation-only and may replace only the visible name component.
+ *
+ * @param string $employee_id
+ * @param array $emp
+ * @return string
+ */
+function employee_salary_authoritative_employee_label($employee_id, $emp) {
+	global $employee_maintenance_selector_as_of;
+
+	$legacy_name = is_array($emp)
+		? trim((isset($emp['first_name']) ? (string)$emp['first_name'] : '').' '.(isset($emp['last_name']) ? (string)$emp['last_name'] : ''))
+		: '';
+	$legacy_label = $legacy_name.' ['.(string)$employee_id.']';
+	if (trim((string)$employee_id) === '' || $employee_maintenance_selector_as_of === false)
+		return $legacy_label;
+
+	$identity = get_hrm_person_worker_report_name_as_of(
+		$employee_id, $employee_maintenance_selector_as_of
+	);
+	if (!is_array($identity) || empty($identity['canonical_linked']))
+		return $legacy_label;
+
+	$first_name = isset($identity['first_name']) ? trim((string)$identity['first_name']) : '';
+	$middle_name = isset($identity['middle_name']) ? trim((string)$identity['middle_name']) : '';
+	$last_name = isset($identity['last_name']) ? trim((string)$identity['last_name']) : '';
+	$canonical_name = trim($first_name.' '.($middle_name !== '' ? $middle_name.' ' : '').$last_name);
+	if ($canonical_name === '')
+		return $legacy_label;
+
+	return $canonical_name.' ['.(string)$employee_id.']';
+}
+
+
+function set_edit($employee_id) {
+	$row = get_employee_by_code($employee_id);
+	if (!$row) return;
+
+	// Keep the page state aligned when an employee is opened directly or after tab switches.
+	$row['NewEmpID'] = $employee_id;
+	$row['employee_id'] = $employee_id;
+	$_POST = array_merge($_POST, $row);
+
+	// Convert SQL dates to user format
+	$date_fields = array('birth_date', 'hire_date', 'released_date', 'confirmation_date', 
+		'probation_end_date', 'passport_expiry');
+	foreach ($date_fields as $f) {
+		$_POST[$f] = empty($_POST[$f]) ? '' : sql2date($_POST[$f]);
+	}
+	$_POST['del_image'] = 0;
+}
+
+function del_image($employee_id) {
+	foreach (array('jpg', 'png', 'gif') as $ext) {
+		$filename = company_path().'/images/employees/'.item_img_name($employee_id).".".$ext;
+		if (file_exists($filename) && !unlink($filename))
+			return false;
+	}
+	return true;
+}
+
+function show_image($employee_id) {
+	global $SysPrefs;
+
+	$check_remove_image = false;
+	$img_link = "<img id='emp_img' alt='No Image' src='".company_path().'/images/no_image.svg'."?nocache=".rand()."' height='100'>";
+
+	if (!empty($employee_id)) {
+		foreach (array('jpg', 'png', 'gif') as $ext) {
+			$file = company_path().'/images/employees/'.item_img_name($employee_id).'.'.$ext;
+			if (file_exists($file)) {
+				$check_remove_image = true;
+				$img_link = "<img id='emp_img' alt='[".$employee_id.".$ext]' src='".$file."?nocache=".rand()."' height='100' border='0'>";
+				break;
+			}
+		}
+	}
+	label_row("&nbsp;", $img_link);
+	if ($check_remove_image)
+		check_row(_('Delete Image:'), 'del_image');
+}
+
+function clear_inputs() {
+	$fields = array(
+		'first_name', 'last_name', 'middle_name', 'address', 'city', 'state', 'country',
+		'phone', 'mobile', 'email', 'personal_email',
+		'birth_date', 'nationality', 'national_id', 'passport', 'passport_expiry',
+		'bank_name', 'bank_branch', 'bank_account', 'bank_routing', 'tax_number', 'social_security_no',
+		'emergency_name', 'emergency_relation', 'emergency_phone',
+		'notes', 'NewEmpID', 'hire_date', 'confirmation_date', 'probation_end_date', 'released_date',
+		'department_id', 'position_id', 'grade_id', 'shift_id', 'login_id', 'reporting_to',
+	);
+	foreach ($fields as $f)
+		unset($_POST[$f]);
+}
+
+function collect_employee_data($new_employee=false) {
+	$data = array();
+
+	// Personal
+	$data['first_name']     = $_POST['first_name'];
+	$data['last_name']      = $_POST['last_name'];
+	$data['middle_name']    = get_post('middle_name', '');
+	$data['gender']         = get_post('gender', 0);
+	$data['birth_date']     = get_post('birth_date', '');
+	$data['nationality']    = get_post('nationality', '');
+	$data['marital_status'] = get_post('marital_status', 0);
+	$data['dependents_no']  = input_num('dependents_no', 0);
+
+	// Contact
+	$data['address']        = get_post('address', '');
+	$data['city']           = get_post('city', '');
+	$data['state']          = get_post('state', '');
+	$data['country']        = get_post('country', '');
+	$data['phone']          = get_post('phone', '');
+	$data['mobile']         = get_post('mobile', '');
+	$data['email']          = get_post('email', '');
+	$data['personal_email'] = get_post('personal_email', '');
+
+	// Identification
+	$data['national_id']       = get_post('national_id', '');
+	$data['passport']          = get_post('passport', '');
+	$data['passport_expiry']   = get_post('passport_expiry', '');
+	$data['tax_number']        = get_post('tax_number', '');
+	$data['social_security_no'] = get_post('social_security_no', '');
+
+	// Banking
+	$data['bank_name']     = get_post('bank_name', '');
+	$data['bank_branch']   = get_post('bank_branch', '');
+	$data['bank_account']  = get_post('bank_account', '');
+	$data['bank_routing']  = get_post('bank_routing', '');
+	$data['payment_method'] = get_post('payment_method', 0);
+
+	// Emergency
+	$data['emergency_name']     = get_post('emergency_name', '');
+	$data['emergency_relation'] = get_post('emergency_relation', '');
+	$data['emergency_phone']    = get_post('emergency_phone', '');
+
+	// Employment
+	$data['hire_date']          = get_post('hire_date', '');
+	// HRM-FND-005: confirmation_date, probation_end_date, released_date and inactive are lifecycle-command owned for existing employees and are never accepted by generic maintenance writes.
+	$data['employment_type']    = get_post('employment_type', 0);
+	// HRM-FND-005: accepted Employee Transfer owns organization/manager changes for existing employees.
+	// Initial organization/assignment values remain accepted only while creating a new employee.
+	if ($new_employee) {
+		$data['department_id'] = get_post('department_id', 0);
+		$data['position_id']   = get_post('position_id', 0);
+		$data['grade_id']      = get_post('grade_id', 0);
+		$data['reporting_to']  = get_post('reporting_to', '');
+	}
+	$data['shift_id']           = get_post('shift_id', 0);
+	$data['personal_salary']    = get_post('personal_salary', 0);
+	$data['cost_center_id']     = get_post('cost_center_id', 0);
+	$data['login_id']           = get_post('login_id', '');
+
+	// Notes
+	$data['notes']              = get_post('notes', '');
+
+	return $data;
+}
+
+/**
+ * Return only bank-detail keys present in the current request.
+ *
+ * @return array
+ */
+function collect_submitted_employee_bank_details() {
+	$submitted = array();
+	foreach (hrm_restricted_bank_detail_fields() as $field) {
+		if (array_key_exists($field, $_POST))
+			$submitted[$field] = $_POST[$field];
+	}
+
+	return $submitted;
+}
+
+/**
+ * Return only identity/tax keys present in the current request.
+ *
+ * @return array
+ */
+function collect_submitted_employee_identity_details() {
+	$submitted = array();
+	foreach (hrm_restricted_identity_detail_fields() as $field) {
+		if (array_key_exists($field, $_POST))
+			$submitted[$field] = $_POST[$field];
+	}
+
+	return $submitted;
+}
+
+/**
+ * Escape one restricted display value before it reaches a read-only label.
+ *
+ * @param string $value
+ * @return string
+ */
+function escape_employee_restricted_display($value) {
+	return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+}
+
+/**
+ * Validate that a child record belongs to the selected employee.
+ *
+ * @param array|false $record
+ * @param string $employee_id
+ * @param string $record_label
+ * @return bool
+ */
+function is_employee_child_record_accessible($record, $employee_id, $record_label) {
+	if (!$record) {
+		display_error(sprintf(_('%s record could not be found.'), $record_label));
+		return false;
+	}
+
+	if (!isset($record['employee_id']) || $record['employee_id'] != $employee_id) {
+		display_error(sprintf(_('%s record does not belong to the selected employee.'), $record_label));
+		return false;
+	}
+
+	return true;
+}
+
+/**
+ * Record an auditable employee-history row for a salary-element mutation.
+ *
+ * @param array $employee
+ * @param float|null $old_amount
+ * @param float|null $new_amount
+ * @param string $reason
+ * @return int
+ */
+function record_employee_salary_element_history($employee, $old_amount, $new_amount, $reason) {
+	if (!$employee || !isset($employee['employee_id']))
+		return 0;
+
+	return add_employee_history(
+		$employee['employee_id'],
+		HRM_HIST_SALARY_CHANGE,
+		Today(),
+		isset($employee['department_id']) ? (int)$employee['department_id'] : null,
+		isset($employee['department_id']) ? (int)$employee['department_id'] : null,
+		isset($employee['position_id']) ? (int)$employee['position_id'] : null,
+		isset($employee['position_id']) ? (int)$employee['position_id'] : null,
+		isset($employee['grade_id']) ? (int)$employee['grade_id'] : null,
+		isset($employee['grade_id']) ? (int)$employee['grade_id'] : null,
+		$old_amount,
+		$new_amount,
+		$reason
+	);
+}
+
+//======================================================================
+// TAB 1: PERSONAL INFORMATION
+//======================================================================
+function tab_personal($employee_id, $new_employee) {
+	global $path_to_root, $SysPrefs;
+
+	start_outer_table(TABLESTYLE2);
+
+	// ── LEFT COLUMN ──────────────────────────────────────
+	table_section(1);
+
+	table_section_title(_('Identity'));
+
+	if ($new_employee) {
+		text_row(_('Employee ID:'), 'NewEmpID', null, 42, 20);
+		$_POST['inactive'] = 0;
+	} else {
+		// Reload employee data if:
+		// 1. NewEmpID differs from employee_id (different employee selected), OR
+		// 2. Add/Update button was just clicked, OR
+		// 3. NewEmpID is set but form data is empty (switching back from another tab)
+		if (get_post('NewEmpID') != get_post('employee_id') || get_post('addupdate') || (get_post('NewEmpID') && empty(get_post('first_name')))) {
+			set_edit(get_post('employee_id'));
+		}
+		label_row(_('Employee ID:'), get_post('NewEmpID'));
+		hidden('NewEmpID', get_post('NewEmpID'));
+		// Only set focus on initial load, not after form submission (let validation handle focus)
+		if (!get_post('addupdate'))
+			set_focus('first_name');
+	}
+
+	file_row(_('Photo (.jpg/.png/.gif):'), 'pic', 'pic');
+	show_image(get_post('NewEmpID'));
+
+	table_section_title(_('Personal Information'));
+
+	text_row(_('First Name:'), 'first_name', null, 42, 100);
+	text_row(_('Middle Name:'), 'middle_name', null, 42, 100);
+	text_row(_('Last Name:'), 'last_name', null, 42, 100);
+
+	gender_list_row(_('Gender:'), 'gender');
+	date_row(_('Date of Birth:'), 'birth_date', null, null, 0, 0, -80);
+	text_row(_('Nationality:'), 'nationality', null, 42, 60);
+	marital_status_list_row(_('Marital Status:'), 'marital_status');
+	qty_row(_('Number of Dependents:'), 'dependents_no', null, null, null, 0);
+
+	table_section_title(_('Identification'));
+
+	$can_view_identity_details = hrm_user_can_access_sensitive_field(
+		HRM_FIELD_RESTRICTED_IDENTITY,
+		HRM_FIELD_ACTION_VIEW
+	);
+	if (!$new_employee && $can_view_identity_details) {
+		$identity_labels = array(
+			'national_id' => _('National ID:'),
+			'passport' => _('Passport No:'),
+			'tax_number' => _('Tax ID:'),
+			'social_security_no' => _('Social Security No:'),
+		);
+		foreach ($identity_labels as $field => $label) {
+			$masked_value = hrm_mask_restricted_value(get_post($field));
+			label_row(
+				$label,
+				escape_employee_restricted_display(
+					$masked_value === '' ? _('Not provided') : $masked_value
+				)
+			);
+		}
+		hrm_log_sensitive_field_access(
+			HRM_FIELD_RESTRICTED_IDENTITY,
+			HRM_FIELD_ACTION_VIEW,
+			'granted_masked'
+		);
+	} else {
+		label_row(_('Identity / Tax Details:'), _('Restricted'));
+	}
+	$can_manage_identity_supersession = !$new_employee && hrm_user_can_access_sensitive_field(
+		HRM_FIELD_RESTRICTED_IDENTITY,
+		HRM_FIELD_ACTION_VERIFY_LINK
+	);
+	if ($can_manage_identity_supersession) {
+		$employee_identity_ref = rawurlencode((string)get_post('NewEmpID'));
+		$identifier_change_url = 'identifier_supersession.php?employee_id='.$employee_identity_ref;
+		$identifier_request_url = 'identifier_verification_request.php?employee_id='.$employee_identity_ref;
+		$identifier_evidence_url = 'identifier_verification_evidence.php?employee_id='.$employee_identity_ref;
+		$identifier_promotion_url = 'identifier_verification_promotion.php?employee_id='.$employee_identity_ref;
+		label_row(
+			_('Identity / Tax Changes:'),
+			"<a href='".htmlspecialchars($identifier_change_url, ENT_QUOTES, 'UTF-8')."'>"
+			.escape_employee_restricted_display(_('Governed identifier change'))."</a> | "
+			."<a href='".htmlspecialchars($identifier_request_url, ENT_QUOTES, 'UTF-8')."'>"
+			.escape_employee_restricted_display(_('Submit identifier verification request'))."</a> | "
+			."<a href='".htmlspecialchars($identifier_evidence_url, ENT_QUOTES, 'UTF-8')."'>"
+			.escape_employee_restricted_display(_('Register verification evidence'))."</a> | "
+			."<a href='".htmlspecialchars($identifier_promotion_url, ENT_QUOTES, 'UTF-8')."'>"
+			.escape_employee_restricted_display(_('Promote verified identifier'))."</a>"
+		);
+	} else {
+		label_row(_('Identity / Tax Changes:'), _('Restricted'));
+	}
+
+	// ── RIGHT COLUMN ─────────────────────────────────────
+	table_section(2);
+
+	table_section_title(_('Contact Information'));
+
+	textarea_row(_('Address:'), 'address', null, 37, 3);
+	text_row(_('City:'), 'city', null, 42, 60);
+	text_row(_('State/Province:'), 'state', null, 42, 60);
+	text_row(_('Country:'), 'country', null, 42, 60);
+	text_row(_('Phone:'), 'phone', null, 42, 30);
+	text_row(_('Mobile:'), 'mobile', null, 42, 30);
+	email_row(_('Work Email:'), 'email', get_post('email'), 42, 100);
+	email_row(_('Personal Email:'), 'personal_email', get_post('personal_email'), 42, 100);
+
+	table_section_title(_('Banking'));
+
+	$can_view_bank_details = hrm_user_can_access_sensitive_field(
+		HRM_FIELD_RESTRICTED_FINANCIAL,
+		HRM_FIELD_ACTION_VIEW
+	);
+	if (!$new_employee && $can_view_bank_details) {
+		$masked_account = hrm_mask_restricted_value(get_post('bank_account'));
+		$masked_routing = hrm_mask_restricted_value(get_post('bank_routing'));
+		$payment_methods = hrm_get_payment_methods();
+		$payment_method = (int)get_post('payment_method', 0);
+		label_row(
+			_('Account Number:'),
+			escape_employee_restricted_display($masked_account === '' ? _('Not provided') : $masked_account)
+		);
+		label_row(
+			_('Routing/IBAN:'),
+			escape_employee_restricted_display($masked_routing === '' ? _('Not provided') : $masked_routing)
+		);
+		label_row(
+			_('Payment Method:'),
+			escape_employee_restricted_display(isset($payment_methods[$payment_method])
+				? $payment_methods[$payment_method] : _('Unknown'))
+		);
+		hrm_log_sensitive_field_access(
+			HRM_FIELD_RESTRICTED_FINANCIAL,
+			HRM_FIELD_ACTION_VIEW,
+			'granted_masked'
+		);
+	} else {
+		label_row(_('Bank Details:'), _('Restricted'));
+	}
+	$can_supersede_bank_details = !$new_employee && hrm_user_can_access_sensitive_field(
+		HRM_FIELD_RESTRICTED_FINANCIAL,
+		HRM_FIELD_ACTION_SUPERSEDE
+	);
+	if ($can_supersede_bank_details) {
+		$employee_bank_ref = rawurlencode((string)get_post('NewEmpID'));
+		$bank_change_url = 'person_bank_account_supersession.php?employee_id='.$employee_bank_ref;
+		$bank_verification_request_url = 'person_bank_account_verification_request.php?employee_id='.$employee_bank_ref;
+		$bank_verification_evidence_url = 'person_bank_account_verification_evidence.php?employee_id='.$employee_bank_ref;
+		$bank_verification_promotion_url = 'person_bank_account_verification_promotion.php?employee_id='.$employee_bank_ref;
+		label_row(
+			_('Bank Detail Changes:'),
+			"<a href='".htmlspecialchars($bank_change_url, ENT_QUOTES, 'UTF-8')."'>"
+			.escape_employee_restricted_display(_('Governed bank-detail change'))."</a> | "
+			."<a href='".htmlspecialchars($bank_verification_request_url, ENT_QUOTES, 'UTF-8')."'>"
+			.escape_employee_restricted_display(_('Submit bank verification request'))."</a> | "
+			."<a href='".htmlspecialchars($bank_verification_evidence_url, ENT_QUOTES, 'UTF-8')."'>"
+			.escape_employee_restricted_display(_('Register verification evidence'))."</a> | "
+			."<a href='".htmlspecialchars($bank_verification_promotion_url, ENT_QUOTES, 'UTF-8')."'>"
+			.escape_employee_restricted_display(_('Promote verified bank account'))."</a>"
+		);
+	} else {
+		label_row(_('Bank Detail Changes:'), _('Restricted'));
+	}
+	$can_manage_payment_election = !$new_employee && hrm_user_can_access_sensitive_field(
+		HRM_FIELD_RESTRICTED_FINANCIAL,
+		HRM_FIELD_ACTION_PAYMENT_ELECTION
+	);
+	if ($can_manage_payment_election) {
+		$employee_payment_election_ref = rawurlencode((string)get_post('NewEmpID'));
+		$payment_election_url = 'person_bank_payment_election.php?employee_id='.$employee_payment_election_ref;
+		label_row(
+			_('Payment Election:'),
+			"<a href='".htmlspecialchars($payment_election_url, ENT_QUOTES, 'UTF-8')."'>"
+			.escape_employee_restricted_display(_('Manage governed bank payment election'))."</a>"
+		);
+	} else {
+		label_row(_('Payment Election:'), _('Restricted'));
+	}
+
+	table_section_title(_('Emergency Contact'));
+
+	text_row(_('Contact Name:'), 'emergency_name', null, 42, 100);
+	text_row(_('Relation:'), 'emergency_relation', null, 42, 60);
+	text_row(_('Phone:'), 'emergency_phone', null, 42, 30);
+
+	end_outer_table(1);
+}
+
+//======================================================================
+// TAB 2: EMPLOYMENT INFORMATION
+//======================================================================
+function tab_employment($employee_id, $new_employee) {
+	global $path_to_root;
+
+	hidden('NewEmpID', get_post('NewEmpID'));
+	
+	// Reload employee data if editing and employment fields are absent from POST.
+	// This happens when switching from a non-Employment tab (e.g. Personal) where
+	// hire_date is not part of the submitted form.
+	//
+	// IMPORTANT: use array_merge($row, $_POST) so that any value the user has
+	// already changed on THIS tab — in particular a freshly-selected Job Position
+	// triggered via select_submit — is NOT overwritten by the DB-stored value.
+	if (!$new_employee && get_post('NewEmpID') && empty(get_post('hire_date'))) {
+		$row = get_employee_by_code(get_post('NewEmpID'));
+		if ($row) {
+			$date_fields = array('hire_date', 'confirmation_date', 'probation_end_date', 'released_date');
+			foreach ($date_fields as $f)
+				$row[$f] = empty($row[$f]) ? '' : sql2date($row[$f]);
+			// DB values fill missing fields; POST values take priority so user
+			// selections (e.g. a newly-picked Job Position) are never reverted.
+			$_POST = array_merge($row, $_POST);
+		}
+	}
+	
+	start_outer_table(TABLESTYLE2);
+
+	// ── LEFT COLUMN ──────────────────────────────────────
+	table_section(1);
+
+	table_section_title(_('Employment Details'));
+
+	date_row(_('Hire Date:'), 'hire_date', null, null, 0, 0, 1001);
+	if ($new_employee) {
+		label_row(_('Confirmation Date:'), _('Set after employee creation through approval'));
+	} else {
+		$current_confirmation = get_post('confirmation_date', '');
+		if ($current_confirmation !== '') {
+			label_row(_('Confirmation Date:'), htmlspecialchars($current_confirmation, ENT_QUOTES, 'UTF-8'));
+			hrm_lifecycle_confirmation_browser_forget_idempotency_key(get_post('NewEmpID'));
+		} else {
+			$confirmation_status = get_hrm_lifecycle_employee_confirmation_browser_status(get_post('NewEmpID'));
+			$status = isset($confirmation_status['status']) ? (string)$confirmation_status['status'] : 'inconsistent';
+			$status_labels = array(
+				'none'=>_('Not submitted'), 'pending'=>_('Pending approval'), 'blocked'=>_('Another lifecycle request is pending'),
+				'rejected'=>_('Latest request rejected'), 'cancelled'=>_('Latest request cancelled'),
+				'completed'=>_('Completed; refresh employee state'), 'inconsistent'=>_('Blocked: inconsistent approval custody'),
+			);
+			label_row(_('Confirmation Status:'), isset($status_labels[$status]) ? $status_labels[$status] : _('Blocked'));
+			if (in_array($status, array('none','rejected','cancelled'), true)) {
+				date_row(_('Confirmation Effective Date:'), 'confirmation_effective_date', null, null, 0, 0, 1001);
+				textarea_row(_('Confirmation Reason:'), 'confirmation_reason', null, 40, 3);
+				submit_cells('submit_confirmation', _('Submit Confirmation for Approval'));
+			} elseif ($status === 'pending') {
+				label_row(_('Confirmation Action:'), _('Awaiting independent approval'));
+			}
+		}
+	}
+	if ($new_employee) {
+		label_row(_('Probation End Date:'), _('Set after employee creation through approval'));
+	} else {
+		$current_probation = get_post('probation_end_date', '');
+		$current_confirmation = get_post('confirmation_date', '');
+		label_row(_('Probation End Date:'), $current_probation !== ''
+			? htmlspecialchars($current_probation, ENT_QUOTES, 'UTF-8') : _('Not scheduled'));
+		if ($current_confirmation !== '') {
+			hrm_lifecycle_probation_schedule_browser_forget_idempotency_key(get_post('NewEmpID'));
+			label_row(_('Probation Schedule Status:'), _('Unavailable after confirmation'));
+		} elseif ($current_probation !== '' && is_date($current_probation) && date_comp($current_probation, Today()) < 0) {
+			hrm_lifecycle_probation_schedule_browser_forget_idempotency_key(get_post('NewEmpID'));
+			label_row(_('Probation Schedule Status:'), _('Past schedule cannot be rewritten'));
+		} else {
+			$probation_status = get_hrm_lifecycle_employee_probation_schedule_browser_status(get_post('NewEmpID'));
+			$probation_status_code = isset($probation_status['status']) ? (string)$probation_status['status'] : 'inconsistent';
+			if ($probation_status_code === 'completed') {
+				hrm_lifecycle_probation_schedule_browser_forget_idempotency_key(get_post('NewEmpID'));
+				$probation_status_code = 'none'; // a later extension is a distinct fixed command
+			}
+			$probation_status_labels = array(
+				'none'=>_('Not submitted'), 'pending'=>_('Pending approval'), 'blocked'=>_('Another lifecycle request is pending'),
+				'rejected'=>_('Latest request rejected'), 'cancelled'=>_('Latest request cancelled'),
+				'completed'=>_('Completed; refresh employee state'), 'inconsistent'=>_('Blocked: inconsistent approval custody'),
+			);
+			label_row(_('Probation Schedule Status:'), isset($probation_status_labels[$probation_status_code])
+				? $probation_status_labels[$probation_status_code] : _('Blocked'));
+			if (in_array($probation_status_code, array('none','rejected','cancelled'), true)) {
+				date_row($current_probation === '' ? _('Probation End Date Request:') : _('Extended Probation End Date:'),
+					'probation_schedule_effective_date', null, null, 0, 0, 1001);
+				textarea_row(_('Probation Schedule Reason:'), 'probation_schedule_reason', null, 40, 3);
+				submit_cells('submit_probation_schedule', _('Submit Probation Schedule for Approval'));
+			} elseif ($probation_status_code === 'pending') {
+				label_row(_('Probation Schedule Action:'), _('Awaiting independent approval'));
+			}
+		}
+	}
+	employment_type_list_row(_('Employment Type:'), 'employment_type');
+
+	table_section_title(_('Organization'));
+
+	if ($new_employee) {
+		departments_list_row(_('Department:'), 'department_id', null, false, _('Select department'));
+		positions_list_row(_('Job Position:'), 'position_id', null, true, _('Select position'));
+	} else {
+		$department_label = trim((string)get_post('department_name', ''));
+		$position_label = trim((string)get_post('position_name', ''));
+		label_row(_('Department:'), htmlspecialchars($department_label === '' ? _('Not assigned') : $department_label, ENT_QUOTES, 'UTF-8'));
+		label_row(_('Job Position:'), htmlspecialchars($position_label === '' ? _('Not assigned') : $position_label, ENT_QUOTES, 'UTF-8'));
+	}
+	
+	// Display Job Class as label (read-only) — fetched from the selected/stored position
+	$job_class_name = _('Not assigned');
+	$position_id = get_post('position_id');
+	if ($position_id) {
+		$position = job_positions_entity::find($position_id);
+		if ($position && !empty($position['job_class_id'])) {
+			$job_class = job_classes_entity::find($position['job_class_id']);
+			$job_class_name = $job_class ? $job_class['class_name'] : _('Not assigned');
+		}
+	}
+	label_row(_('Job Class:'), $job_class_name);
+	
+	if ($new_employee) {
+		grades_list_row(_('Pay Grade:'), 'grade_id', null, _('Basic'));
+	} else {
+		$grade_label = trim((string)get_post('grade_name', ''));
+		label_row(_('Pay Grade:'), htmlspecialchars($grade_label === '' ? _('Not assigned') : $grade_label, ENT_QUOTES, 'UTF-8'));
+	}
+
+	// ── RIGHT COLUMN ─────────────────────────────────────
+	table_section(2);
+
+	table_section_title(_('Assignment'));
+
+	work_shifts_list_row(_('Work Shift:'), 'shift_id', null, true);
+	if ($new_employee) {
+		reporting_to_list_row(_('Reports To:'), 'reporting_to', null, get_post('NewEmpID'), false, array(
+			'format' => 'employee_reporting_to_authoritative_employee_list'
+		));
+	} else {
+		$manager_code = trim((string)get_post('reporting_to', ''));
+		$manager_label = _('Not assigned');
+		if ($manager_code !== '') {
+			$manager = get_employee_by_code($manager_code);
+			$manager_label = $manager && !empty($manager['employee_name'])
+				? $manager['employee_name'].' ('.$manager_code.')' : $manager_code;
+		}
+		label_row(_('Reports To:'), htmlspecialchars($manager_label, ENT_QUOTES, 'UTF-8'));
+	}
+	users_list_row(_('System Login:'), 'login_id', null, false, _('Select user'));
+	dimensions_list_row(_('Cost Center:'), 'cost_center_id', null, true, ' ', false, 1, false);
+
+	table_section_title(_('Salary & Status'));
+
+	yesno_list_row(_('Personal Salary Structure:'), 'personal_salary');
+	if ($new_employee) {
+		label_row(_('Release Date:'), _('Not set'));
+		label_row(_('Employee Status:'), _('Active (default)'));
+	} else {
+		label_row(_('Release Date:'), trim((string)get_post('released_date')) === '' ? _('Not set') : get_post('released_date'));
+		label_row(_('Employee Status:'), get_post('inactive') ? _('Inactive') : _('Active'));
+	}
+
+	table_section_title(_('Notes'));
+
+	textarea_row(_('Notes:'), 'notes', null, 50, 5);
+
+	end_outer_table(1);
+}
+
+//======================================================================
+// TAB 3: SALARY STRUCTURE
+//======================================================================
+function tab_salary($employee_id) {
+	global $path_to_root, $Ajax, $designer_available;
+
+	$has_manage_request = isset($_GET['edit_salary'])
+		|| isset($_GET['delete_salary'])
+		|| find_submit('delete_salary') != -1
+		|| isset($_POST['add_salary_element']);
+	$required_action = $has_manage_request
+		? HRM_FIELD_ACTION_MANAGE : HRM_FIELD_ACTION_VIEW;
+	if (!hrm_require_sensitive_field_access(HRM_FIELD_RESTRICTED_COMPENSATION, $required_action))
+		return;
+
+	if (empty($employee_id)) {
+		hidden('NewEmpID', get_post('NewEmpID'));
+		display_note(_('Please save the employee first before configuring salary.'));
+		return;
+	}
+
+	hidden('NewEmpID', get_post('NewEmpID'));
+	$emp = get_employee_by_code($employee_id);
+	if (!$emp) return;
+
+	// If personal salary, process actions before rendering the current list.
+	if ($emp['personal_salary']) {
+		// Salary deletion is a state-changing action and must never execute from
+		// a bookmarked or crafted GET request. Keep the old parameter as an
+		// explicit denial so undocumented clients cannot silently mutate data.
+		if (isset($_GET['delete_salary'])) {
+			hrm_log_sensitive_field_access(
+				HRM_FIELD_RESTRICTED_COMPENSATION,
+				HRM_FIELD_ACTION_MANAGE,
+				'denied_invalid_method'
+			);
+			display_error(_('Salary element removal requires a confirmed form submission.'));
+		}
+
+		if (isset($_GET['edit_salary'])) {
+			$editing_salary = get_employee_salary($_GET['edit_salary']);
+			if (is_employee_child_record_accessible($editing_salary, $employee_id, _('Salary element'))) {
+				$_POST['editing_salary_id'] = $editing_salary['salary_id'];
+				$_POST['sal_element_id'] = $editing_salary['element_id'];
+				$_POST['sal_amount'] = price_format($editing_salary['amount']);
+				$_POST['sal_formula'] = $editing_salary['formula'];
+				$_POST['sal_reference'] = $editing_salary['reference'];
+				$_POST['sal_effective_from'] = !empty($editing_salary['effective_from']) ? sql2date($editing_salary['effective_from']) : '';
+				$_POST['sal_effective_to'] = !empty($editing_salary['effective_to']) ? sql2date($editing_salary['effective_to']) : '';
+			}
+		}
+
+		// Handle POST/CSRF-protected salary element deletion.
+		$delete_salary_id = find_submit('delete_salary');
+		if ($delete_salary_id != -1) {
+			$deleting_salary = $delete_salary_id > 0
+				? get_employee_salary($delete_salary_id) : false;
+			if (is_employee_child_record_accessible($deleting_salary, $employee_id, _('Salary element'))) {
+				begin_transaction();
+				$deleted = delete_employee_salary($deleting_salary['salary_id']);
+				$history_id = $deleted ? record_employee_salary_element_history(
+					$emp,
+					(float)$deleting_salary['amount'],
+					null,
+					sprintf(
+						_('Employee salary element removed (salary ID %d, element ID %d).'),
+						(int)$deleting_salary['salary_id'],
+						(int)$deleting_salary['element_id']
+					)
+				) : 0;
+				$audit_event = ($deleted && $history_id) ? append_employee_salary_domain_audit(
+					'delete',
+					$employee_id,
+					(int)$deleting_salary['salary_id'],
+					$deleting_salary,
+					null,
+					(int)$history_id
+				) : false;
+				if ($deleted && $history_id && $audit_event) {
+					commit_transaction();
+					hrm_log_sensitive_field_access(
+						HRM_FIELD_RESTRICTED_COMPENSATION,
+						HRM_FIELD_ACTION_MANAGE,
+						'granted_salary_delete'
+					);
+					display_notification(_('Salary element removed.'));
+				} else {
+					cancel_transaction();
+					display_error(_('Could not remove salary element with complete audit evidence.'));
+				}
+			}
+			$Ajax->activate('_page_body');
+		}
+
+		// Handle add salary element
+		if (isset($_POST['add_salary_element'])) {
+			$input_error = 0;
+			$editing_salary = false;
+			if (get_post('editing_salary_id')) {
+				$editing_salary = get_employee_salary(get_post('editing_salary_id'));
+				if (!is_employee_child_record_accessible($editing_salary, $employee_id, _('Salary element')))
+					$input_error = 1;
+			}
+			if (!get_post('sal_element_id')) {
+				$input_error = 1;
+				display_error(_('Please select a pay element.'));
+			}
+			if (input_num('sal_amount') == 0 && empty(get_post('sal_formula'))) {
+				$input_error = 1;
+				display_error(_('Please enter an amount or formula.'));
+			}
+			if (!get_post('sal_effective_from')) {
+				$input_error = 1;
+				display_error(_('Effective from date is required.'));
+			}
+			if (!$input_error && !is_date(get_post('sal_effective_from'))) {
+				$input_error = 1;
+				display_error(_('Effective from date is invalid.'));
+			}
+			if (!$input_error && get_post('sal_effective_to') !== '' && !is_date(get_post('sal_effective_to'))) {
+				$input_error = 1;
+				display_error(_('Effective to date is invalid.'));
+			}
+			if (!$input_error && get_post('sal_effective_to') !== ''
+				&& date1_greater_date2(get_post('sal_effective_from'), get_post('sal_effective_to'))) {
+				$input_error = 1;
+				display_error(_('Effective to date cannot be earlier than effective from date.'));
+			}
+
+			if (!$input_error) {
+				if ($editing_salary) {
+					begin_transaction();
+					$ok = update_employee_salary(
+						$editing_salary['salary_id'],
+						input_num('sal_amount'),
+						get_post('sal_effective_from'),
+						get_post('sal_effective_to'),
+						get_post('sal_formula'),
+						get_post('sal_reference')
+					);
+					$history_id = $ok ? record_employee_salary_element_history(
+						$emp,
+						(float)$editing_salary['amount'],
+						(float)input_num('sal_amount'),
+						sprintf(
+							_('Employee salary element updated (salary ID %d, element ID %d).'),
+							(int)$editing_salary['salary_id'],
+							(int)$editing_salary['element_id']
+						)
+					) : 0;
+					$updated_salary = ($ok && $history_id)
+						? get_employee_salary((int)$editing_salary['salary_id']) : false;
+					$audit_event = ($updated_salary && $history_id) ? append_employee_salary_domain_audit(
+						'update',
+						$employee_id,
+						(int)$editing_salary['salary_id'],
+						$editing_salary,
+						$updated_salary,
+						(int)$history_id
+					) : false;
+					if ($ok && $history_id && $updated_salary && $audit_event) {
+						commit_transaction();
+						display_notification(_('Salary element updated.'));
+					} else {
+						cancel_transaction();
+						$policy_error = hrm_legacy_formula_last_error();
+						display_error($policy_error !== '' ? _($policy_error) : _('Could not update salary element with complete audit evidence.'));
+					}
+				} else {
+					begin_transaction();
+					$salary_id = add_employee_salary(
+						$employee_id,
+						get_post('sal_element_id'),
+						input_num('sal_amount'),
+						get_post('sal_effective_from'),
+						get_post('sal_effective_to'),
+						get_post('sal_formula'),
+						get_post('sal_reference')
+					);
+					$history_id = $salary_id ? record_employee_salary_element_history(
+						$emp,
+						null,
+						(float)input_num('sal_amount'),
+						sprintf(
+							_('Employee salary element added (salary ID %d, element ID %d).'),
+							(int)$salary_id,
+							(int)get_post('sal_element_id')
+						)
+					) : 0;
+					$created_salary = ($salary_id && $history_id)
+						? get_employee_salary((int)$salary_id) : false;
+					$audit_event = ($created_salary && $history_id) ? append_employee_salary_domain_audit(
+						'create',
+						$employee_id,
+						(int)$salary_id,
+						null,
+						$created_salary,
+						(int)$history_id
+					) : false;
+					if ($salary_id && $history_id && $created_salary && $audit_event) {
+						commit_transaction();
+						display_notification(_('Salary element added.'));
+					} else {
+						cancel_transaction();
+						$policy_error = hrm_legacy_formula_last_error();
+						display_error($policy_error !== '' ? _($policy_error) : _('Could not add salary element with complete audit evidence. Check effective dates, duplicates, and audit-key storage.'));
+					}
+				}
+				unset($_POST['editing_salary_id'], $_POST['sal_element_id'], $_POST['sal_amount'], $_POST['sal_formula'], $_POST['sal_reference'], $_POST['sal_effective_from'], $_POST['sal_effective_to']);
+				$Ajax->activate('_page_body');
+			}
+		}
+	}
+
+	// Header info
+	start_table(TABLESTYLE2);
+	label_row(_('Employee:'), employee_salary_authoritative_employee_label($employee_id, $emp));
+	label_row(_('Position:'), $emp['position_name'] ?: _('Not assigned'));
+	label_row(_('Grade:'), $emp['grade_name'] ?: _('Not assigned'));
+	label_row(_('Salary Mode:'), $emp['personal_salary'] ? _('Personal (Individual Override)') : _('Position-based (Salary Structure)'));
+	end_table(1);
+
+	// Display salary components after processing actions so the list is current.
+	$can_manage_salary = hrm_user_can_access_sensitive_field(
+		HRM_FIELD_RESTRICTED_COMPENSATION,
+		HRM_FIELD_ACTION_MANAGE
+	);
+	$editable = $emp['personal_salary'] && $can_manage_salary;
+	display_salary_components($employee_id, $editable);
+
+	// If personal salary, show add form
+	if ($emp['personal_salary'] && $can_manage_salary) {
+		br();
+		display_heading(_('Add / Edit Salary Element'));
+
+		start_outer_table(TABLESTYLE2);
+		table_section(1);
+
+		hidden('editing_salary_id', get_post('editing_salary_id', ''));
+
+		$sql = "SELECT element_id, CONCAT(element_code, ' - ', element_name) as name 
+				FROM ".TB_PREF."pay_elements WHERE !inactive";
+		label_row(_('Pay Element:'), combo_input('sal_element_id', get_post('sal_element_id'), $sql, 'element_id', 'name', array(
+			'spec_option' => _('-- Select --'), 'spec_id' => '',
+		)));
+
+		amount_row(_('Amount:'), 'sal_amount');
+		
+		textarea_row(_('Formula:'), 'sal_formula', null, 255, 3);
+		if ($designer_available) {
+			echo '<tr><td></td><td>';
+			echo '<button type="button" class="fd-modal-trigger-btn" '
+				. 'id="formula-designer-trigger">'
+				. _('Open Formula Designer') . '</button>';
+			echo '</td></tr>';
+		}
+
+		table_section(2);
+
+		date_row(_('Effective From:'), 'sal_effective_from');
+		date_row(_('Effective To:'), 'sal_effective_to', '', false, 0, 0, 1001);
+		text_row(_('Reference:'), 'sal_reference', null, 42, 60);
+
+		end_outer_table(1);
+
+		submit_center('add_salary_element', _('Add / Update Element'), true, '', 'default');
+	}
+}
+
+//======================================================================
+// TAB 4: DOCUMENTS
+//======================================================================
+function tab_documents($employee_id) {
+	global $Ajax, $path_to_root;
+
+	hidden('NewEmpID', get_post('NewEmpID'));
+
+	if (empty($employee_id)) {
+		display_note(_('Please save the employee first before managing documents.'));
+		return;
+	}
+
+	// Handle POST/CSRF-protected document deletion.
+	$delete_doc_id = find_submit('delete_doc');
+	if ($delete_doc_id > 0) {
+		$doc = get_employee_document($delete_doc_id);
+		if (is_employee_child_record_accessible($doc, $employee_id, _('Document'))) {
+			if (delete_employee_document($doc['doc_id']))
+				display_notification(_('Document deleted.'));
+			else
+				display_error(_('Document deletion was blocked by retention or storage validation.'));
+		}
+		$Ajax->activate('_page_body');
+	}
+
+	$editing_doc = null;
+	if (isset($_GET['edit_doc'])) {
+		$editing_doc = get_employee_document($_GET['edit_doc']);
+		if (is_employee_child_record_accessible($editing_doc, $employee_id, _('Document'))) {
+			$_POST['doc_type_id'] = $editing_doc['doc_type_id'];
+			$_POST['doc_name']    = $editing_doc['doc_name'];
+			$_POST['doc_issue_date']  = !empty($editing_doc['issue_date']) ? sql2date($editing_doc['issue_date']) : '';
+			$_POST['doc_expiry_date'] = !empty($editing_doc['expiry_date']) ? sql2date($editing_doc['expiry_date']) : '';
+			$_POST['doc_notes']   = $editing_doc['notes'];
+			$_POST['editing_doc_id'] = $editing_doc['doc_id'];
+		}
+	}
+
+	if (isset($_POST['save_document'])) {
+		$input_error = 0;
+		$current_doc = false;
+		if (get_post('editing_doc_id')) {
+			$current_doc = get_employee_document(get_post('editing_doc_id'));
+			if (!is_employee_child_record_accessible($current_doc, $employee_id, _('Document')))
+				$input_error = 1;
+		}
+		if (!get_post('doc_type_id')) {
+			$input_error = 1;
+			display_error(_('Please select a document type.'));
+		}
+		if (empty(trim(get_post('doc_name')))) {
+			$input_error = 1;
+			display_error(_('Please enter a document name.'));
+		}
+
+		// --- Core Attachment Upload ---
+		$upload_info = array();
+		if (isset($_FILES['doc_file']) && $_FILES['doc_file']['name'] != '') {
+			// Employee documents require strict content agreement and a clean scan.
+			$upload_info = validate_hrm_employee_document_upload($_FILES['doc_file']);
+			if (!$upload_info['ok']) {
+				$input_error = 1;
+				display_error($upload_info['error']);
+				$upload_info = array();
+			}
+		}
+
+		if (!$input_error) {
+			// Resolve employee_number for core attachment ownership.
+			$employee_number = resolve_employee_number($employee_id);
+			if ($employee_number === false) {
+				display_error(_('Cannot resolve employee record.'));
+				$input_error = 1;
+			}
+		}
+
+		if (!$input_error) {
+			if ($current_doc) {
+				// Update existing document with core attachment integration.
+				$updated = update_employee_document_with_attachment(
+					$current_doc['doc_id'],
+					$employee_number,
+					get_post('doc_type_id'),
+					get_post('doc_name'),
+					$upload_info,
+					get_post('doc_issue_date'),
+					get_post('doc_expiry_date'),
+					get_post('doc_notes')
+				);
+				if ($updated)
+					display_notification(_('Document updated.'));
+				else
+					display_error(_('Document update was blocked. Add a new document for replacement content, or review retention and scan status.'));
+			} else {
+				// Create new document with core attachment integration.
+				$document_id = add_employee_document_with_attachment(
+					$employee_id,
+					$employee_number,
+					get_post('doc_type_id'),
+					get_post('doc_name'),
+					$upload_info,
+					get_post('doc_issue_date'),
+					get_post('doc_expiry_date'),
+					get_post('doc_notes')
+				);
+				if ($document_id !== false) {
+					display_notification(_('Document added.'));
+
+					// Fire backward-compatible hook.
+					hrm_fire_hook('on_document_uploaded', $document_id, $employee_id);
+				} else {
+					display_error(_('Failed to save document.'));
+				}
+			}
+			unset($_POST['doc_type_id'], $_POST['doc_name'], $_POST['doc_issue_date'], 
+				$_POST['doc_expiry_date'], $_POST['doc_notes'], $_POST['editing_doc_id']);
+			$Ajax->activate('_page_body');
+		}
+	}
+
+	// Display existing documents after processing so the table is current.
+	display_employee_documents($employee_id);
+
+	// Add/Edit document form
+	br();
+	display_heading(_('Add / Edit Document'));
+
+	start_outer_table(TABLESTYLE2);
+
+	table_section(1);
+
+	hidden('editing_doc_id', get_post('editing_doc_id', ''));
+	document_types_list_row(_('Document Type:'), 'doc_type_id', null, true);
+	text_row(_('Document Name:'), 'doc_name', null, 42, 200);
+	file_row(_('Attachment:'), 'doc_file');
+
+	table_section(2);
+
+	date_row(_('Issue Date:'), 'doc_issue_date', '', false, 0, 0, 1001);
+	date_row(_('Expiry Date:'), 'doc_expiry_date', '', false, 0, 0, 1001);
+	textarea_row(_('Notes:'), 'doc_notes', null, 35, 3);
+
+	end_outer_table(1);
+
+	submit_center('save_document', _('Save Document'), true, '', 'default');
+}
+
+//======================================================================
+// TAB 5: HISTORY
+//======================================================================
+function tab_history($employee_id) {
+	hidden('NewEmpID', get_post('NewEmpID'));
+	if (empty($employee_id)) {
+		display_note(_('Please save the employee first.'));
+		return;
+	}
+
+	display_employee_history($employee_id);
+}
+
+//======================================================================
+// TAB 6: DEPENDENTS
+//======================================================================
+function tab_dependents($employee_id) {
+	global $Ajax;
+
+	hidden('NewEmpID', get_post('NewEmpID'));
+
+	if (empty($employee_id)) {
+		display_note(_('Please save the employee first before managing dependents.'));
+		return;
+	}
+
+	// Handle delete dependent
+	if (isset($_GET['delete_dep'])) {
+		$dependent = get_employee_dependent($_GET['delete_dep']);
+		if (is_employee_child_record_accessible($dependent, $employee_id, _('Dependent'))) {
+			delete_employee_dependent($dependent['dependent_id']);
+			display_notification(_('Dependent deleted.'));
+		}
+		$Ajax->activate('_page_body');
+	}
+
+	$editing_dep = null;
+	if (isset($_GET['edit_dep'])) {
+		$editing_dep = get_employee_dependent($_GET['edit_dep']);
+		if (is_employee_child_record_accessible($editing_dep, $employee_id, _('Dependent'))) {
+			$_POST['dep_name']          = $editing_dep['name'];
+			$_POST['dep_relationship']  = $editing_dep['relationship'];
+			$_POST['dep_birth_date']    = !empty($editing_dep['birth_date']) ? sql2date($editing_dep['birth_date']) : '';
+			$_POST['dep_gender']        = $editing_dep['gender'];
+			$_POST['dep_is_beneficiary'] = $editing_dep['is_beneficiary'];
+			$_POST['editing_dep_id']    = $editing_dep['dependent_id'];
+		}
+	}
+
+	if (isset($_POST['save_dependent'])) {
+		$input_error = 0;
+		$current_dependent = false;
+		if (get_post('editing_dep_id')) {
+			$current_dependent = get_employee_dependent(get_post('editing_dep_id'));
+			if (!is_employee_child_record_accessible($current_dependent, $employee_id, _('Dependent')))
+				$input_error = 1;
+		}
+		if (empty(trim(get_post('dep_name')))) {
+			$input_error = 1;
+			display_error(_('Please enter the dependent\'s name.'));
+		}
+		if (empty(get_post('dep_relationship'))) {
+			$input_error = 1;
+			display_error(_('Please select a relationship.'));
+		}
+
+		$dependent_identity_data = array(
+			'national_id' => get_post('dep_national_id', ''),
+		);
+		$submitted_dependent_identity = array();
+		if (array_key_exists('dep_national_id', $_POST))
+			$submitted_dependent_identity['national_id'] = $_POST['dep_national_id'];
+		if (!hrm_enforce_restricted_identity_write(
+			$dependent_identity_data,
+			$submitted_dependent_identity,
+			$current_dependent,
+			array('national_id')
+		)) {
+			$input_error = 1;
+		}
+
+		if (!$input_error) {
+			if ($current_dependent) {
+				update_employee_dependent(
+					$current_dependent['dependent_id'],
+					get_post('dep_name'),
+					get_post('dep_relationship'),
+					get_post('dep_birth_date'),
+					get_post('dep_gender', 0),
+					$dependent_identity_data['national_id'],
+					get_post('dep_is_beneficiary', 0)
+				);
+				display_notification(_('Dependent updated.'));
+			} else {
+				add_employee_dependent(
+					$employee_id,
+					get_post('dep_name'),
+					get_post('dep_relationship'),
+					get_post('dep_birth_date'),
+					get_post('dep_gender', 0),
+					$dependent_identity_data['national_id'],
+					get_post('dep_is_beneficiary', 0)
+				);
+				display_notification(_('Dependent added.'));
+			}
+			unset($_POST['dep_name'], $_POST['dep_relationship'], $_POST['dep_birth_date'],
+				$_POST['dep_gender'], $_POST['dep_national_id'], $_POST['dep_is_beneficiary'],
+				$_POST['editing_dep_id']);
+			$Ajax->activate('_page_body');
+		}
+	}
+
+	// Display existing dependents after processing so the table is current.
+	$can_view_identity_details = hrm_user_can_access_sensitive_field(
+		HRM_FIELD_RESTRICTED_IDENTITY,
+		HRM_FIELD_ACTION_VIEW
+	);
+	display_employee_dependents($employee_id, $can_view_identity_details);
+	if ($can_view_identity_details) {
+		hrm_log_sensitive_field_access(
+			HRM_FIELD_RESTRICTED_IDENTITY,
+			HRM_FIELD_ACTION_VIEW,
+			'granted_masked'
+		);
+	}
+
+	// Add/Edit form
+	br();
+	display_heading(_('Add / Edit Dependent'));
+
+	start_outer_table(TABLESTYLE2);
+
+	table_section(1);
+
+	hidden('editing_dep_id', get_post('editing_dep_id', ''));
+	text_row(_('Name:'), 'dep_name', null, 42, 100);
+	relationship_list_row(_('Relationship:'), 'dep_relationship');
+	gender_list_row(_('Gender:'), 'dep_gender');
+
+	table_section(2);
+
+	date_row(_('Date of Birth:'), 'dep_birth_date', '', false, 0, 0, -80);
+	$dependent_identity_value = $editing_dep && $can_view_identity_details
+		? hrm_mask_restricted_value($editing_dep['national_id']) : '';
+	label_row(
+		_('National ID:'),
+		$can_view_identity_details && $editing_dep
+			? escape_employee_restricted_display(
+				$dependent_identity_value === '' ? _('Not provided') : $dependent_identity_value
+			) : _('Restricted')
+	);
+	yesno_list_row(_('Beneficiary:'), 'dep_is_beneficiary');
+
+	end_outer_table(1);
+
+	submit_center('save_dependent', _('Save Dependent'), true, '', 'default');
+}
+
+//======================================================================
+// TAB 7: TRANSACTIONS (Payslips, Leave, Loans)
+//======================================================================
+function tab_transactions($employee_id) {
+	hidden('NewEmpID', get_post('NewEmpID'));
+	if (empty($employee_id)) {
+		display_note(_('Please save the employee first.'));
+		return;
+	}
+
+	display_employee_transactions($employee_id);
+}
+
+//======================================================================
+// HANDLE EMPLOYEE ID SELECTION / NAVIGATION
+//======================================================================
+
+if (isset($_GET['employee_no']))
+	$_POST['employee_id'] = $_GET['employee_no'];
+elseif (isset($_GET['employee_id']))
+	$_POST['employee_id'] = $_GET['employee_id'];
+
+if (isset($_GET['_tabs_sel']))
+	$_POST['_tabs_sel'] = $_GET['_tabs_sel'];
+
+$employee_id = get_post('employee_id');
+
+if (list_updated('employee_id')) {
+	// user picked from dropdown
+	$employee_id = get_post('employee_id');
+	
+	if (empty($employee_id)) {
+		// Selecting "New employee" - clear the form
+		$_POST['NewEmpID'] = '';
+		clear_inputs();
+		$new_employee = true;
+	} else {
+		// Selecting an existing employee - load their data
+		$_POST['NewEmpID'] = $employee_id;
+		set_edit($employee_id);
+		$new_employee = false;
+	}
+	
+	$Ajax->activate('details');
+	$Ajax->activate('controls');
+}
+
+if (get_post('cancel')) {
+	$_POST['NewEmpID'] = '';
+	$employee_id = '';
+	$_POST['employee_id'] = '';
+	clear_inputs();
+	set_focus('NewEmpID');
+	$Ajax->activate('_page_body');
+}
+
+// recompute new_employee after any of the above handlers
+$new_employee = get_post('employee_id') == '' || get_post('cancel');
+
+if (!$new_employee && empty(get_post('NewEmpID')))
+	set_edit($employee_id);
+
+//======================================================================
+// HANDLE IMAGE UPLOAD
+//======================================================================
+
+$upload_file = '';
+if (isset($_FILES['pic']) && $_FILES['pic']['name'] != '') {
+	$employee_id = $_POST['NewEmpID'];
+	$result = $_FILES['pic']['error'];
+	$upload_file = 'Yes';
+	$filename = company_path().'/images/employees';
+	if (!file_exists($filename))
+		mkdir($filename, 0777, true);
+
+	$filename .= '/'.item_img_name($employee_id).(substr(trim($_FILES['pic']['name']), strrpos($_FILES['pic']['name'], '.')));
+
+	if ($_FILES['pic']['error'] == UPLOAD_ERR_INI_SIZE) {
+		display_error(_('The file size is over the maximum allowed.'));
+		$upload_file = 'No';
+	}
+	elseif ($_FILES['pic']['error'] > 0) {
+		display_error(_('Error uploading file.'));
+		$upload_file = 'No';
+	}
+
+	if ((list($width, $height, $type, $attr) = getimagesize($_FILES['pic']['tmp_name'])) !== false)
+		$imagetype = $type;
+	else
+		$imagetype = false;
+
+	if ($imagetype != IMAGETYPE_GIF && $imagetype != IMAGETYPE_JPEG && $imagetype != IMAGETYPE_PNG) {
+		display_warning(_('Only graphics files can be uploaded.'));
+		$upload_file = 'No';
+	}
+	elseif (!in_array(strtoupper(substr(trim($_FILES['pic']['name']), strlen($_FILES['pic']['name']) - 3)), array('JPG','PNG','GIF'))) {
+		display_warning(_('Only graphics files are supported — a file extension of .jpg, .png or .gif is expected.'));
+		$upload_file = 'No';
+	}
+	elseif ($_FILES['pic']['size'] > ($SysPrefs->max_image_size * 1024)) {
+		display_warning(_('The file size is over the maximum allowed. The maximum size allowed in KB is').' '.$SysPrefs->max_image_size);
+		$upload_file = 'No';
+	}
+	elseif ($_FILES['pic']['type'] == 'text/plain') {
+		display_warning(_('Only graphics files can be uploaded.'));
+		$upload_file = 'No';
+	}
+	elseif (!del_image($employee_id)) {
+		display_error(_('The existing image could not be removed.'));
+		$upload_file = 'No';
+	}
+
+	if ($upload_file == 'Yes') {
+		$result = move_uploaded_file($_FILES['pic']['tmp_name'], $filename);
+		if ($msg = check_image_file($filename)) {
+			display_error($msg);
+			unlink($filename);
+			$upload_file = 'No';
+		}
+	}
+	$Ajax->activate('details');
+}
+
+//======================================================================
+// HANDLE ADD / UPDATE EMPLOYEE
+//======================================================================
+
+// HRM-FND-005 Employee Confirmation command-only browser submission.
+if (isset($_POST['submit_confirmation'])) {
+	$employee_code = trim((string)get_post('NewEmpID'));
+	$status = get_hrm_lifecycle_employee_confirmation_browser_status($employee_code);
+	$status_code = is_array($status) && isset($status['status']) ? (string)$status['status'] : 'inconsistent';
+	if ($employee_code === '' || !get_employee_by_code($employee_code)) {
+		display_error(_('Employee record could not be found. No confirmation request was created.'));
+	} elseif ($status_code === 'inconsistent') {
+		display_error(_('Employee Confirmation approval custody is inconsistent. No change was made.'));
+	} elseif ($status_code === 'blocked') {
+		display_error(_('Another employee lifecycle request is pending for this employee.'));
+	} elseif ($status_code === 'pending') {
+		display_notification(_('Employee Confirmation approval request is already pending.'));
+	} elseif ($status_code === 'completed') {
+		hrm_lifecycle_confirmation_browser_forget_idempotency_key($employee_code);
+		display_notification(_('Employee Confirmation is already completed.'));
+	} else {
+		$effective_user = trim((string)get_post('confirmation_effective_date'));
+		$reason = trim((string)get_post('confirmation_reason'));
+		if ($effective_user === '' || !is_date($effective_user)) {
+			display_error(_('Confirmation effective date is not in a valid format.'));
+			set_focus('confirmation_effective_date');
+		} elseif ($reason === '' || strlen(strip_tags($reason)) > 500) {
+			display_error(_('Confirmation reason is required and must not exceed 500 characters.'));
+			set_focus('confirmation_reason');
+		} else {
+			if (in_array($status_code, array('rejected','cancelled'), true))
+				hrm_lifecycle_confirmation_browser_forget_idempotency_key($employee_code);
+			$idempotency_key = hrm_lifecycle_confirmation_browser_idempotency_key($employee_code);
+			$result = $idempotency_key === false ? false : submit_hrm_lifecycle_employee_confirmation(
+				$employee_code, date2sql($effective_user), $reason, $idempotency_key
+			);
+			if ($result === false)
+				display_error(_('Employee Confirmation could not be submitted for approval. No direct confirmation change was made.'));
+			else
+				display_notification(_('Employee Confirmation has been submitted for approval.'));
+		}
+	}
+	$_POST['_tabs_sel'] = 'tab_employment';
+	$_POST['employee_id'] = $employee_code;
+	$_POST['NewEmpID'] = $employee_code;
+	$Ajax->activate('_page_body');
+}
+
+// HRM-FND-005 Employee Probation Schedule command-only browser submission.
+if (isset($_POST['submit_probation_schedule'])) {
+	$employee_code = trim((string)get_post('NewEmpID'));
+	$status = get_hrm_lifecycle_employee_probation_schedule_browser_status($employee_code);
+	$status_code = is_array($status) && isset($status['status']) ? (string)$status['status'] : 'inconsistent';
+	$employee = $employee_code === '' ? false : get_employee_by_code($employee_code);
+	if (!$employee) {
+		display_error(_('Employee record could not be found. No probation schedule request was created.'));
+	} elseif (!empty($employee['confirmation_date'])) {
+		hrm_lifecycle_probation_schedule_browser_forget_idempotency_key($employee_code);
+		display_error(_('Probation Schedule cannot be changed after Employee Confirmation.'));
+	} elseif ($status_code === 'inconsistent') {
+		display_error(_('Employee Probation Schedule approval custody is inconsistent. No change was made.'));
+	} elseif ($status_code === 'blocked') {
+		display_error(_('Another employee lifecycle request is pending for this employee.'));
+	} elseif ($status_code === 'pending') {
+		display_notification(_('Employee Probation Schedule approval request is already pending.'));
+	} else {
+		if ($status_code === 'completed') {
+			hrm_lifecycle_probation_schedule_browser_forget_idempotency_key($employee_code);
+			$status_code = 'none'; // completed schedule may be followed only by a later extension
+		}
+		$effective_user = trim((string)get_post('probation_schedule_effective_date'));
+		$reason = trim((string)get_post('probation_schedule_reason'));
+		if ($effective_user === '' || !is_date($effective_user)) {
+			display_error(_('Probation end date request is not in a valid format.'));
+			set_focus('probation_schedule_effective_date');
+		} elseif (date_comp($effective_user, Today()) <= 0) {
+			display_error(_('Probation end date request must be in the future.'));
+			set_focus('probation_schedule_effective_date');
+		} elseif ($reason === '' || strlen(strip_tags($reason)) > 500) {
+			display_error(_('Probation Schedule reason is required and must not exceed 500 characters.'));
+			set_focus('probation_schedule_reason');
+		} else {
+			if (in_array($status_code, array('rejected','cancelled'), true))
+				hrm_lifecycle_probation_schedule_browser_forget_idempotency_key($employee_code);
+			$idempotency_key = hrm_lifecycle_probation_schedule_browser_idempotency_key($employee_code);
+			$result = $idempotency_key === false ? false : submit_hrm_lifecycle_employee_probation_schedule(
+				$employee_code, date2sql($effective_user), $reason, $idempotency_key
+			);
+			if ($result === false)
+				display_error(_('Employee Probation Schedule could not be submitted for approval. No direct probation_end_date change was made.'));
+			else
+				display_notification(_('Employee Probation Schedule has been submitted for approval.'));
+		}
+	}
+	$_POST['_tabs_sel'] = 'tab_employment';
+	$_POST['employee_id'] = $employee_code;
+	$_POST['NewEmpID'] = $employee_code;
+	$Ajax->activate('_page_body');
+}
+
+if (isset($_POST['addupdate'])) {
+	// If updating from a non-Personal tab, only a subset of fields
+	// will be posted. To avoid validation failing for required
+	// personal fields, pre-fill any missing values from the DB
+	// while preserving values submitted on the current tab.
+	if (!empty(get_post('NewEmpID')) && !$new_employee && (empty(get_post('first_name')) || empty(get_post('last_name')))) {
+		$dbrow = get_employee_by_code(get_post('NewEmpID'));
+		if ($dbrow) {
+			// Convert SQL dates to user format
+			$date_fields = array('birth_date', 'hire_date', 'released_date', 'confirmation_date', 'probation_end_date', 'passport_expiry');
+			foreach ($date_fields as $f) {
+				if (!empty($dbrow[$f]))
+					$dbrow[$f] = sql2date($dbrow[$f]);
+				else
+					$dbrow[$f] = '';
+			}
+			// Merge DB values first, then submitted POST values so POST overrides DB
+			$_POST = array_merge($dbrow, $_POST);
+		}
+	}
+
+	$input_error = 0;
+
+	if ($upload_file == 'No')
+		$input_error = 1;
+
+	if (empty(trim(get_post('NewEmpID')))) {
+		$input_error = 1;
+		display_error(_('Employee ID must be entered.'));
+		set_focus('NewEmpID');
+	}
+	elseif (empty(trim(get_post('first_name')))) {
+		$input_error = 1;
+		display_error(_('Employee first name must be entered.'));
+		set_focus('first_name');
+	}
+	elseif (empty(trim(get_post('last_name')))) {
+		$input_error = 1;
+		display_error(_('Employee last name must be entered.'));
+		set_focus('last_name');
+	}
+	elseif (strstr($_POST['NewEmpID'], ' ') || strstr($_POST['NewEmpID'], "'")
+		|| strstr($_POST['NewEmpID'], '+') || strstr($_POST['NewEmpID'], '"')
+		|| strstr($_POST['NewEmpID'], '&') || strstr($_POST['NewEmpID'], "\t")) {
+		$input_error = 1;
+		display_error(_('The employee ID cannot contain any of the following characters — & + OR a space OR quotes.'));
+		set_focus('NewEmpID');
+	}
+	elseif ($new_employee && key_in_foreign_table($_POST['NewEmpID'], 'employees', 'employee_id')) {
+		$input_error = 1;
+		display_error(_('Duplicated employee ID found.'));
+		set_focus('NewEmpID');
+	}
+	elseif (!check_num('dependents_no', 0)) {
+		$input_error = 1;
+		display_error(_('Number of dependents must be a positive integer.'));
+		set_focus('dependents_no');
+	}
+	$email = get_post('email', '');
+	if (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+		$input_error = 1;
+		display_error(_('Work email address is invalid.'));
+		set_focus('email');
+	}
+	$personal_email = get_post('personal_email', '');
+	if (!empty($personal_email) && !filter_var($personal_email, FILTER_VALIDATE_EMAIL)) {
+		$input_error = 1;
+		display_error(_('Personal email address is invalid.'));
+		set_focus('personal_email');
+	}
+
+	// Validate date fields
+	$birth_date = get_post('birth_date', '');
+	if (!empty($birth_date) && !is_date($birth_date)) {
+		$input_error = 1;
+		display_error(_('Birth date is not in a valid format.'));
+		set_focus('birth_date');
+	} elseif (!empty($birth_date) && date_comp($birth_date, Today()) > 0) {
+		$input_error = 1;
+		display_error(_('Birth date cannot be in the future.'));
+		set_focus('birth_date');
+	}
+
+	$hire_date = get_post('hire_date', '');
+	if (!empty($hire_date) && !is_date($hire_date)) {
+		$input_error = 1;
+		display_error(_('Hire date is not in a valid format.'));
+		set_focus('hire_date');
+	}
+
+	$passport_expiry = get_post('passport_expiry', '');
+	if (!empty($passport_expiry) && !is_date($passport_expiry)) {
+		$input_error = 1;
+		display_error(_('Passport expiry date is not in a valid format.'));
+		set_focus('passport_expiry');
+	}
+
+	$data = array();
+	$old_emp = null;
+	if (!$input_error) {
+		$data = collect_employee_data($new_employee);
+		$old_emp = !$new_employee ? get_employee_by_code($_POST['NewEmpID']) : null;
+		if (!$new_employee && !$old_emp) {
+			$input_error = 1;
+			display_error(_('Employee record could not be found.'));
+		} else {
+			$bank_write_allowed = hrm_enforce_restricted_bank_write(
+				$data,
+				collect_submitted_employee_bank_details(),
+				$old_emp
+			);
+			$identity_write_allowed = hrm_enforce_restricted_identity_write(
+				$data,
+				collect_submitted_employee_identity_details(),
+				$old_emp
+			);
+			if (!$bank_write_allowed || !$identity_write_allowed)
+				$input_error = 1;
+		}
+	}
+
+	if (!$input_error) {
+		if (!$new_employee) {
+			// HRM-FND-005: generic maintenance no longer owns Transfer-state changes or their history.
+			// The accepted Employee Transfer final checker writes the projection, Assignment and history atomically.
+			if (!update_employee($_POST['NewEmpID'], $data)) {
+				display_error(_('Could not update this employee or append required audit evidence.'));
+			} else {
+				if (check_value('del_image'))
+					del_image($_POST['NewEmpID']);
+
+
+				// Fire hook
+				hrm_fire_hook('on_employee_updated', $_POST['NewEmpID'], $old_emp, $data);
+
+				set_focus('employee_id');
+				$Ajax->activate('employee_id');
+				display_notification(_('Employee information has been updated.'));
+			}
+		}
+		else {
+			$data['employee_id'] = $_POST['NewEmpID'];
+			// New employee creation retains only the safe active default; no release date is seeded.
+			$data['inactive'] = 0;
+			unset($data['released_date']);
+			$emp_number = add_employee($data);
+			if (!$emp_number) {
+				display_error(_('Could not add this employee or append required audit evidence.'));
+			} else {
+				// Record hire history
+				if (!empty($data['hire_date'])) {
+					record_employee_history($_POST['NewEmpID'], HRM_HIST_HIRE, $data['hire_date'],
+						array(),
+						array(
+							'department_id' => $data['department_id'],
+							'position_id'   => $data['position_id'],
+							'grade_id'      => $data['grade_id'],
+							'salary'        => 0,
+						)
+					);
+				}
+
+				// Fire hook
+				hrm_fire_hook('on_employee_created', $_POST['NewEmpID']);
+
+				display_notification(_('A new employee has been added.'));
+				$_POST['employee_id'] = '';
+				$_POST['NewEmpID'] = '';
+				clear_inputs();
+				set_focus('NewEmpID');
+			}
+		}
+		$Ajax->activate('_page_body');
+	}
+}
+
+//======================================================================
+// HANDLE DELETE EMPLOYEE
+//======================================================================
+
+if (isset($_POST['delete'])) {
+	$emp_id = get_post('NewEmpID');
+	if (!employee_can_delete($emp_id)) {
+		display_error(_('Cannot delete this employee — there are transactions linked to this employee.'));
+	} else {
+		if (delete_employee($emp_id)) {
+			del_image($emp_id);
+			display_notification(_('Employee has been deleted.'));
+			$_POST['employee_id'] = '';
+			$_POST['NewEmpID'] = '';
+			clear_inputs();
+			$Ajax->activate('_page_body');
+		} else {
+			display_error(_('Could not delete this employee.'));
+		}
+	}
+}
+
+//======================================================================
+// PAGE RENDERING
+//======================================================================
+
+$employee_maintenance_selector_as_of = hrm_person_worker_utc_now();
+hrm_log_restricted_employee_projection('employee_maintenance_selector');
+
+start_form(true);
+
+// ── Employee selector ──────────────────────────────────────
+if (db_has_employees()) {
+	start_table(TABLESTYLE_NOBORDER);
+	start_row();
+	employees_list_cells(_('Select an employee:'), 'employee_id', null, _('New employee'), true,
+		check_value('show_inactive'), false, array(
+			'search_submit' => true,
+			'format' => 'employee_maintenance_authoritative_employee_list'
+		));
+	$new_employee = get_post('employee_id') == '';
+	check_cells(_('Show inactive:'), 'show_inactive', null, true);
+	end_row();
+	end_table();
+
+	if (get_post('_show_inactive_update')) {
+		$Ajax->activate('employee_id');
+		set_focus('employee_id');
+	}
+} else {
+	hidden('employee_id', get_post('employee_id'));
+}
+
+div_start('details');
+
+$employee_id = get_post('employee_id');
+if (!$employee_id) // force personal tab for new employee
+	unset($_POST['_tabs_sel']);
+
+// ── Build tabs array ───────────────────────────────────────
+$tabs = array(
+	'tab_personal'     => array(_('&Personal'), $employee_id),
+	'tab_employment'   => array(_('E&mployment'), $employee_id),
+	'tab_salary'       => array(_('&Salary'), (hrm_user_can_access_sensitive_field(HRM_FIELD_RESTRICTED_COMPENSATION, HRM_FIELD_ACTION_VIEW) ? $employee_id : null)),
+	'tab_documents'    => array(_('&Documents'), (user_check_access('SA_EMPLOYEE') ? $employee_id : null)),
+	'tab_history'      => array(_('&History'), $employee_id),
+	'tab_dependents'   => array(_('De&pendents'), (user_check_access('SA_EMPLOYEE') ? $employee_id : null)),
+	'tab_transactions' => array(_('&Transactions'), (user_check_access('SA_EMPLOYEETRANSVIEW') ? $employee_id : null)),
+);
+
+tabbed_content_start('tabs', $tabs);
+
+switch (get_post('_tabs_sel')) {
+	default:
+	case 'tab_personal':
+		tab_personal($employee_id, $new_employee);
+		break;
+	case 'tab_employment':
+		tab_employment($employee_id, $new_employee);
+		break;
+	case 'tab_salary':
+		tab_salary($employee_id);
+		break;
+	case 'tab_documents':
+		tab_documents($employee_id);
+		break;
+	case 'tab_history':
+		tab_history($employee_id);
+		break;
+	case 'tab_dependents':
+		tab_dependents($employee_id);
+		break;
+	case 'tab_transactions':
+		tab_transactions($employee_id);
+		break;
+}
+
+// ── Submit buttons (shown on Personal & Employment tabs) ───
+$current_tab = get_post('_tabs_sel', 'tab_personal');
+if (in_array($current_tab, array('tab_personal', 'tab_employment', ''))) {
+	br();
+	div_start('controls');
+	if (@$_REQUEST['popup'])
+		hidden('popup', 1);
+	if (!isset($_POST['NewEmpID']) || $new_employee) {
+		submit_center('addupdate', _('Add New Employee'), true, '', 'default');
+	} else {
+		submit_center_first('addupdate', _('Update Employee'), '', @$page_nested ? true : 'default');
+		submit_return('select', get_post('employee_id'), _('Select this employee and return to document entry.'));
+		submit('delete', _('Delete This Employee'), true, '', true);
+		submit_center_last('cancel', _('Cancel'), _('Cancel Edition'), 'cancel');
+	}
+	div_end();
+}
+
+if ($new_employee && $current_tab == 'tab_personal' && !get_post('addupdate') && !list_updated('employee_id') && !get_post('_show_inactive_update'))
+	set_focus('NewEmpID');
+
+br();
+tabbed_content_end();
+
+div_end();
+
+end_form();
+
+// ---------------------------------------------------------------------------
+// Phase 14: Formula Designer Modal (centralized via DesignerFacade)
+// ---------------------------------------------------------------------------
+if ($designer_available) {
+    DesignerFacade::renderModal(array(
+        'formulaValue'        => get_post('sal_formula', ''),
+        'module'              => 'hrm',
+        'textareaName'        => 'formula_designer_modal_sal',
+        'targetFieldSelector' => 'textarea[name="sal_formula"]',
+    ));
+}
+
+end_page(@$_REQUEST['popup']);

@@ -1,0 +1,86 @@
+<?php
+/**********************************************************************
+    Copyright (C) NotrinosERP.
+    Released under the terms of the GNU General Public License, GPL,
+    as published by the Free Software Foundation, either version 3
+    of the License, or (at your option) any later version.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    See the License here <http://www.gnu.org/licenses/gpl-3.0.html>.
+***********************************************************************/
+$page_security = 'SA_DEPTCOST';
+$path_to_root = "../..";
+include_once($path_to_root . '/includes/db_pager.inc');
+include($path_to_root . "/includes/session.inc");
+include_once($path_to_root . '/includes/ui.inc');
+include_once($path_to_root . '/hrm/includes/db/payslip_db.inc');
+
+$js = '';
+if (user_use_date_picker())
+	$js .= get_js_date_picker();
+
+page(_("Department Costs"), false, false, '', $js);
+
+if (!isset($_POST['from_date']))
+    $_POST['from_date'] = begin_month(Today());
+if (!isset($_POST['to_date']))
+    $_POST['to_date'] = end_month(Today());
+
+start_form();
+start_table(TABLESTYLE_NOBORDER);
+start_row();
+date_cells(_('From Date:'), 'from_date');
+date_cells(_('To Date:'), 'to_date');
+submit_cells('Search', _('Apply Filter'));
+end_row();
+end_table(1);
+
+$table = payslip_header_table();
+
+if (!$table) {
+    display_note(_('No payslip records found.'), 0, 1);
+    end_form();
+    end_page();
+    return;
+}
+
+$emp_col = payslip_has_column($table, 'employee_id') ? 'employee_id' : (payslip_has_column($table, 'emp_id') ? 'emp_id' : '');
+$from_col = payslip_has_column($table, 'from_date') ? 'from_date' : (payslip_has_column($table, 'tran_date') ? 'tran_date' : '');
+$gross_expr = payslip_has_column($table, 'gross_salary') ? 'p.gross_salary' : (payslip_has_column($table, 'salary_amount') ? 'p.salary_amount' : '0');
+$ded_expr = payslip_has_column($table, 'total_deductions') ? 'p.total_deductions' : '0';
+$net_expr = payslip_has_column($table, 'net_salary') ? 'p.net_salary' : (payslip_has_column($table, 'payable_amount') ? 'p.payable_amount' : '0');
+
+if ($emp_col == '' || $from_col == '') {
+    display_error(_('Department cost inquiry cannot run because required payslip columns are missing.'));
+    end_form();
+    end_page();
+    return;
+}
+
+$sql = "SELECT d.department_id,
+        COALESCE(d.department_name, ".db_escape(_('Unassigned')).") department_name,
+        SUM(IFNULL($gross_expr,0)) gross_total,
+        SUM(IFNULL($ded_expr,0)) deductions_total,
+        SUM(IFNULL($net_expr,0)) net_total
+    FROM ".TB_PREF.$table." p
+    JOIN ".TB_PREF."employees e ON e.employee_id = p.$emp_col
+    LEFT JOIN ".TB_PREF."departments d ON d.department_id = e.department_id
+    WHERE ".payslip_non_voided_condition($table, 'p')."
+		AND ".payslip_period_overlap_condition($table, $_POST['from_date'], $_POST['to_date'], 'p')."
+    GROUP BY d.department_id, d.department_name
+    ORDER BY d.department_name";
+
+$cols = array(
+    _('Department') => array('name' => 'department_name', 'ord' => 'asc'),
+    _('Gross Total') => array('name' => 'gross_total', 'type' => 'amount'),
+    _('Deductions Total') => array('name' => 'deductions_total', 'type' => 'amount'),
+    _('Net Total') => array('name' => 'net_total', 'type' => 'amount')
+);
+
+$table =& new_db_pager('department_cost_tbl', $sql, $cols);
+$table->width = '100%';
+display_db_pager($table);
+end_form();
+
+end_page();

@@ -1,0 +1,50 @@
+-- TABLA CABECERA PREVENTA (Actualizada con campos de integración)
+CREATE TABLE `pwa_preventas_cabecera` (
+  `id_orden` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `num_orden` varchar(20) NOT NULL,
+  `cod_clien` int(11) NOT NULL,
+  `cod_sucur` int(11) NOT NULL,
+  `fec_reg_ord` date DEFAULT NULL,
+  `fec_est_ent` date DEFAULT NULL,
+  `horario_entrega` varchar(50) NOT NULL DEFAULT '',
+  `forma_pago` varchar(50) NOT NULL DEFAULT '',
+  `hashreg` varchar(50) NOT NULL DEFAULT '',
+  `vendedor` int(11) NOT NULL DEFAULT 0,
+  `estado` int(11) NOT NULL DEFAULT 1,
+  `doc_elec` varchar(70) NOT NULL DEFAULT '',
+  `fec_doc_elec` date DEFAULT NULL,
+  `notas` varchar(200) NOT NULL DEFAULT '',
+  
+  -- Campos adicionales para la integración con NotrinosERP
+  `bodega_origen` varchar(5) NOT NULL DEFAULT 'DEF' COMMENT 'Código de la ubicación/bodega (ej. DEF, VAN01)',
+  `trans_no_erp` int(11) NOT NULL DEFAULT 0 COMMENT 'Número de transacción oficial generado por el ERP tras facturar',
+  `monto_flete` double NOT NULL DEFAULT 0 COMMENT 'Costo de envío u recargos globales',
+  
+  PRIMARY KEY (`id_orden`),
+  KEY `idx_num_orden` (`num_orden`),
+  KEY `idx_cod_clien` (`cod_clien`),
+  KEY `idx_estado` (`estado`),
+  KEY `idx_bodega` (`bodega_origen`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- TABLA DETALLE PREVENTA (Actualizada con campos de integración)
+CREATE TABLE `pwa_preventas_detalle` (
+  `id_det_ord` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id_orden` int(11) UNSIGNED NOT NULL DEFAULT 0,
+  `cod_item` varchar(20) NOT NULL,
+  `cantidad` double NOT NULL DEFAULT 1,
+  `precio_por_menor` double NOT NULL DEFAULT 0,
+  `precio_sugerido` double NOT NULL DEFAULT 0,
+  `aplico_desc` tinyint(1) NOT NULL DEFAULT 0, 
+  `tipo_desc` varchar(20) NOT NULL DEFAULT '',
+  
+  -- Campos adicionales para la integración con NotrinosERP
+  `descuento_porcentaje` double NOT NULL DEFAULT 0 COMMENT 'Valor decimal del descuento para el ERP (ej. 0.15 para 15%)',
+  `cantidad_facturada` double NOT NULL DEFAULT 0 COMMENT 'Cantidad real despachada en caso de quiebre de stock',
+  
+  PRIMARY KEY (`id_det_ord`),
+  KEY `idx_id_orden` (`id_orden`),
+  KEY `idx_cod_item` (`cod_item`),
+  CONSTRAINT `fk_preventa_detalle_cabecera` FOREIGN KEY (`id_orden`) REFERENCES `pwa_preventas_cabecera` (`id_orden`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

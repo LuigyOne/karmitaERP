@@ -1,0 +1,1172 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<autorizacion>
+<estado>AUTORIZADO</estado>
+<numeroAutorizacion>1508202401091850736900120010030000000011234567819</numeroAutorizacion>
+<fechaAutorizacion>2024-08-19T11:01:30-05:00</fechaAutorizacion>
+<ambiente>PRODUCCIÓN</ambiente>
+<comprobante><![CDATA[<?xml version="1.0" encoding="UTF-8"?><factura id="comprobante" version="1.0.0">
+    <infoTributaria>
+        <ambiente>2</ambiente>
+        <tipoEmision>1</tipoEmision>
+        <razonSocial>MORAN URI�A HERLINDA MARIBEL</razonSocial>
+        <nombreComercial>MORAN URI�A HERLINDA MARIBEL</nombreComercial>
+        <ruc>0918507369001</ruc>
+        <claveAcceso>1508202401091850736900120010030000000011234567819</claveAcceso>
+        <codDoc>01</codDoc>
+        <estab>001</estab>
+        <ptoEmi>003</ptoEmi>
+        <secuencial>000000001</secuencial>
+        <dirMatriz>GUAYAS / GUAYAQUIL / LETAMENDI / CALLEJON PARRA 112 Y TUNGURAHUA  L. GARCIA</dirMatriz>
+        <contribuyenteRimpe>CONTRIBUYENTE RÉGIMEN RIMPE</contribuyenteRimpe>
+    </infoTributaria>
+    <infoFactura>
+        <fechaEmision>15/08/2024</fechaEmision>
+        <dirEstablecimiento>GUAYAS / GUAYAQUIL / LETAMENDI / CALLEJON PARRA 112 Y TUNGURAHUA  L. GARCIA</dirEstablecimiento>
+        <obligadoContabilidad>NO</obligadoContabilidad>
+        <tipoIdentificacionComprador>04</tipoIdentificacionComprador>
+        <razonSocialComprador>MEDILIMPIO S.A.</razonSocialComprador>
+        <identificacionComprador>2390638585001</identificacionComprador>
+        <direccionComprador>LA PRADERA 2</direccionComprador>
+        <totalSinImpuestos>6178.55</totalSinImpuestos>
+        <totalDescuento>0.00</totalDescuento>
+        <totalConImpuestos>
+            <totalImpuesto>
+                <codigo>2</codigo>
+                <codigoPorcentaje>0</codigoPorcentaje>
+                <baseImponible>33.00</baseImponible>
+                <valor>0.00</valor>
+            </totalImpuesto>
+            <totalImpuesto>
+                <codigo>2</codigo>
+                <codigoPorcentaje>4</codigoPorcentaje>
+                <baseImponible>6145.55</baseImponible>
+                <valor>921.83</valor>
+            </totalImpuesto>
+        </totalConImpuestos>
+        <propina>0.00</propina>
+        <importeTotal>7100.38</importeTotal>
+        <pagos>
+            <pago>
+                <formaPago>20</formaPago>
+                <total>7100.38</total>
+                <plazo>30</plazo>
+                <unidadTiempo>dias</unidadTiempo>
+            </pago>
+        </pagos>
+    </infoFactura>
+ <detalles>
+  <detalle>
+   <codigoPrincipal>0002</codigoPrincipal>
+   <descripcion>ACIDO ANTISARRO</descripcion>
+   <cantidad>5</cantidad>
+   <precioUnitario>5.36</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>26.80</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>26.80</baseImponible>
+     <valor>4.02</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0003</codigoPrincipal>
+   <descripcion>ALCOHOL ANTISEPTICO 70� CANECA</descripcion>
+   <cantidad>1</cantidad>
+   <precioUnitario>33.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>33.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>0</codigoPorcentaje>
+     <tarifa>0.00</tarifa>
+     <baseImponible>33.00</baseImponible>
+     <valor>0.00</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0004</codigoPrincipal>
+   <descripcion>ALCOHOL ANTISEPTICO 70� GALON</descripcion>
+   <cantidad>35</cantidad>
+   <precioUnitario>7.50</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>262.50</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>262.50</baseImponible>
+     <valor>39.38</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0005</codigoPrincipal>
+   <descripcion>ALCOHOL PARA MANOS SACHET</descripcion>
+   <cantidad>34</cantidad>
+   <precioUnitario>13.75</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>467.50</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>467.50</baseImponible>
+     <valor>70.13</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0006</codigoPrincipal>
+   <descripcion>AMBIENTAL SPRAY 400 ML</descripcion>
+   <cantidad>21</cantidad>
+   <precioUnitario>3.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>63.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>63.00</baseImponible>
+     <valor>9.45</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0007</codigoPrincipal>
+   <descripcion>AMBIENTAL GALON</descripcion>
+   <cantidad>6</cantidad>
+   <precioUnitario>5.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>30.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>30.00</baseImponible>
+     <valor>4.50</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0009</codigoPrincipal>
+   <descripcion>ATOMIZADOR  500ML</descripcion>
+   <cantidad>10</cantidad>
+   <precioUnitario>1.14</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>11.40</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>11.40</baseImponible>
+     <valor>1.71</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0010</codigoPrincipal>
+   <descripcion>BASE MOPA</descripcion>
+   <cantidad>10</cantidad>
+   <precioUnitario>9.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>90.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>90.00</baseImponible>
+     <valor>13.50</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0011</codigoPrincipal>
+   <descripcion>BASE MOPA PLANA MICROFIBRA 30CM</descripcion>
+   <cantidad>5</cantidad>
+   <precioUnitario>5.16</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>25.80</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>25.80</baseImponible>
+     <valor>3.87</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0012</codigoPrincipal>
+   <descripcion>BASE MOPA PLANA MICROFIBRA 60CM</descripcion>
+   <cantidad>6</cantidad>
+   <precioUnitario>7.17</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>43.02</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>43.02</baseImponible>
+     <valor>6.45</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0013</codigoPrincipal>
+   <descripcion>CAL 25 KG</descripcion>
+   <cantidad>8</cantidad>
+   <precioUnitario>10.24</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>81.92</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>81.92</baseImponible>
+     <valor>12.29</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0014</codigoPrincipal>
+   <descripcion>CEPILLO DE ROPA</descripcion>
+   <cantidad>12</cantidad>
+   <precioUnitario>0.75</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>9.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>9.00</baseImponible>
+     <valor>1.35</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0015</codigoPrincipal>
+   <descripcion>CERA LIQUIDA</descripcion>
+   <cantidad>1</cantidad>
+   <precioUnitario>5.36</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>5.36</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>5.36</baseImponible>
+     <valor>0.80</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0016</codigoPrincipal>
+   <descripcion>CLORO CONCENTRADO 8% caneca</descripcion>
+   <cantidad>6</cantidad>
+   <precioUnitario>13.22</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>79.32</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>79.32</baseImponible>
+     <valor>11.90</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0017</codigoPrincipal>
+   <descripcion>CLORO CONCENTRADO 8% GALON</descripcion>
+   <cantidad>3</cantidad>
+   <precioUnitario>2.87</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>8.61</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>8.61</baseImponible>
+     <valor>1.29</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0018</codigoPrincipal>
+   <descripcion>DESENGRASANTE  GALON</descripcion>
+   <cantidad>2</cantidad>
+   <precioUnitario>5.90</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>11.80</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>11.80</baseImponible>
+     <valor>1.77</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0019</codigoPrincipal>
+   <descripcion>DESINFECTANTE GALON</descripcion>
+   <cantidad>19</cantidad>
+   <precioUnitario>2.85</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>54.15</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>54.15</baseImponible>
+     <valor>8.12</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0020</codigoPrincipal>
+   <descripcion>DESINFECTANTE CANECA</descripcion>
+   <cantidad>9</cantidad>
+   <precioUnitario>15.90</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>143.10</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>143.10</baseImponible>
+     <valor>21.47</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0021</codigoPrincipal>
+   <descripcion>DESTAPA CA�O</descripcion>
+   <cantidad>2</cantidad>
+   <precioUnitario>10.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>20.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>20.00</baseImponible>
+     <valor>3.00</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0022</codigoPrincipal>
+   <descripcion>DETERGENTE EN POLVO 1 KG</descripcion>
+   <cantidad>7</cantidad>
+   <precioUnitario>2.25</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>15.75</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>15.75</baseImponible>
+     <valor>2.36</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0024</codigoPrincipal>
+   <descripcion>ESCOBA REPUESTO</descripcion>
+   <cantidad>9</cantidad>
+   <precioUnitario>2.25</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>20.25</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>20.25</baseImponible>
+     <valor>3.04</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0069</codigoPrincipal>
+   <descripcion>CLORO CONCENTRADO 5%</descripcion>
+   <cantidad>6</cantidad>
+   <precioUnitario>5.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>30.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>30.00</baseImponible>
+     <valor>4.50</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0027</codigoPrincipal>
+   <descripcion>ESTROPAJO</descripcion>
+   <cantidad>7</cantidad>
+   <precioUnitario>1.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>7.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>7.00</baseImponible>
+     <valor>1.05</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0028</codigoPrincipal>
+   <descripcion>FOSFORO</descripcion>
+   <cantidad>1</cantidad>
+   <precioUnitario>2.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>2.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>2.00</baseImponible>
+     <valor>0.30</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0029</codigoPrincipal>
+   <descripcion>GEL ANTIBACTERIAL GALON</descripcion>
+   <cantidad>8</cantidad>
+   <precioUnitario>12.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>96.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>96.00</baseImponible>
+     <valor>14.40</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0030</codigoPrincipal>
+   <descripcion>GUANTE NEGRO T 8 1/2</descripcion>
+   <cantidad>5</cantidad>
+   <precioUnitario>2.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>10.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>10.00</baseImponible>
+     <valor>1.50</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0031</codigoPrincipal>
+   <descripcion>GUANTE NEGRO T 9</descripcion>
+   <cantidad>5</cantidad>
+   <precioUnitario>2.50</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>12.50</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>12.50</baseImponible>
+     <valor>1.88</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0032</codigoPrincipal>
+   <descripcion>ESCURRIDOR PLASTICO 50 CM</descripcion>
+   <cantidad>3</cantidad>
+   <precioUnitario>20.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>60.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>60.00</baseImponible>
+     <valor>9.00</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0033</codigoPrincipal>
+   <descripcion>HIPOCLORITO DE SODIO 10% CANECA</descripcion>
+   <cantidad>46</cantidad>
+   <precioUnitario>19.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>874.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>874.00</baseImponible>
+     <valor>131.10</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0035</codigoPrincipal>
+   <descripcion>JABON LIQUIDO CANECA</descripcion>
+   <cantidad>2</cantidad>
+   <precioUnitario>17.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>34.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>34.00</baseImponible>
+     <valor>5.10</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0036</codigoPrincipal>
+   <descripcion>JABON LIQUIDO GALON</descripcion>
+   <cantidad>7</cantidad>
+   <precioUnitario>3.35</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>23.45</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>23.45</baseImponible>
+     <valor>3.52</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0037</codigoPrincipal>
+   <descripcion>LAVAJILLAS  LAVA CREMA TACHO</descripcion>
+   <cantidad>3</cantidad>
+   <precioUnitario>10.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>30.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>30.00</baseImponible>
+     <valor>4.50</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0038</codigoPrincipal>
+   <descripcion>LIMPIA VIDRIOS Y ESPEJO CANECA</descripcion>
+   <cantidad>2</cantidad>
+   <precioUnitario>19.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>38.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>38.00</baseImponible>
+     <valor>5.70</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0039</codigoPrincipal>
+   <descripcion>LIMPIA VIDRIOS Y ESPEJOS GALON</descripcion>
+   <cantidad>1</cantidad>
+   <precioUnitario>4.02</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>4.02</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>4.02</baseImponible>
+     <valor>0.60</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0040</codigoPrincipal>
+   <descripcion>LIMPION CAFE ROLLO</descripcion>
+   <cantidad>32</cantidad>
+   <precioUnitario>8.10</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>259.20</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>259.20</baseImponible>
+     <valor>38.88</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0041</codigoPrincipal>
+   <descripcion>LIMPION EN ROLLO PAQUETE</descripcion>
+   <cantidad>9</cantidad>
+   <precioUnitario>13.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>117.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>117.00</baseImponible>
+     <valor>17.55</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0042</codigoPrincipal>
+   <descripcion>LIMPION MULTIUSO 150M</descripcion>
+   <cantidad>2</cantidad>
+   <precioUnitario>8.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>16.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>16.00</baseImponible>
+     <valor>2.40</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0044</codigoPrincipal>
+   <descripcion>MOPA 40CM</descripcion>
+   <cantidad>3</cantidad>
+   <precioUnitario>12.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>36.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>36.00</baseImponible>
+     <valor>5.40</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0045</codigoPrincipal>
+   <descripcion>MOPA 60CM</descripcion>
+   <cantidad>2</cantidad>
+   <precioUnitario>15.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>30.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>30.00</baseImponible>
+     <valor>4.50</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0046</codigoPrincipal>
+   <descripcion>MOPA PLANA MICROFIBRA 30CM</descripcion>
+   <cantidad>5</cantidad>
+   <precioUnitario>13.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>65.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>65.00</baseImponible>
+     <valor>9.75</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0047</codigoPrincipal>
+   <descripcion>MOPA PLANA MICROFIBRA 60CM</descripcion>
+   <cantidad>6</cantidad>
+   <precioUnitario>16.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>96.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>96.00</baseImponible>
+     <valor>14.40</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0048</codigoPrincipal>
+   <descripcion>MOPA PUNTA DOBLADA AZUL</descripcion>
+   <cantidad>4</cantidad>
+   <precioUnitario>15.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>60.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>60.00</baseImponible>
+     <valor>9.00</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0049</codigoPrincipal>
+   <descripcion>MOPA TRAPEADOR AZUL</descripcion>
+   <cantidad>3</cantidad>
+   <precioUnitario>5.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>15.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>15.00</baseImponible>
+     <valor>2.25</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0050</codigoPrincipal>
+   <descripcion>MOPA TRAPEADOR VERDE</descripcion>
+   <cantidad>3</cantidad>
+   <precioUnitario>5.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>15.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>15.00</baseImponible>
+     <valor>2.25</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0051</codigoPrincipal>
+   <descripcion>PA�O MULTIUSO ROLLO MASTER W</descripcion>
+   <cantidad>46</cantidad>
+   <precioUnitario>8.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>368.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>368.00</baseImponible>
+     <valor>55.20</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0052</codigoPrincipal>
+   <descripcion>PAPEL ALUMINIO 250M</descripcion>
+   <cantidad>2</cantidad>
+   <precioUnitario>15.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>30.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>30.00</baseImponible>
+     <valor>4.50</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0053</codigoPrincipal>
+   <descripcion>PAPEL HIGIENICO JUMBO x 4</descripcion>
+   <cantidad>282</cantidad>
+   <precioUnitario>2.90</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>817.80</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>817.80</baseImponible>
+     <valor>122.67</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0054</codigoPrincipal>
+   <descripcion>PAPEL TOALLA CENTER PULL</descripcion>
+   <cantidad>4</cantidad>
+   <precioUnitario>4.75</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>19.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>19.00</baseImponible>
+     <valor>2.85</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0056</codigoPrincipal>
+   <descripcion>PAPEL TOALLA Z paq x 50</descripcion>
+   <cantidad>664</cantidad>
+   <precioUnitario>1.85</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>1228.40</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>1228.40</baseImponible>
+     <valor>184.26</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0057</codigoPrincipal>
+   <descripcion>PERFUME PARA ROPA CANECA</descripcion>
+   <cantidad>2</cantidad>
+   <precioUnitario>25.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>50.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>50.00</baseImponible>
+     <valor>7.50</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0058</codigoPrincipal>
+   <descripcion>RECOGEDOR DE BASURA PLASTICO</descripcion>
+   <cantidad>2</cantidad>
+   <precioUnitario>4.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>8.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>8.00</baseImponible>
+     <valor>1.20</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0059</codigoPrincipal>
+   <descripcion>TUBO REPUESTO COGEDOR DE BASURA</descripcion>
+   <cantidad>2</cantidad>
+   <precioUnitario>2.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>4.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>4.00</baseImponible>
+     <valor>0.60</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0064</codigoPrincipal>
+   <descripcion>SHAMPOO PARA LAVADORA GALON</descripcion>
+   <cantidad>2</cantidad>
+   <precioUnitario>5.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>10.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>10.00</baseImponible>
+     <valor>1.50</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0062</codigoPrincipal>
+   <descripcion>SANITIZANTE (amonio cuaternario)</descripcion>
+   <cantidad>3</cantidad>
+   <precioUnitario>8.48</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>25.44</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>25.44</baseImponible>
+     <valor>3.82</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0063</codigoPrincipal>
+   <descripcion>SHAMPOO PARA LAVADORA CANECA</descripcion>
+   <cantidad>3</cantidad>
+   <precioUnitario>23.90</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>71.70</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>71.70</baseImponible>
+     <valor>10.76</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0065</codigoPrincipal>
+   <descripcion>SILICON FRASCO GALON</descripcion>
+   <cantidad>1</cantidad>
+   <precioUnitario>10.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>10.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>10.00</baseImponible>
+     <valor>1.50</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0066</codigoPrincipal>
+   <descripcion>SUAVIZANTE DE ROPA CANECA</descripcion>
+   <cantidad>2</cantidad>
+   <precioUnitario>23.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>46.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>46.00</baseImponible>
+     <valor>6.90</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0068</codigoPrincipal>
+   <descripcion>TUBO RESPUESTO PARA ESCOBA</descripcion>
+   <cantidad>6</cantidad>
+   <precioUnitario>2.00</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>12.00</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>12.00</baseImponible>
+     <valor>1.80</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+  <detalle>
+   <codigoPrincipal>0008</codigoPrincipal>
+   <descripcion>ANTISARRO</descripcion>
+   <cantidad>2</cantidad>
+   <precioUnitario>22.88</precioUnitario>
+   <descuento>0</descuento>
+   <precioTotalSinImpuesto>45.76</precioTotalSinImpuesto>
+   <impuestos>
+    <impuesto>
+     <codigo>2</codigo>
+     <codigoPorcentaje>4</codigoPorcentaje>
+     <tarifa>15.00</tarifa>
+     <baseImponible>45.76</baseImponible>
+     <valor>6.86</valor>
+    </impuesto>
+   </impuestos>
+  </detalle>
+ </detalles>
+    <infoAdicional>
+        <campoAdicional nombre="Codigo Cliente">000002</campoAdicional>
+        <campoAdicional nombre="Condiciones">Contado</campoAdicional>
+        <campoAdicional nombre="Vencimiento">20/08/2024</campoAdicional>
+        <campoAdicional nombre="Pedido">0</campoAdicional>
+        <campoAdicional nombre="Direcci�n">LA PRADERA 2</campoAdicional>
+        <campoAdicional nombre="Email">metrodial.manta@clinicametrodial.com</campoAdicional>
+        <campoAdicional nombre="Ciudad">Manta</campoAdicional>
+        <campoAdicional nombre="Vendedor">Herlinda Moran</campoAdicional>
+    </infoAdicional>
+<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:etsi="http://uri.etsi.org/01903/v1.3.2#" Id="Signature911799">
+<ds:SignedInfo Id="Signature-SignedInfo182312">
+<ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+<ds:SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+<ds:Reference Id="SignedPropertiesID674223" Type="http://uri.etsi.org/01903#SignedProperties" URI="#Signature911799-SignedProperties789925">
+<ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+<ds:DigestValue>NIyfZywu2ZMS+RFUH/NDo5xEYps=</ds:DigestValue>
+</ds:Reference>
+<ds:Reference URI="#Certificate1272665">
+<ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+<ds:DigestValue>avn/k9kJR1R0dN8Hj0IK23tzYuE=</ds:DigestValue>
+</ds:Reference>
+<ds:Reference Id="Reference-ID-1037720" URI="#comprobante">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+<ds:DigestValue>EXGdd8trp4mT/JvUXuvXzAp/2aU=</ds:DigestValue>
+</ds:Reference>
+</ds:SignedInfo>
+<ds:SignatureValue Id="SignatureValue44595">
+SRRvRk6Jalw8JopFc016cRmqqwWpzCSrQskCJNeIjtTXuXIWdUeeEiCQysi1vpkgcyQl9SWg3at8
+ix1pfUPWV5rjbuOLXhY+2n7VBNBQJDi9IPPLttOIxmHfGYKCn2hohs//0L4L5gFKA9qXkLRGs3Bw
+DcHjWXtojbXkHXGfj1Pda0d1rjbLvX/fNvdYQmuPvlPCLFgc/xdSEVPEePJdq1sXFN9zKVj1SSfh
+IAfpYx5aJVn+5U+zNuSCJW7IUphlVzHGjNC9hunBOirdcj6deXGsnPm3vh2hshM1pGTqtpVz6h0R
+k9c2CsouhpQzABaFmaSWGBuoq/Ob6tuo0DucKg==
+</ds:SignatureValue>
+<ds:KeyInfo Id="Certificate1272665">
+<ds:X509Data>
+<ds:X509Certificate>
+MIILXDCCCUSgAwIBAgIMA0cPT3h1R9+YoQ3jMA0GCSqGSIb3DQEBCwUAMIG5MRYwFAYDVQQFEw0x
+NzkyNjAxMjE1MDAxMQswCQYDVQQGEwJFQzE2MDQGA1UEChMtQU5GQUMgQVVUT1JJREFEIERFIENF
+UlRJRklDQUNJT04gRUNVQURPUiBDLkEuMSUwIwYDVQQLExxBTkYgQXV0b3JpZGFkIGludGVybWVk
+aWEgIEVDMTMwMQYDVQQDEypBTkYgSGlnaCBBc3N1cmFuY2UgRWN1YWRvciBJbnRlcm1lZGlhdGUg
+Q0EwHhcNMjMxMjI5MDAzMDQ3WhcNMjUxMjI4MDAzMDQ3WjCCAZQxJjAkBgNVBAoMHU1PUkFOIFVS
+ScORQSBIRVJMSU5EQSBNQVJJQkVMMRowGAYKKwYBBAGCpEIKBAwKMDkxODUwNzM2OTErMCkGA1UE
+CwwiQ2VydGlmaWNhZG8gUGVyc29uYSBOYXR1cmFsIFJVQyBFQzEZMBcGA1UEKgwQSEVSTElOREEg
+TUFSSUJFTDEWMBQGA1UEYRMNMDkxODUwNzM2OTAwMTELMAkGA1UEBhMCRUMxEzARBgNVBAUTCjA5
+MTg1MDczNjkxFTATBgNVBAQMDE1PUkFOIFVSScORQTExMC8GA1UEAwwoMDkxODUwNzM2OSBIRVJM
+SU5EQSBNQVJJQkVMIE1PUkFOIFVSScORQTEqMCgGCSqGSIb3DQEJARYbbWFyaWJlbF9tb3Jhbl91
+QGhvdG1haWwuY29tMTEwLwYDVQQNDChDZXJ0aWZpY2FkbyBwYXJhIFBlcnNvbmEgTmF0dXJhbCBj
+b24gUlVDMQ8wDQYDVQQIDAZHVUFZQVMxEjAQBgNVBAcMCUdVQVlBUVVJTDCCASIwDQYJKoZIhvcN
+AQEBBQADggEPADCCAQoCggEBALVAGWsf6h1d/tT05ARMvR5zCH2Pj+/TJ7B36/eqz2WHatqtxZYK
+lsOt3D4jhtWvogyvdCJ6p6KCE8yLVJ28SZ1wj6DX0DgIspsTWCX3f4iNP3AWHc3aITIrBAyVYJk1
+FJfaOUOcQBAVHYT3Xl7NKOe90bfE95jswKm/PxRqmqFx/jXUq7C+yJwVXIdilAznFz/6C24fGUUK
+4s6/+W6OVk2jqku+sDDMc8Mmm0GIOLO6oOys05BA3nM0d7D4NF7IdnXWzU3hRikr3+8rmo+PRC2V
+u1mTK0Add3tKH2hEEbcvGFaBt7DN/dthcry+sDR5myujKHD/IwYECZVowYU+ib0CAwEAAaOCBYQw
+ggWAMB8GA1UdIwQYMBaAFJKu1MuCtJnG0XsRbGXqxU1oIfmsMB0GA1UdDgQWBBTWeNL/5+7lrI7/
+oNdfkjwDAx26zTCB/gYDVR0RBIH2MIHzgRttYXJpYmVsX21vcmFuX3VAaG90bWFpbC5jb22kgdMw
+gdAxIDAeBgorBgEEAYKkQgoBDBBIRVJMSU5EQSBNQVJJQkVMMRUwEwYKKwYBBAGCpEIKAgwFTU9S
+QU4xFjAUBgorBgEEAYKkQgoDDAZVUknDkUExGjAYBgorBgEEAYKkQgoEDAowOTE4NTA3MzY5MRkw
+FwYJKwYBBAGDvW4BDApBLTI4MTIyMDIzMTEwLwYDVQQDDCgwOTE4NTA3MzY5IEhFUkxJTkRBIE1B
+UklCRUwgTU9SQU4gVVJJw5FBMRMwEQYDVQQFDAowOTE4NTA3MzY5MA4GA1UdDwEB/wQEAwIGwDAd
+BgNVHSUEFjAUBggrBgEFBQcDAgYIKwYBBQUHAwQwUAYDVR0fBEkwRzBFoEOgQYY/aHR0cDovL2Ny
+bC5hbmYuZXMvY3JsL0FORkhpZ2hBc3N1cmFuY2VFY3VhZG9ySW50ZXJtZWRpYXRlQ0EuY3JsMIIB
+AwYDVR0gBIH7MIH4MIHfBgwrBgEEAYKkQgIFAQMwgc4wKAYIKwYBBQUHAgEWHGh0dHA6Ly93d3cu
+YW5mLmVzL2RvY3VtZW50b3MwgaEGCCsGAQUFBwICMIGUDIGRQ2VydGlmaWNhZG8gY29uZm9ybWUg
+YSBsYSBsZWdpc2xhY2nDs24gZGUgZmlybWEgZWxlY3Ryw7NuaWNhLiBBbnRlcyBkZSBhY2VwdGFy
+bG8gY29tcHJ1ZWJlIGludGVncmlkYWQsIGxpbWl0YWNpb25lcywgdmlnZW5jaWEgeSB1c29zIGF1
+dG9yaXphZG9zLjAJBgcEAIvsQAEBMAkGB2CFVAEDBQgwgZsGCCsGAQUFBwEBBIGOMIGLMCcGCCsG
+AQUFBzABhhtodHRwOi8vb2NzcC5hbmYuZXMvc3BhaW4vQVYwYAYIKwYBBQUHMAKGVGh0dHA6Ly93
+d3cuYW5mLmVzL2VzL2NlcnRpZmljYXRlcy1kb3dubG9hZC9BTkZIaWdoQXNzdXJhbmNlRWN1YWRv
+ckludGVybWVkaWF0ZUNBLmNlcjAMBgNVHRMBAf8EAjAAMCgGCSsGAQQBgY8cEwQbDBk1OTY1ODQz
+MzIxMDktNDg0NjU2NDczNDQwMBUGCisGAQQBgY8cEwIEBwwFMzc0NDIwKQYKKwYBBAGCpEITAQQb
+DBk0ODQ2NTY0NzM0NDAtNDc2ODE5NzQ3MDk1MBoGCisGAQQBgqRCAwEEDAwKMDkxODUwNzM2OTAt
+BgorBgEEAYKkQgMKBB8MHU1PUkFOIFVSScORQSBIRVJMSU5EQSBNQVJJQkVMMB0GCisGAQQBgqRC
+AwsEDwwNMDkxODUwNzM2OTAwMTASBgorBgEEAYKkQgMMBAQMAkVDMCAGCisGAQQBgqRCAwIEEgwQ
+SEVSTElOREEgTUFSSUJFTDAcBgorBgEEAYKkQgMDBA4MDE1PUkFOIFVSScORQTAZBgorBgEEAYKk
+QgMJBAsMCUdVQVlBUVVJTDAXBgorBgEEAYKkQioBBAkMB1VJTy0wMDMwEwYKKwYBBAGCpEIuAQQF
+DAM3MzAwUAYKKwYBBAGCpEIvAQRCDEBkMmY0MmRiYmJhYjViNjcyZDlmYWI1NDdiN2M5NmY3Mjgw
+OGRjYjlhZDI0OTQ4ZjRlMDVmY2ZiZWFlNGU5YTg0MEQGCCsGAQUFBwEDBDgwNjAIBgYEAI5GAQEw
+EwYGBACORgEGMAkGBwQAjkYBBgEwCQYHBACL7EkBATAKBggrBgEFBQcLAjANBgkqhkiG9w0BAQsF
+AAOCAgEAJzOML5tOJCYuTqiNH9+1viN+66/bfi3PN684WDXh5dLeHEc6dRWCFm/cR6CuQSZ3rcby
+TBAsp3+M9ChtdBBO53qmMnPnlejNNyfRWtUcviv8zdGdWS/rTt5z3GMZtd2Kl0uIzYfWs0I3GVBm
+vHGVOQ+ySM7zc5UEnCkI+a3u8z+c6h9FdH69upABjImqawmSA/X2UwDnv6Amr0kxsI+30l44Ens5
+DxQET7JOoBpCJuUCDD3GSVoP+MqpUflESvFENcGpZeRcLfPdclrIBfJCMKZLAGcwkMeZ7pSIBtzb
+nhx9h0txhJ4ykiUomUlHtfxHU5L8MxXjR8B3mf/5KWAxUj+EMYNeawXRIFHT8/zD6Qqzh3fy0BYH
+eJDtVBgXaZFk4vTajB5PPe0V5ctEqYSwnrGIVD0lPfbIxigQV+C8R9qMNcIvrIRqGauIE6BRl06q
+RtzeLfeaNioy7BX9dMUpythN6xoDaJ/Mtlz9sPHFcT4iK2OjdBhDlCBHHHkZx1KnLeVmDZkY0khN
+DAch9ui27f9UPqO/PobMbFCONyU21ZaJM2zdOzvWE1QNoyFFyBJsTESAKUNNvACDpCGz4Aj1A0/T
+FrS6QhxjT6GxHM4iYSbmWKnzRIq4tqPyLLFnkiyn92otoB8qRIN1ouXqdmOsv3s2mHtSgWo36VDl
+AJ+xt6k=
+</ds:X509Certificate>
+</ds:X509Data>
+<ds:KeyValue>
+<ds:RSAKeyValue>
+<ds:Modulus>
+tUAZax/qHV3+1PTkBEy9HnMIfY+P79MnsHfr96rPZYdq2q3FlgqWw63cPiOG1a+iDK90InqnooIT
+zItUnbxJnXCPoNfQOAiymxNYJfd/iI0/cBYdzdohMisEDJVgmTUUl9o5Q5xAEBUdhPdeXs0o573R
+t8T3mOzAqb8/FGqaoXH+NdSrsL7InBVch2KUDOcXP/oLbh8ZRQrizr/5bo5WTaOqS76wMMxzwyab
+QYg4s7qg7KzTkEDeczR3sPg0Xsh2ddbNTeFGKSvf7yuaj49ELZW7WZMrQB13e0ofaEQRty8YVoG3
+sM3922FyvL6wNHmbK6MocP8jBgQJlWjBhT6JvQ==
+</ds:Modulus>
+<ds:Exponent>AQAB</ds:Exponent>
+</ds:RSAKeyValue>
+</ds:KeyValue>
+</ds:KeyInfo>
+<ds:Object Id="Signature911799-Object877502"><etsi:QualifyingProperties Target="#Signature911799"><etsi:SignedProperties Id="Signature911799-SignedProperties789925"><etsi:SignedSignatureProperties><etsi:SigningTime>2024-08-19T11:01:25-05:00</etsi:SigningTime><etsi:SigningCertificate><etsi:Cert><etsi:CertDigest><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><ds:DigestValue>6EANSA/OR94A49R6Uj56OZuYwgQ=</ds:DigestValue></etsi:CertDigest><etsi:IssuerSerial><ds:X509IssuerName>CN=ANF High Assurance Ecuador Intermediate CA,OU=ANF Autoridad intermedia  EC,O=ANFAC AUTORIDAD DE CERTIFICACION ECUADOR C.A.,C=EC,2.5.4.5=#130d31373932363031323135303031</ds:X509IssuerName><ds:X509SerialNumber>1014361064126621627801734627</ds:X509SerialNumber></etsi:IssuerSerial></etsi:Cert></etsi:SigningCertificate></etsi:SignedSignatureProperties><etsi:SignedDataObjectProperties><etsi:DataObjectFormat ObjectReference="#Reference-ID-1037720"><etsi:Description>contenido comprobante</etsi:Description><etsi:MimeType>text/xml</etsi:MimeType></etsi:DataObjectFormat></etsi:SignedDataObjectProperties></etsi:SignedProperties></etsi:QualifyingProperties></ds:Object></ds:Signature></factura>]]></comprobante>
+<mensajes/>
+</autorizacion>
+

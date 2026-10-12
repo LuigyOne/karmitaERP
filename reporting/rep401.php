@@ -1,0 +1,117 @@
+<?php
+/**********************************************************************
+	Copyright (C) NotrinosERP.
+	Released under the terms of the GNU General Public License, GPL, 
+	as published by the Free Software Foundation, either version 3 
+	of the License, or (at your option) any later version.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+	See the License here <http://www.gnu.org/licenses/gpl-3.0.html>.
+***********************************************************************/
+$page_security = 'SA_BOMREP';
+$path_to_root='..';
+
+include_once($path_to_root . '/includes/session.inc');
+include_once($path_to_root . '/includes/date_functions.inc');
+include_once($path_to_root . '/includes/data_checks.inc');
+include_once($path_to_root . '/gl/includes/gl_db.inc');
+
+//----------------------------------------------------------------------------------------------------
+
+print_bill_of_material();
+
+/**
+ * Fetch BOM rows with all display metadata and unit precision.
+ *
+ * @param string $from First parent product.
+ * @param string $to Last parent product.
+ * @return resource Database result.
+ */
+function getTransactions($from, $to) {
+	$sql = "SELECT bom.parent,
+			bom.component,
+			component.description AS CompDescription,
+			parent.description AS ParentDescription,
+			units.decimals AS ComponentDecimals,
+			bom.quantity,
+			bom.loc_code,
+			bom.workcentre_added,
+			location.location_name AS LocationName,
+			workcentre.name AS WorkCentreName
+		FROM ".TB_PREF."bom bom
+		INNER JOIN ".TB_PREF."stock_master component ON component.stock_id=bom.component
+		LEFT JOIN ".TB_PREF."stock_master parent ON parent.stock_id=bom.parent
+		LEFT JOIN ".TB_PREF."item_units units ON units.abbr=component.units
+		LEFT JOIN ".TB_PREF."locations location ON location.loc_code=bom.loc_code
+		LEFT JOIN ".TB_PREF."workcentres workcentre ON workcentre.id=bom.workcentre_added
+		WHERE 1=1
+		AND bom.parent >= ".db_escape($from)."
+		AND bom.parent <= ".db_escape($to)."
+		ORDER BY
+			bom.parent,
+			bom.component";
+
+	return db_query($sql, 'No transactions were returned');
+}
+
+//----------------------------------------------------------------------------------------------------
+
+function print_bill_of_material() {
+	global $path_to_root;
+
+	$frompart = $_POST['PARAM_0'];
+	$topart = $_POST['PARAM_1'];
+	$comments = $_POST['PARAM_2'];
+	$orientation = $_POST['PARAM_3'];
+	$destination = $_POST['PARAM_4'];
+	if ($destination)
+		include_once($path_to_root . '/reporting/includes/excel_report.inc');
+	else
+		include_once($path_to_root . '/reporting/includes/pdf_report.inc');
+
+	$orientation = ($orientation ? 'L' : 'P');
+	$cols = array(0, 50, 305, 375, 445,	515);
+
+	$headers = array(_('Component'), _('Description'), _('Loc'), _('Wrk Ctr'), _('Quantity'));
+
+	$aligns = array('left',	'left',	'left', 'left', 'right');
+
+	$params =   array( 	0 => $comments,
+						1 => array('text' => _('Component'), 'from' => $frompart, 'to' => $topart));
+
+	$rep = new FrontReport(_('Bill of Material Listing'), 'BillOfMaterial', user_pagesize(), 9, $orientation);
+	if ($orientation == 'L')
+		recalculate_cols($cols);
+
+	$rep->Font();
+	$rep->Info($params, $cols, $headers, $aligns);
+	$rep->NewPage();
+
+	$res = getTransactions($frompart, $topart);
+	$parent = '';
+	while ($trans=db_fetch($res)) {
+		if ($parent != $trans['parent']) {
+			if ($parent != '') {
+				$rep->Line($rep->row - 2);
+				$rep->NewLine(2, 3);
+			}
+			$rep->TextCol(0, 1, $trans['parent']);
+			$rep->TextCol(1, 2, $trans['ParentDescription']);
+			$parent = $trans['parent'];
+			$rep->NewLine();
+		}
+
+		$rep->NewLine();
+		$dec = $trans['ComponentDecimals'] == -1 || $trans['ComponentDecimals'] === null
+			? user_qty_dec() : $trans['ComponentDecimals'];
+		$rep->TextCol(0, 1, $trans['component']);
+		$rep->TextCol(1, 2, $trans['CompDescription']);
+		$rep->TextCol(2, 3, $trans['LocationName']);
+		$rep->TextCol(3, 4, $trans['WorkCentreName']);
+		$rep->AmountCol(4, 5, $trans['quantity'], $dec);
+	}
+	$rep->Line($rep->row - 4);
+	$rep->NewLine();
+	$rep->End();
+}

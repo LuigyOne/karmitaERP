@@ -1,0 +1,26 @@
+<?php
+/**********************************************************************
+    Copyright (C) NotrinosERP.
+    Released under the terms of the GNU General Public License, GPL,
+    as published by the Free Software Foundation, either version 3
+    of the License, or (at your option) any later version.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    See the License here <http://www.gnu.org/licenses/gpl-3.0.html>.
+*******************************************************************************/
+$page_security = 'SA_HRMREPORTS';
+if (!isset($path_to_root) || $path_to_root == '')
+    $path_to_root  = '../..';
+include_once($path_to_root.'/hrm/reporting/report_controller_security.inc');
+hrm_require_report_controller(893);
+// NOTE: This file is included by reporting/rep893.php
+// $path_to_root and session are already initialized when called via report framework.
+// Direct access uses the above declarations.
+include_once($path_to_root.'/includes/date_functions.inc');
+include_once($path_to_root.'/includes/data_checks.inc');
+include_once($path_to_root.'/hrm/includes/hrm_constants.inc');
+include_once($path_to_root.'/hrm/includes/hrm_db.inc');
+
+define('HRM_PAYSLIP_EMAIL_REPORT', true);
+require_once($path_to_root.'/hrm/reporting/rep_payslip.php');

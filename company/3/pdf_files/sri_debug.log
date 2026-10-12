@@ -1,0 +1,59 @@
+[2026-10-06 12:01:12] INVOICE #2
+PAYLOAD: {
+    "ambiente": "1",
+    "tipoEmision": "1",
+    "fechaEmision": "06\/10\/2026",
+    "emisor": {
+        "ruc": "1716016330001",
+        "razonSocial": "ALVARADO BARRERA CARMEN ALEXANDRA",
+        "nombreComercial": "AC - Asistencia Contable",
+        "dirMatriz": "SANTO DOMINGO DE LOS TSACHILAS \/ SANTO DOMINGO \/ CHIGUILPE \/ VIA QUITO S\/N Y MARGEN DERECHO",
+        "dirEstablecimiento": "SANTO DOMINGO DE LOS TSACHILAS \/ SANTO DOMINGO \/ CHIGUILPE \/ VIA QUITO S\/N Y MARGEN DERECHO",
+        "establecimiento": "001",
+        "puntoEmision": "010",
+        "obligadoContabilidad": "NO"
+    },
+    "comprador": {
+        "tipoIdentificacion": "07",
+        "identificacion": "9999999999999",
+        "razonSocial": "CONSUMIDOR FINAL",
+        "direccion": "CONSUMIDOR FINAL"
+    },
+    "detalles": [
+        {
+            "codigoPrincipal": "SING-E001",
+            "codigoAuxiliar": "SING-E001",
+            "descripcion": "FIRMA ELECTRONICA",
+            "cantidad": 1,
+            "precioUnitario": 35,
+            "descuento": 0,
+            "impuestos": [
+                {
+                    "codigo": "2",
+                    "codigoPorcentaje": "4",
+                    "tarifa": 15,
+                    "baseImponible": 35,
+                    "valor": 5.25
+                }
+            ]
+        }
+    ],
+    "pagos": [
+        {
+            "formaPago": "01",
+            "total": 40.25
+        }
+    ],
+    "infoAdicional": [
+        {
+            "nombre": "Vendedor",
+            "valor": "Vendedor Rutero"
+        },
+        {
+            "nombre": "Orden",
+            "valor": "Ref: FAC-000000031"
+        }
+    ]
+}
+RESPONSE: {"success":true,"claveAcceso":"0610202601171601633000110010100000000037093279210","estado":"AUTORIZADO","fechaAutorizacion":"2026-10-06T17:01:14.000Z","numeroAutorizacion":"0610202601171601633000110010100000000037093279210","xmlAutorizado":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<factura id=\"comprobante\" version=\"1.1.0\">\n  <infoTributaria>\n    <ambiente>1</ambiente>\n    <tipoEmision>1</tipoEmision>\n    <razonSocial>ALVARADO BARRERA CARMEN ALEXANDRA</razonSocial>\n    <nombreComercial>AC - Asistencia Contable</nombreComercial>\n    <ruc>1716016330001</ruc>\n    <claveAcceso>0610202601171601633000110010100000000037093279210</claveAcceso>\n    <codDoc>01</codDoc>\n    <estab>001</estab>\n    <ptoEmi>010</ptoEmi>\n    <secuencial>000000003</secuencial>\n    <dirMatriz>SANTO DOMINGO DE LOS TSACHILAS / SANTO DOMINGO / CHIGUILPE / VIA QUITO S/N Y MARGEN DERECHO</dirMatriz>\n  </infoTributaria>\n  <infoFactura>\n    <fechaEmision>06/10/2026</fechaEmision>\n    <dirEstablecimiento>SANTO DOMINGO DE LOS TSACHILAS / SANTO DOMINGO / CHIGUILPE / VIA QUITO S/N Y MARGEN DERECHO</dirEstablecimiento>\n    <obligadoContabilidad>NO</obligadoContabilidad>\n    <tipoIdentificacionComprador>07</tipoIdentificacionComprador>\n    <razonSocialComprador>CONSUMIDOR FINAL</razonSocialComprador>\n    <identificacionComprador>9999999999999</identificacionComprador>\n    <direccionComprador>CONSUMIDOR FINAL</direccionComprador>\n    <totalSinImpuestos>35.00</totalSinImpuestos>\n    <totalDescuento>0.00</totalDescuento>\n    <totalConImpuestos>\n      <totalImpuesto>\n        <codigo>2</codigo>\n        <codigoPorcentaje>4</codigoPorcentaje>\n        <baseImponible>35.00</baseImponible>\n        <tarifa>15.00</tarifa>\n        <valor>5.25</valor>\n      </totalImpuesto>\n    </totalConImpuestos>\n    <importeTotal>40.25</importeTotal>\n    <moneda>DOLAR</moneda>\n    <pagos>\n      <pago>\n        <formaPago>01</formaPago>\n        <total>40.25</total>\n      </pago>\n    </pagos>\n  </infoFactura>\n  <detalles>\n    <detalle>\n      <codigoPrincipal>SING-E001</codigoPrincipal>\n      <codigoAuxiliar>SING-E001</codigoAuxiliar>\n      <descripcion>FIRMA ELECTRONICA</descripcion>\n      <cantidad>1.000000</cantidad>\n      <precioUnitario>35.000000</precioUnitario>\n      <descuento>0.00</descuento>\n      <precioTotalSinImpuesto>35.00</precioTotalSinImpuesto>\n      <impuestos>\n        <impuesto>\n          <codigo>2</codigo>\n          <codigoPorcentaje>4</codigoPorcentaje>\n          <tarifa>15.00</tarifa>\n          <baseImponible>35.00</baseImponible>\n          <valor>5.25</valor>\n        </impuesto>\n      </impuestos>\n    </detalle>\n  </detalles>\n  <infoAdicional>\n    <campoAdicional nombre=\"direccion\">CONSUMIDOR FINAL</campoAdicional>\n    <campoAdicional nombre=\"Vendedor\">Vendedor Rutero</campoAdicional>\n    <campoAdicional nombre=\"Orden\">Ref: FAC-000000031</campoAdicional>\n  </infoAdicional>\n<ds:Signature Id=\"id-dfea0bdcbd6c\" xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\"/><ds:SignatureMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#rsa-sha1\"/><ds:Reference Id=\"Reference-comprobante\" URI=\"#comprobante\"><ds:Transforms><ds:Transform Algorithm=\"http://www.w3.org/2000/09/xmldsig#enveloped-signature\"/><ds:Transform Algorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\"/></ds:Transforms><ds:DigestMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#sha1\"/><ds:DigestValue>doWZ4OoGQERpsX8RIfvlnpzmvPg=</ds:DigestValue></ds:Reference><ds:Reference URI=\"#xades-id-dfea0bdcbd6c\" Type=\"http://uri.etsi.org/01903#SignedProperties\"><ds:DigestMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#sha1\"/><ds:DigestValue>2r0KqwhfbJ7rynn/AeEF7R2t7Is=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue>BIHbb4g6Ud/QRXEKOvAzTriDnYFbuPlYoWpm/6j2Jl9DGIl/HZJnZVMuN6d1T7kXc3OxZ1nY5Z//qxpzMdKktbJUN5lcT66aXPJiYlwXYHC7FnVN8jchwncYA+9AxvJodHXkGtN8YZXvEjhA7cPnhlatuxWCRsOIUnH7MEBVHhD1NWIcq6WGchY9DoPGi279LHacxpzf0pc6GY8ibEtjDWH04XEvcdj8hh2MYvh7hJnpDOJ8aWSztflz3e3DEMw9ijZbeKE62lf3STpcdS8sIJm8rFJgYUAqXh83osJxO24ypHxAolPzqeMDHHjzXMxjNBC5SjRUMbTqOw8meBqDsQ==</ds:SignatureValue><ds:KeyInfo><ds:X509Data><ds:X509Certificate>MIIIPTCCByWgAwIBAgIFAMIPO/8wDQYJKoZIhvcNAQELBQAwRzELMAkGA1UEBhMCRUMxGzAZBgNVBAoMEkxhenphdGUgQ2lhLiBMdGRhLjEbMBkGA1UEAwwSTGF6emF0ZSBFbWlzb3IgQ0EyMB4XDTI2MDYwNTE0NTUwNFoXDTI3MDYwNTE0NTUwNFowgaMxCzAJBgNVBAYTAkVDMRswGQYDVQQKDBJMYXp6YXRlIENpYS4gTHRkYS4xHjAcBgNVBAsMFUVudGUgZGUgQ2VydGlmaWNhY2lvbjEqMCgGA1UEAwwhQ0FSTUVOIEFMRVhBTkRSQSBBTFZBUkFETyBCQVJSRVJBMSswKQYJKoZIhvcNAQkBFhxrYXJtaXRhbHZhcmFkbzE5ODBAZ21haWwuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAv9YsYOSdTJJpLc/5a6WvkcgMht+0UP13uHsbYEUM21X6JejpKMBzv9w5AC1u+TQQrTU36rArBeg9IB/4yZuM/3Go6HMSmT/pAgux14+Mdy2eZxI9u1mmhPwHdUbOae3gFGZwwqJv6fR64K1Xb23lFMAed8j6LOJSU+XLEMi1XWttsONIMAgDFVIqR2FKewNkv5xX+V6ptvERdl6BG+C/D2niav6yonymZzTYhPp9hrVG11ZxwYe6HH9TfLC4Rnp40FdYxEoCseY9oCdSEkb8JpFxV2O/vYGMeYnf46W32GqyYxKKI42HTddFFv9gIZ7V8ty+g6R/tcMJ6cAMxMMeuQIDAQABo4IE0TCCBM0wGgYKKwYBBAGDz3YDAQQMDAoxNzE2MDE2MzMwMCAGCisGAQQBg892AwIEEgwQQ0FSTUVOIEFMRVhBTkRSQTAYBgorBgEEAYPPdgMDBAoMCEFMVkFSQURPMBcGCisGAQQBg892AwQECQwHQkFSUkVSQTBIBgorBgEEAYPPdgMHBDoMOENPT1BFUkFUSVZBIExPUyBGVU5EQURPUkVTIFZJQSBRVUlUTyBLTSA1IE1BUkdFTiBERVJFQ0hPMBoGCisGAQQBg892AwgEDAwKMDk5OTQ5NTk0OTAdBgorBgEEAYPPdgMJBA8MDVNBTlRPIERPTUlOR08wFwYKKwYBBAGDz3YDDAQJDAdFQ1VBRE9SMB0GCisGAQQBg892AwsEDwwNMTcxNjAxNjMzMDAwMTAMBgNVHRMBAf8EAjAAMB0GA1UdDgQWBBQ8S/h3OeZuw8Lt4OQjzxfyAw34uzAfBgNVHSMEGDAWgBTtdkiwCvHJhoYMTEZk0gb4zNW9PjAOBgNVHQ8BAf8EBAMCBeAwOgYDVR0fBDMwMTAvoC2gK4YpaHR0cDovZW5leHQyLnh5ei9MYXp6YXRlQ0EyL2VtaXNvckNBMi5jcmwwggGEBgNVHSAEggF7MIIBdzB8BgorBgEEAYPPdgIBMG4wbAYIKwYBBQUHAgIwYBpeRWwgcHJlc2VudGUgY2VydGlmaWNhZG8gZXMgZW1pdGlkbyBlbiBiYXNlIGEgbGFzIHBvbMOtdGljYXMgZGUgc2VndXJpZGFkIGRlIExhenphdGUgQ2lhLiBMdGRhLjCB9gYJKwYBBAGDz3YCMIHoMGwGCCsGAQUFBwICMGAaXkVsIHByZXNlbnRlIGNlcnRpZmljYWRvIGVzIGVtaXRpZG8gZW4gYmFzZSBhIGxhcyBwb2zDrXRpY2FzIGRlIHNlZ3VyaWRhZCBkZSBMYXp6YXRlIENpYS4gTHRkYS4weAYIKwYBBQUHAgIwbBpqRWwgcHJlc2VudGUgY2VydGlmaWNhZG8gc3Vib3JkaW5hZG8gZXMgZW1pdGlkbyBlbiBiYXNlIGEgbGFzIHBvbMOtdGljYXMgZGUgc2VndXJpZGFkIGRlIExhenphdGUgQ2lhLiBMdGRhLjCCATsGA1UdEQSCATIwggEuoBoGCisGAQQBg892AwGgDAwKMTcxNjAxNjMzMKAgBgorBgEEAYPPdgMCoBIMEENBUk1FTiBBTEVYQU5EUkGgGAYKKwYBBAGDz3YDA6AKDAhBTFZBUkFET6AXBgorBgEEAYPPdgMEoAkMB0JBUlJFUkGgSAYKKwYBBAGDz3YDB6A6DDhDT09QRVJBVElWQSBMT1MgRlVOREFET1JFUyBWSUEgUVVJVE8gS00gNSBNQVJHRU4gREVSRUNIT6AaBgorBgEEAYPPdgMIoAwMCjA5OTk0OTU5NDmgHQYKKwYBBAGDz3YDCaAPDA1TQU5UTyBET01JTkdPoBcGCisGAQQBg892AwygCQwHRUNVQURPUqAdBgorBgEEAYPPdgMLoA8MDTE3MTYwMTYzMzAwMDEwPAYIKwYBBQUHAQEEMDAuMCwGCCsGAQUFBzABhiBodHRwOi8vZW5leHQyLnh5ejo4Nzc3L2Fkc3Mvb2NzcDANBgkqhkiG9w0BAQsFAAOCAQEA4XcBKveshxc62k42zrk/DoVl5sd5AngdbVf19+VeUY/0809SbVG0ATxUKMT9HZOr4W3F5Ubs7YkZGjSHvLG7mcXwCb3+K3kNjjAPsE48S1lZ7BEDKJ6GB1AovmPn9qZCemr2U5Z8m0sVfofbm8yHdCTEUSKt8ivyNKGHbVTlOWJAmsjRetubUos1r1yUh+Gp65Rm3R0YT/nsOgS/jOUdRoYEKechR/OxS6ODMEGOOu3btXMZq8o7hClEpnMpR9rmCKdlxuRda2w5ECXMnc2Ebc6dAbBt+/sm7AJw8ZNsSA6T3JEYFz1z0VcjWuRJUXShSjH5t91Nv+2jTpVKbKxWUQ==</ds:X509Certificate></ds:X509Data></ds:KeyInfo><ds:Object><xades:QualifyingProperties Target=\"#id-dfea0bdcbd6c\" xmlns:xades=\"http://uri.etsi.org/01903/v1.3.2#\"><xades:SignedProperties Id=\"xades-id-dfea0bdcbd6c\"><xades:SignedSignatureProperties><xades:SigningTime>2026-10-06T17:01:13.503Z</xades:SigningTime><xades:SignerRole><xades:ClaimedRoles><xades:ClaimedRole>Emisor</xades:ClaimedRole></xades:ClaimedRoles></xades:SignerRole></xades:SignedSignatureProperties></xades:SignedProperties></xades:QualifyingProperties></ds:Object></ds:Signature></factura>","mensajes":[]}
+---------------------------------------------------

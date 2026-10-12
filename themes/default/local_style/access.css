@@ -1,0 +1,205 @@
+/* NotrinosERP 1.0 Modern Login / Access Pages */
+:root {
+	--access-accent-1: #6a11cb;
+	--access-accent-2: #2575fc;
+}
+
+#loginscreen {
+	margin: 0;
+	padding: 0;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	/*background: linear-gradient(120deg, var(--access-accent-1), var(--access-accent-2));*/
+	background-color: #4a74dc;
+  	background-image:
+    	radial-gradient(ellipse at 10% 90%, #3c2d83 0%, transparent 50%),
+    	radial-gradient(ellipse at 90% 90%, #c33c65 0%, transparent 50%),
+    	radial-gradient(ellipse at 90% 10%, #4a74dc 0%, transparent 50%),
+    	radial-gradient(ellipse at 10% 10%, #35244f 0%, transparent 50%);
+	background-size: 200% 200%;
+	animation: loginBgShift 8s ease-in-out infinite;
+	font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+	color: var(--modern-color-text, #1f2937);
+}
+
+#loginscreen .nerp-icon {
+	height: 1.2em;
+	width: 1.2em;
+}
+
+@keyframes loginBgShift {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}
+#loginscreen .login-title-bar {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	padding: 12px 24px;
+	background: rgba(0,0,0,0.15);
+	color: #fff;
+	font-size: 14px;
+	font-weight: 500;
+	z-index: 10;
+}
+#loginscreen .login-card {
+	width: 100%;
+	max-width: 400px;
+	background: #fff;
+	border-radius: 16px;
+	box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+	padding: 40px 36px 32px;
+	margin: 20px;
+	animation: loginFadeIn 0.4s ease;
+}
+@keyframes loginFadeIn {
+	from { opacity: 0; transform: translateY(20px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+#loginscreen .login-logo {
+	text-align: center;
+	margin-bottom: 24px;
+}
+#loginscreen .login-logo img {
+	height: 50px;
+}
+#loginscreen .login-subtitle {
+	text-align: center;
+	font-size: 13px;
+	color: #64748b;
+	margin-bottom: 28px;
+	line-height: 1.5;
+}
+#loginscreen .login-field {
+	margin-bottom: 16px;
+}
+#loginscreen .login-field .input_container {
+	display: flex;
+	align-items: center;
+	border: 1px solid #d4dbe6;
+	border-radius: 10px;
+	padding: 0 14px;
+	background: #f8fafc;
+	transition: border-color 0.2s, box-shadow 0.2s;
+}
+#loginscreen .login-field .input_container:focus-within {
+	border-color: #3f51b5;
+	box-shadow: 0 0 0 3px rgba(63,81,181,0.12);
+	background: #fff;
+}
+#loginscreen .login-field .input_container i {
+	color: #94a3b8;
+	font-size: 15px;
+	width: 20px;
+	text-align: center;
+	flex-shrink: 0;
+}
+#loginscreen .login-field .input_container:focus-within i {
+	color: #3f51b5;
+}
+#loginscreen .login-field input.input,
+#loginscreen .login-field input[type="text"],
+#loginscreen .login-field input[type="password"],
+#loginscreen .login-field select {
+	flex: 1;
+	border: none;
+	background: transparent;
+	padding: 12px 10px;
+	font-size: 14px;
+	color: #1f2937;
+	outline: none;
+	font-family: inherit;
+	width: 100%;
+	box-sizing: border-box;
+}
+#loginscreen .login-field select {
+	cursor: pointer;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+}
+#loginscreen .login-message {
+	text-align: center;
+	font-size: 13px;
+	color: #64748b;
+	margin: 16px 0;
+	line-height: 1.5;
+}
+#loginscreen .login-message .redfg {
+	color: #b91c1c;
+}
+#loginscreen .login-message a {
+	color: #3f51b5;
+	text-decoration: none;
+	font-weight: 500;
+}
+#loginscreen .login-message a:hover {
+	text-decoration: underline;
+}
+#loginscreen .login-submit {
+	margin-top: 8px;
+}
+#loginscreen .login-submit input[type="submit"],
+#loginscreen .login-submit button[type="submit"] {
+	display: block;
+	width: 100%;
+	padding: 13px;
+	background: #3f51b5;
+	color: #fff;
+	border: none;
+	border-radius: 10px;
+	font-size: 15px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.2s, transform 0.1s;
+	font-family: inherit;
+}
+#loginscreen .login-submit input[type="submit"]:hover,
+#loginscreen .login-submit button[type="submit"]:hover {
+	background: #2c3e98;
+}
+#loginscreen .login-submit input[type="submit"]:active,
+#loginscreen .login-submit button[type="submit"]:active {
+	transform: scale(0.98);
+}
+#loginscreen .login-submit input[type="submit"]:disabled {
+	background: #94a3b8;
+	cursor: not-allowed;
+}
+#loginscreen .login-footer {
+	text-align: center;
+	margin-top: 32px;
+	color: rgba(255,255,255,0.6);
+	font-size: 12px;
+}
+#loginscreen .login-footer a {
+	color: rgba(255,255,255,0.8);
+	text-decoration: none;
+}
+#loginscreen .login-footer a:hover {
+	color: #fff;
+	text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+	#loginscreen .login-card {
+		width: 88%;
+		max-width: 340px;
+		padding: 28px 20px 24px;
+		margin: 12px auto;
+		border-radius: 12px;
+	}
+}
+

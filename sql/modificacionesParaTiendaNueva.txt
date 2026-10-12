@@ -1,0 +1,77 @@
+-- 1. Incorporación de campos de datos flexibles (Soporte JSON)
+ALTER TABLE `areas` ADD COLUMN IF NOT EXISTS `custom_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{}' CHECK (json_valid(`custom_data`));
+ALTER TABLE `attachments` ADD COLUMN IF NOT EXISTS `custom_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{}' CHECK (json_valid(`custom_data`));
+ALTER TABLE `audit_trail` ADD COLUMN IF NOT EXISTS `custom_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{}' CHECK (json_valid(`custom_data`));
+ALTER TABLE `bank_accounts` ADD COLUMN IF NOT EXISTS `custom_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{}' CHECK (json_valid(`custom_data`));
+ALTER TABLE `bank_trans` ADD COLUMN IF NOT EXISTS `custom_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{}' CHECK (json_valid(`custom_data`));
+ALTER TABLE `bom` ADD COLUMN IF NOT EXISTS `custom_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{}' CHECK (json_valid(`custom_data`));
+ALTER TABLE `budget_trans` ADD COLUMN IF NOT EXISTS `custom_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{}' CHECK (json_valid(`custom_data`));
+ALTER TABLE `chart_class` ADD COLUMN IF NOT EXISTS `custom_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{}' CHECK (json_valid(`custom_data`));
+ALTER TABLE `chart_master` ADD COLUMN IF NOT EXISTS `custom_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{}' CHECK (json_valid(`custom_data`));
+ALTER TABLE `chart_types` ADD COLUMN IF NOT EXISTS `custom_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{}' CHECK (json_valid(`custom_data`));
+ALTER TABLE `debtor_trans_details` ADD COLUMN IF NOT EXISTS `custom_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{}' CHECK (json_valid(`custom_data`));
+ALTER TABLE `dimensions` ADD COLUMN IF NOT EXISTS `custom_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{}' CHECK (json_valid(`custom_data`));
+ALTER TABLE `gl_trans` ADD COLUMN IF NOT EXISTS `custom_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{}' CHECK (json_valid(`custom_data`));
+ALTER TABLE `grn_batch` ADD COLUMN IF NOT EXISTS `custom_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{}' CHECK (json_valid(`custom_data`));
+ALTER TABLE `item_codes` ADD COLUMN IF NOT EXISTS `custom_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{}' CHECK (json_valid(`custom_data`));
+ALTER TABLE `prices` ADD COLUMN IF NOT EXISTS `custom_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{}' CHECK (json_valid(`custom_data`));
+
+-- 2. Modificaciones en cust_branch (Geolocalización, control fotográfico y ruteros)
+ALTER TABLE `cust_branch`
+  ADD COLUMN IF NOT EXISTS `latitud` decimal(10,8) DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS `longitud` decimal(11,8) DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS `foto_1` varchar(255) DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS `foto_2` varchar(255) DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS `foto_3` varchar(255) DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS `foto_4` varchar(255) DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS `dias_visita` varchar(15) DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS `frecuencia_visita` varchar(20) DEFAULT 'Semanal',
+  ADD COLUMN IF NOT EXISTS `ultima_visita` date DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS `ultima_venta` date DEFAULT NULL;
+
+-- 3. Modificaciones en debtors_master (Evaluación de riesgo crediticio y perfilación comercial)
+ALTER TABLE `debtors_master`
+  ADD COLUMN IF NOT EXISTS `custom_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{}' CHECK (json_valid(`custom_data`)),
+  ADD COLUMN IF NOT EXISTS `credit_insurance_limit` double NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS `credit_review_date` date DEFAULT NULL,
+  ADD COLUMN IF NOT EXISTS `credit_risk_score` enum('low','medium','high','critical') NOT NULL DEFAULT 'medium',
+  ADD COLUMN IF NOT EXISTS `payment_behavior_score` double NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS `customer_tier` enum('standard','silver','gold','platinum','vip') NOT NULL DEFAULT 'standard',
+  ADD COLUMN IF NOT EXISTS `preferred_communication` enum('email','phone','whatsapp','portal') NOT NULL DEFAULT 'email',
+  ADD COLUMN IF NOT EXISTS `industry` varchar(50) NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS `company_size` enum('small','medium','large','enterprise') NOT NULL DEFAULT 'medium';
+
+-- 4. Modificaciones en debtor_trans (Campos requeridos para Facturación Electrónica SRI)
+ALTER TABLE `debtor_trans`
+  ADD COLUMN IF NOT EXISTS `custom_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{}' CHECK (json_valid(`custom_data`)),
+  ADD COLUMN IF NOT EXISTS `sri_clave_acceso` varchar(50) DEFAULT NULL COMMENT 'Clave de Acceso / Autorización de 49 dígitos del SRI',
+  ADD COLUMN IF NOT EXISTS `sri_fecha_autorizacion` datetime DEFAULT NULL COMMENT 'Fecha y hora devuelta por la API del SRI',
+  ADD COLUMN IF NOT EXISTS `sri_estado` tinyint(1) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS `sri_mensaje` varchar(255) DEFAULT '',
+  ADD COLUMN IF NOT EXISTS `sri_secuencial` varchar(30) DEFAULT NULL COMMENT 'Secuencial oficial del SRI formato estab-ptoEmi-secuencial (ej: 001-010-000000031)';
+
+-- 5. Modificaciones en grn_items (Gestión de trazabilidad, lotes e inspección)
+ALTER TABLE `grn_items`
+  ADD COLUMN IF NOT EXISTS `custom_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{}' CHECK (json_valid(`custom_data`)),
+  ADD COLUMN IF NOT EXISTS `batch_id` int(11) DEFAULT NULL COMMENT 'FK to stock_batches.id',
+  ADD COLUMN IF NOT EXISTS `serial_numbers_json` text DEFAULT NULL COMMENT 'JSON array of serial numbers received for this line',
+  ADD COLUMN IF NOT EXISTS `expiry_date` date DEFAULT NULL COMMENT 'Expiry date of received goods',
+  ADD COLUMN IF NOT EXISTS `manufacturing_date` date DEFAULT NULL COMMENT 'Manufacturing date of received goods',
+  ADD COLUMN IF NOT EXISTS `inspection_status` varchar(20) DEFAULT 'none' COMMENT 'none|pending|pass|fail';
+
+-- 6. Modificaciones en locations (Sistema de Gestión de Almacenes WMS y Configuración SRI)
+ALTER TABLE `locations`
+  ADD COLUMN IF NOT EXISTS `custom_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT '{}' CHECK (json_valid(`custom_data`)),
+  ADD COLUMN IF NOT EXISTS `wh_enabled` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Enable WMS features for this location',
+  ADD COLUMN IF NOT EXISTS `inbound_steps` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1=direct, 2=receive+putaway, 3=receive+QC+putaway',
+  ADD COLUMN IF NOT EXISTS `outbound_steps` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1=ship, 2=pick+ship, 3=pick+pack+ship',
+  ADD COLUMN IF NOT EXISTS `default_route_in` int(11) DEFAULT NULL COMMENT 'FK to wh_routes',
+  ADD COLUMN IF NOT EXISTS `default_route_out` int(11) DEFAULT NULL COMMENT 'FK to wh_routes',
+  ADD COLUMN IF NOT EXISTS `removal_strategy` varchar(20) DEFAULT 'fifo' COMMENT 'fifo|fefo|lifo|closest',
+  ADD COLUMN IF NOT EXISTS `picking_method` varchar(20) DEFAULT 'single' COMMENT 'single|batch|wave|cluster',
+  ADD COLUMN IF NOT EXISTS `barcode_prefix` varchar(10) DEFAULT NULL COMMENT 'Prefix for auto-generated location barcodes',
+  ADD COLUMN IF NOT EXISTS `use_packages` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Enable packing/package tracking',
+  ADD COLUMN IF NOT EXISTS `use_cycle_counts` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Enable cycle counting',
+  ADD COLUMN IF NOT EXISTS `cross_dock_enabled` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Enable cross-docking at this warehouse',
+  ADD COLUMN IF NOT EXISTS `establishment_code` varchar(3) NOT NULL DEFAULT '001' COMMENT 'Código de Establecimiento (SRI)',
+  ADD COLUMN IF NOT EXISTS `emission_point_code` varchar(3) NOT NULL DEFAULT '010' COMMENT 'Código de Punto de Emisión (SRI)';

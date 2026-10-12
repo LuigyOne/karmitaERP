@@ -1,0 +1,137 @@
+<?php
+/**********************************************************************
+Copyright (C) NotrinosERP.
+Released under the terms of the GNU General Public License, GPL,
+as published by the Free Software Foundation, either version 3
+of the License, or (at your option) any later version.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+See the License here <http://www.gnu.org/licenses/gpl-3.0.html>.
+***********************************************************************/
+/**
+ * CRM Email Templates Management
+ *
+ * @package NotrinosERP
+ * @subpackage CRM
+ */
+
+$page_security = 'SA_CRM_SETTINGS';
+$path_to_root  = '../..';
+
+include_once($path_to_root . '/includes/session.inc');
+include_once($path_to_root . '/includes/ui.inc');
+include_once($path_to_root . '/crm/includes/crm_constants.inc');
+include_once($path_to_root . '/crm/includes/db/crm_settings_db.inc');
+include_once($path_to_root . '/crm/includes/db/crm_campaigns_entity.inc');
+
+page(_($help_context = 'CRM Email Templates'));
+
+simple_page_mode(false);
+
+if ($Mode == 'ADD_ITEM' || $Mode == 'UPDATE_ITEM') {
+    if (empty(trim($_POST['name']))) {
+        display_error(_('Template name cannot be empty.'));
+        set_focus('name');
+    } elseif (empty(trim($_POST['subject']))) {
+        display_error(_('Subject cannot be empty.'));
+        set_focus('subject');
+    } else {
+        $template_data = array(
+            'name' => $_POST['name'],
+            'subject' => $_POST['subject'],
+            'body_html' => $_POST['body_html'],
+            'category' => $_POST['category'],
+            'variables_json' => $_POST['variables_json'],
+        );
+        if ($selected_id != '') {
+            $template_data['active'] = check_value('active');
+            crm_campaigns_entity::modify_email_template($selected_id, $template_data);
+            display_notification(_('Email template has been updated.'));
+        } else {
+            crm_campaigns_entity::create_email_template($template_data);
+            display_notification(_('New email template has been added.'));
+        }
+        $Mode = 'RESET';
+    }
+}
+
+if ($Mode == 'Delete') {
+    if (key_in_foreign_table($selected_id, 'crm_campaign_emails', 'email_template_id')) {
+        display_error(_('Cannot delete this template — it is referenced by existing campaign email(s).'));
+    } else {
+        crm_campaigns_entity::remove_email_template($selected_id);
+        display_notification(_('Email template has been deleted.'));
+    }
+    $Mode = 'RESET';
+}
+
+if ($Mode == 'RESET') {
+    $selected_id = '';
+    $_POST['name'] = '';
+    $_POST['subject'] = '';
+    $_POST['body_html'] = '';
+    $_POST['category'] = '';
+    $_POST['variables_json'] = '';
+}
+
+//--------------------------------------------------------------------------
+
+start_form();
+
+start_table(TABLESTYLE, "width='80%'");
+
+$th = array(_('ID'), _('Name'), _('Subject'), _('Category'), _('Active'), '', '');
+table_header($th);
+
+$result = crm_campaigns_entity::email_templates(true);
+$k = 0;
+while ($myrow = db_fetch($result)) {
+    alt_table_row_color($k);
+    label_cell($myrow['id']);
+    label_cell($myrow['name']);
+    label_cell($myrow['subject']);
+    label_cell($myrow['category'] ?: '-');
+    label_cell($myrow['active'] ? _('Yes') : _('No'));
+    edit_button_cell('Edit' . $myrow['id'], _('Edit'));
+    delete_button_cell('Delete' . $myrow['id'], _('Delete'));
+    end_row();
+}
+end_table(1);
+
+start_table(TABLESTYLE2);
+
+if ($selected_id != '') {
+    if ($Mode == 'Edit') {
+        $myrow = crm_campaigns_entity::email_template($selected_id);
+        $_POST['name'] = $myrow['name'];
+        $_POST['subject'] = $myrow['subject'];
+        $_POST['body_html'] = $myrow['body_html'];
+        $_POST['category'] = $myrow['category'];
+        $_POST['variables_json'] = $myrow['variables_json'];
+        $_POST['active'] = $myrow['active'];
+    }
+    hidden('selected_id', $selected_id);
+}
+
+text_row_ex(_('Template Name:'), 'name', 40, 100);
+text_row_ex(_('Subject:'), 'subject', 60, 255);
+text_row_ex(_('Category:'), 'category', 30, 50);
+textarea_row(_('Body (HTML):'), 'body_html', null, 80, 10);
+
+label_row(_('Available Variables:'),
+    '<small>{contact_name}, {company_name}, {email}, {phone}, {lead_title}, {salesperson_name}</small>');
+
+text_row_ex(_('Variables JSON:'), 'variables_json', 60, 255);
+
+if ($selected_id != '') {
+    check_row(_('Active:'), 'active', null);
+}
+
+end_table(1);
+
+submit_add_or_update_center($selected_id == '', '', 'both');
+
+end_form();
+end_page();
+

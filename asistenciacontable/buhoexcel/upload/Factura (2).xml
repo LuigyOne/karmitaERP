@@ -1,0 +1,598 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<autorizacion>
+<estado>AUTORIZADO</estado>
+<numeroAutorizacion>0908202401119174319500120010020000254851234567816</numeroAutorizacion>
+<fechaAutorizacion>2024-08-10T14:32:11-05:00</fechaAutorizacion>
+<ambiente>PRODUCCIÓN</ambiente>
+<comprobante><![CDATA[<?xml version="1.0" encoding="UTF-8"?><factura id="comprobante" version="2.1.0">
+	<infoTributaria>
+		<ambiente>2</ambiente>
+		<tipoEmision>1</tipoEmision>
+		<razonSocial>INDULOJA CIA. LTDA.</razonSocial>
+		<nombreComercial>INDULOJA CIA. LTDA.</nombreComercial>
+		<ruc>1191743195001</ruc>
+		<claveAcceso>0908202401119174319500120010020000254851234567816</claveAcceso>
+		<codDoc>01</codDoc>
+		<estab>001</estab>
+		<ptoEmi>002</ptoEmi>
+		<secuencial>000025485</secuencial>
+		<dirMatriz>ZAMORA HUAYCO ALTO, VIA A EL CARMEN</dirMatriz>
+		<agenteRetencion>1</agenteRetencion>
+	</infoTributaria>
+<infoFactura>
+	<fechaEmision>09/08/2024</fechaEmision>
+	<dirEstablecimiento>ZAMORA HUAYCO ALTO, VIA A EL CARMEN</dirEstablecimiento>
+	<obligadoContabilidad>SI</obligadoContabilidad>
+	<tipoIdentificacionComprador>04</tipoIdentificacionComprador>
+	<razonSocialComprador>SANCHEZ ESCOBAR RONALD</razonSocialComprador>
+	<identificacionComprador>1759318114001</identificacionComprador>
+	<direccionComprador>SANTO DOMINGO, CALLE CEIBO SN URBANIZACION MUTUALISTA BENALCAZAR FRENTE AL PARQUE</direccionComprador>
+	<totalSinImpuestos>4700</totalSinImpuestos>
+	<totalDescuento>0</totalDescuento>
+	<totalConImpuestos>
+		<totalImpuesto>
+		<codigo>2</codigo>
+		<codigoPorcentaje>4</codigoPorcentaje>
+		<baseImponible>4700</baseImponible>
+			<tarifa>15</tarifa>
+		<valor>705</valor>
+		</totalImpuesto>
+	</totalConImpuestos>
+	<propina>0</propina>
+	<importeTotal>5405</importeTotal>
+	<moneda>DOLAR</moneda>
+	<pagos>
+		<pago>
+		<formaPago>20</formaPago>
+		<total>5405</total>
+		<plazo>30</plazo>
+		<unidadTiempo>dias</unidadTiempo>
+		</pago>
+	</pagos>
+</infoFactura>
+<detalles>
+	<detalle>
+		<codigoPrincipal>7862127130755</codigoPrincipal>
+		<descripcion>**FORSPORT UVA 500 ML (15UND)</descripcion>
+		<cantidad>20</cantidad>
+		<precioUnitario>4.5</precioUnitario>
+		<descuento>0</descuento>
+		<precioTotalSinImpuesto>90</precioTotalSinImpuesto>
+		<detallesAdicionales>
+			<detAdicional nombre="bultos" valor="20"/>
+			<detAdicional nombre="unidades" valor="0"/>
+			<detAdicional nombre="noteunidad" valor="PACAS"/>
+		</detallesAdicionales>
+	<impuestos>
+		<impuesto>
+			<codigo>2</codigo>
+			<codigoPorcentaje>4</codigoPorcentaje>
+			<tarifa>15</tarifa>
+			<baseImponible>90</baseImponible>
+			<valor>13.5</valor>
+		</impuesto>
+	</impuestos>
+	</detalle>
+	<detalle>
+		<codigoPrincipal>7862127130762</codigoPrincipal>
+		<descripcion>**FORSPORT FRUTOS ROJOS 500 ML (15UND)</descripcion>
+		<cantidad>20</cantidad>
+		<precioUnitario>4.5</precioUnitario>
+		<descuento>0</descuento>
+		<precioTotalSinImpuesto>90</precioTotalSinImpuesto>
+		<detallesAdicionales>
+			<detAdicional nombre="bultos" valor="20"/>
+			<detAdicional nombre="unidades" valor="0"/>
+			<detAdicional nombre="noteunidad" valor="PACAS"/>
+		</detallesAdicionales>
+	<impuestos>
+		<impuesto>
+			<codigo>2</codigo>
+			<codigoPorcentaje>4</codigoPorcentaje>
+			<tarifa>15</tarifa>
+			<baseImponible>90</baseImponible>
+			<valor>13.5</valor>
+		</impuesto>
+	</impuestos>
+	</detalle>
+	<detalle>
+		<codigoPrincipal>7862127130823</codigoPrincipal>
+		<descripcion>**CHICHA MORADA DE LA ABUELA 400 ML (8 UND)</descripcion>
+		<cantidad>40</cantidad>
+		<precioUnitario>2.4</precioUnitario>
+		<descuento>0</descuento>
+		<precioTotalSinImpuesto>96</precioTotalSinImpuesto>
+		<detallesAdicionales>
+			<detAdicional nombre="bultos" valor="40"/>
+			<detAdicional nombre="unidades" valor="0"/>
+			<detAdicional nombre="noteunidad" valor="PACAS"/>
+		</detallesAdicionales>
+	<impuestos>
+		<impuesto>
+			<codigo>2</codigo>
+			<codigoPorcentaje>4</codigoPorcentaje>
+			<tarifa>15</tarifa>
+			<baseImponible>96</baseImponible>
+			<valor>14.4</valor>
+		</impuesto>
+	</impuestos>
+	</detalle>
+	<detalle>
+		<codigoPrincipal>7862127130489</codigoPrincipal>
+		<descripcion>**TE VERDE 400 ML (8 UND)</descripcion>
+		<cantidad>100</cantidad>
+		<precioUnitario>2.4</precioUnitario>
+		<descuento>0</descuento>
+		<precioTotalSinImpuesto>240</precioTotalSinImpuesto>
+		<detallesAdicionales>
+			<detAdicional nombre="bultos" valor="100"/>
+			<detAdicional nombre="unidades" valor="0"/>
+			<detAdicional nombre="noteunidad" valor="PACA"/>
+		</detallesAdicionales>
+	<impuestos>
+		<impuesto>
+			<codigo>2</codigo>
+			<codigoPorcentaje>4</codigoPorcentaje>
+			<tarifa>15</tarifa>
+			<baseImponible>240</baseImponible>
+			<valor>36</valor>
+		</impuesto>
+	</impuestos>
+	</detalle>
+	<detalle>
+		<codigoPrincipal>7862127130496</codigoPrincipal>
+		<descripcion>**TE NEGRO 400 ML (8 UND)</descripcion>
+		<cantidad>100</cantidad>
+		<precioUnitario>2.4</precioUnitario>
+		<descuento>0</descuento>
+		<precioTotalSinImpuesto>240</precioTotalSinImpuesto>
+		<detallesAdicionales>
+			<detAdicional nombre="bultos" valor="100"/>
+			<detAdicional nombre="unidades" valor="0"/>
+			<detAdicional nombre="noteunidad" valor="PACA"/>
+		</detallesAdicionales>
+	<impuestos>
+		<impuesto>
+			<codigo>2</codigo>
+			<codigoPorcentaje>4</codigoPorcentaje>
+			<tarifa>15</tarifa>
+			<baseImponible>240</baseImponible>
+			<valor>36</valor>
+		</impuesto>
+	</impuestos>
+	</detalle>
+	<detalle>
+		<codigoPrincipal>7862127130519</codigoPrincipal>
+		<descripcion>**FRUTOS TROPICALES 400 ML (8 UND)</descripcion>
+		<cantidad>100</cantidad>
+		<precioUnitario>2.4</precioUnitario>
+		<descuento>0</descuento>
+		<precioTotalSinImpuesto>240</precioTotalSinImpuesto>
+		<detallesAdicionales>
+			<detAdicional nombre="bultos" valor="100"/>
+			<detAdicional nombre="unidades" valor="0"/>
+			<detAdicional nombre="noteunidad" valor="PACA"/>
+		</detallesAdicionales>
+	<impuestos>
+		<impuesto>
+			<codigo>2</codigo>
+			<codigoPorcentaje>4</codigoPorcentaje>
+			<tarifa>15</tarifa>
+			<baseImponible>240</baseImponible>
+			<valor>36</valor>
+		</impuesto>
+	</impuestos>
+	</detalle>
+	<detalle>
+		<codigoPrincipal>7862127130830</codigoPrincipal>
+		<descripcion>**FLOR DE JAMAICA Y ARANDANOS 400 ML (8UND)</descripcion>
+		<cantidad>100</cantidad>
+		<precioUnitario>2.4</precioUnitario>
+		<descuento>0</descuento>
+		<precioTotalSinImpuesto>240</precioTotalSinImpuesto>
+		<detallesAdicionales>
+			<detAdicional nombre="bultos" valor="100"/>
+			<detAdicional nombre="unidades" valor="0"/>
+			<detAdicional nombre="noteunidad" valor="PACAS"/>
+		</detallesAdicionales>
+	<impuestos>
+		<impuesto>
+			<codigo>2</codigo>
+			<codigoPorcentaje>4</codigoPorcentaje>
+			<tarifa>15</tarifa>
+			<baseImponible>240</baseImponible>
+			<valor>36</valor>
+		</impuesto>
+	</impuestos>
+	</detalle>
+	<detalle>
+		<codigoPrincipal>7862127130526</codigoPrincipal>
+		<descripcion>**FRESA LIMON 400 ML (8 UND)</descripcion>
+		<cantidad>100</cantidad>
+		<precioUnitario>2.4</precioUnitario>
+		<descuento>0</descuento>
+		<precioTotalSinImpuesto>240</precioTotalSinImpuesto>
+		<detallesAdicionales>
+			<detAdicional nombre="bultos" valor="100"/>
+			<detAdicional nombre="unidades" valor="0"/>
+			<detAdicional nombre="noteunidad" valor="PACA"/>
+		</detallesAdicionales>
+	<impuestos>
+		<impuesto>
+			<codigo>2</codigo>
+			<codigoPorcentaje>4</codigoPorcentaje>
+			<tarifa>15</tarifa>
+			<baseImponible>240</baseImponible>
+			<valor>36</valor>
+		</impuesto>
+	</impuestos>
+	</detalle>
+	<detalle>
+		<codigoPrincipal>7862127130502</codigoPrincipal>
+		<descripcion>**HORCHATA 400 ML (8 UND)</descripcion>
+		<cantidad>125</cantidad>
+		<precioUnitario>2.4</precioUnitario>
+		<descuento>0</descuento>
+		<precioTotalSinImpuesto>300</precioTotalSinImpuesto>
+		<detallesAdicionales>
+			<detAdicional nombre="bultos" valor="125"/>
+			<detAdicional nombre="unidades" valor="0"/>
+			<detAdicional nombre="noteunidad" valor="PACAS"/>
+		</detallesAdicionales>
+	<impuestos>
+		<impuesto>
+			<codigo>2</codigo>
+			<codigoPorcentaje>4</codigoPorcentaje>
+			<tarifa>15</tarifa>
+			<baseImponible>300</baseImponible>
+			<valor>45</valor>
+		</impuesto>
+	</impuestos>
+	</detalle>
+	<detalle>
+		<codigoPrincipal>7868000535419</codigoPrincipal>
+		<descripcion>**TE VERDE 475 ML (6 UND)</descripcion>
+		<cantidad>50</cantidad>
+		<precioUnitario>3.6</precioUnitario>
+		<descuento>0</descuento>
+		<precioTotalSinImpuesto>180</precioTotalSinImpuesto>
+		<detallesAdicionales>
+			<detAdicional nombre="bultos" valor="50"/>
+			<detAdicional nombre="unidades" valor="0"/>
+			<detAdicional nombre="noteunidad" valor="PACAS"/>
+		</detallesAdicionales>
+	<impuestos>
+		<impuesto>
+			<codigo>2</codigo>
+			<codigoPorcentaje>4</codigoPorcentaje>
+			<tarifa>15</tarifa>
+			<baseImponible>180</baseImponible>
+			<valor>27</valor>
+		</impuesto>
+	</impuestos>
+	</detalle>
+	<detalle>
+		<codigoPrincipal>7868000535426</codigoPrincipal>
+		<descripcion>**TE NEGRO 475 ML (6 UND)</descripcion>
+		<cantidad>50</cantidad>
+		<precioUnitario>3.6</precioUnitario>
+		<descuento>0</descuento>
+		<precioTotalSinImpuesto>180</precioTotalSinImpuesto>
+		<detallesAdicionales>
+			<detAdicional nombre="bultos" valor="50"/>
+			<detAdicional nombre="unidades" valor="0"/>
+			<detAdicional nombre="noteunidad" valor="PACAS"/>
+		</detallesAdicionales>
+	<impuestos>
+		<impuesto>
+			<codigo>2</codigo>
+			<codigoPorcentaje>4</codigoPorcentaje>
+			<tarifa>15</tarifa>
+			<baseImponible>180</baseImponible>
+			<valor>27</valor>
+		</impuesto>
+	</impuestos>
+	</detalle>
+	<detalle>
+		<codigoPrincipal>7861000292085</codigoPrincipal>
+		<descripcion>**FRUTOS TROPICALES 475 ML (6 UND)</descripcion>
+		<cantidad>50</cantidad>
+		<precioUnitario>3.6</precioUnitario>
+		<descuento>0</descuento>
+		<precioTotalSinImpuesto>180</precioTotalSinImpuesto>
+		<detallesAdicionales>
+			<detAdicional nombre="bultos" valor="50"/>
+			<detAdicional nombre="unidades" valor="0"/>
+			<detAdicional nombre="noteunidad" valor="PACAS"/>
+		</detallesAdicionales>
+	<impuestos>
+		<impuesto>
+			<codigo>2</codigo>
+			<codigoPorcentaje>4</codigoPorcentaje>
+			<tarifa>15</tarifa>
+			<baseImponible>180</baseImponible>
+			<valor>27</valor>
+		</impuesto>
+	</impuestos>
+	</detalle>
+	<detalle>
+		<codigoPrincipal>7861000261456</codigoPrincipal>
+		<descripcion>**HORCHATA 475 ML (6 UND)</descripcion>
+		<cantidad>85</cantidad>
+		<precioUnitario>3.6</precioUnitario>
+		<descuento>0</descuento>
+		<precioTotalSinImpuesto>306</precioTotalSinImpuesto>
+		<detallesAdicionales>
+			<detAdicional nombre="bultos" valor="85"/>
+			<detAdicional nombre="unidades" valor="0"/>
+			<detAdicional nombre="noteunidad" valor="PACAS"/>
+		</detallesAdicionales>
+	<impuestos>
+		<impuesto>
+			<codigo>2</codigo>
+			<codigoPorcentaje>4</codigoPorcentaje>
+			<tarifa>15</tarifa>
+			<baseImponible>306</baseImponible>
+			<valor>45.9</valor>
+		</impuesto>
+	</impuestos>
+	</detalle>
+	<detalle>
+		<codigoPrincipal>7861000292078</codigoPrincipal>
+		<descripcion>**FRESA LIMON 475 ML (6 UND)</descripcion>
+		<cantidad>50</cantidad>
+		<precioUnitario>3.6</precioUnitario>
+		<descuento>0</descuento>
+		<precioTotalSinImpuesto>180</precioTotalSinImpuesto>
+		<detallesAdicionales>
+			<detAdicional nombre="bultos" valor="50"/>
+			<detAdicional nombre="unidades" valor="0"/>
+			<detAdicional nombre="noteunidad" valor="PACAS"/>
+		</detallesAdicionales>
+	<impuestos>
+		<impuesto>
+			<codigo>2</codigo>
+			<codigoPorcentaje>4</codigoPorcentaje>
+			<tarifa>15</tarifa>
+			<baseImponible>180</baseImponible>
+			<valor>27</valor>
+		</impuesto>
+	</impuestos>
+	</detalle>
+	<detalle>
+		<codigoPrincipal>7862127130724</codigoPrincipal>
+		<descripcion>**FLOR DE JAMAICA Y ARANDANOS 475 ML (6UND)</descripcion>
+		<cantidad>20</cantidad>
+		<precioUnitario>3.6</precioUnitario>
+		<descuento>0</descuento>
+		<precioTotalSinImpuesto>72</precioTotalSinImpuesto>
+		<detallesAdicionales>
+			<detAdicional nombre="bultos" valor="20"/>
+			<detAdicional nombre="unidades" valor="0"/>
+			<detAdicional nombre="noteunidad" valor="PACAS"/>
+		</detallesAdicionales>
+	<impuestos>
+		<impuesto>
+			<codigo>2</codigo>
+			<codigoPorcentaje>4</codigoPorcentaje>
+			<tarifa>15</tarifa>
+			<baseImponible>72</baseImponible>
+			<valor>10.8</valor>
+		</impuesto>
+	</impuestos>
+	</detalle>
+	<detalle>
+		<codigoPrincipal>7862127130403</codigoPrincipal>
+		<descripcion>**AGUA PURIFICADA FOREST 6 LT</descripcion>
+		<cantidad>200</cantidad>
+		<precioUnitario>0.7</precioUnitario>
+		<descuento>0</descuento>
+		<precioTotalSinImpuesto>140</precioTotalSinImpuesto>
+		<detallesAdicionales>
+			<detAdicional nombre="bultos" valor="200"/>
+			<detAdicional nombre="unidades" valor="0"/>
+		</detallesAdicionales>
+	<impuestos>
+		<impuesto>
+			<codigo>2</codigo>
+			<codigoPorcentaje>4</codigoPorcentaje>
+			<tarifa>15</tarifa>
+			<baseImponible>140</baseImponible>
+			<valor>21</valor>
+		</impuesto>
+	</impuestos>
+	</detalle>
+	<detalle>
+		<codigoPrincipal>7862127130687</codigoPrincipal>
+		<descripcion>**CHICHA MORADA DE LA ABUELA 475N ML (6 UND)</descripcion>
+		<cantidad>20</cantidad>
+		<precioUnitario>3.6</precioUnitario>
+		<descuento>0</descuento>
+		<precioTotalSinImpuesto>72</precioTotalSinImpuesto>
+		<detallesAdicionales>
+			<detAdicional nombre="bultos" valor="20"/>
+			<detAdicional nombre="unidades" valor="0"/>
+			<detAdicional nombre="noteunidad" valor="PACAS"/>
+		</detallesAdicionales>
+	<impuestos>
+		<impuesto>
+			<codigo>2</codigo>
+			<codigoPorcentaje>4</codigoPorcentaje>
+			<tarifa>15</tarifa>
+			<baseImponible>72</baseImponible>
+			<valor>10.8</valor>
+		</impuesto>
+	</impuestos>
+	</detalle>
+	<detalle>
+		<codigoPrincipal>7862127130601</codigoPrincipal>
+		<descripcion>**AGUA PURIFICADA FOREST 1LT (6UND)</descripcion>
+		<cantidad>416</cantidad>
+		<precioUnitario>1.5</precioUnitario>
+		<descuento>0</descuento>
+		<precioTotalSinImpuesto>624</precioTotalSinImpuesto>
+		<detallesAdicionales>
+			<detAdicional nombre="bultos" valor="416"/>
+			<detAdicional nombre="unidades" valor="0"/>
+			<detAdicional nombre="noteunidad" valor="PACAS"/>
+		</detallesAdicionales>
+	<impuestos>
+		<impuesto>
+			<codigo>2</codigo>
+			<codigoPorcentaje>4</codigoPorcentaje>
+			<tarifa>15</tarifa>
+			<baseImponible>624</baseImponible>
+			<valor>93.6</valor>
+		</impuesto>
+	</impuestos>
+	</detalle>
+	<detalle>
+		<codigoPrincipal>000037</codigoPrincipal>
+		<descripcion>**AGUA PURIFICADA FOREST 600 ML (15 UNID)</descripcion>
+		<cantidad>400</cantidad>
+		<precioUnitario>2.25</precioUnitario>
+		<descuento>0</descuento>
+		<precioTotalSinImpuesto>900</precioTotalSinImpuesto>
+		<detallesAdicionales>
+			<detAdicional nombre="bultos" valor="400"/>
+			<detAdicional nombre="unidades" valor="0"/>
+			<detAdicional nombre="noteunidad" valor="PACAS"/>
+		</detallesAdicionales>
+	<impuestos>
+		<impuesto>
+			<codigo>2</codigo>
+			<codigoPorcentaje>4</codigoPorcentaje>
+			<tarifa>15</tarifa>
+			<baseImponible>900</baseImponible>
+			<valor>135</valor>
+		</impuesto>
+	</impuestos>
+	</detalle>
+	<detalle>
+		<codigoPrincipal>7862127130656</codigoPrincipal>
+		<descripcion>**LEMON TREE 600 ML(15 UND)</descripcion>
+		<cantidad>20</cantidad>
+		<precioUnitario>4.5</precioUnitario>
+		<descuento>0</descuento>
+		<precioTotalSinImpuesto>90</precioTotalSinImpuesto>
+		<detallesAdicionales>
+			<detAdicional nombre="bultos" valor="20"/>
+			<detAdicional nombre="unidades" valor="0"/>
+			<detAdicional nombre="noteunidad" valor="PACAS"/>
+		</detallesAdicionales>
+	<impuestos>
+		<impuesto>
+			<codigo>2</codigo>
+			<codigoPorcentaje>4</codigoPorcentaje>
+			<tarifa>15</tarifa>
+			<baseImponible>90</baseImponible>
+			<valor>13.5</valor>
+		</impuesto>
+	</impuestos>
+	</detalle>
+</detalles>
+<infoAdicional>
+	<campoAdicional nombre="pIva">15</campoAdicional>
+	<campoAdicional nombre="Direccion">SANTO DOMINGO, CALLE CEIBO SN URBANIZACION MUTUALISTA BENALCAZAR FRENTE AL PARQUE</campoAdicional>
+	<campoAdicional nombre="Telefono">0980497115</campoAdicional>
+	<campoAdicional nombre="Email">administracion@avenapolaca.com.ec</campoAdicional>
+	<campoAdicional nombre="Vencimiento">08/09/2024</campoAdicional>
+	<campoAdicional nombre="Vendedor">SANTIAGO TORRES</campoAdicional>
+	<campoAdicional nombre="Zona">ZONA 1</campoAdicional>
+	<campoAdicional nombre="Comercio">SANCHEZ ESCOBAR RONALD</campoAdicional>
+	<campoAdicional nombre="Usuario">MIREYA A</campoAdicional>
+	<campoAdicional nombre="Ciudad">SANTO DOMINGO</campoAdicional>
+	<campoAdicional nombre="Codigo">1759318114001</campoAdicional>
+	<campoAdicional nombre="FormaPago">Credito</campoAdicional>
+</infoAdicional>
+<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:etsi="http://uri.etsi.org/01903/v1.3.2#" Id="Signature433212">
+<ds:SignedInfo Id="Signature-SignedInfo788339">
+<ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+<ds:SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+<ds:Reference Id="SignedPropertiesID891882" Type="http://uri.etsi.org/01903#SignedProperties" URI="#Signature433212-SignedProperties555486">
+<ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+<ds:DigestValue>ngISxl9Q4rRNL2rTGqel7rUo9a4=</ds:DigestValue>
+</ds:Reference>
+<ds:Reference URI="#Certificate1277942">
+<ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+<ds:DigestValue>s1ea+FyC4Z7p4OCVhKVdjcJhVNc=</ds:DigestValue>
+</ds:Reference>
+<ds:Reference Id="Reference-ID-722036" URI="#comprobante">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+<ds:DigestValue>XWA7obwhqEjiDXC8v7T0rAzbv2k=</ds:DigestValue>
+</ds:Reference>
+</ds:SignedInfo>
+<ds:SignatureValue Id="SignatureValue522583">
+aFb6u+MARxUYxHX/4Dy7zN5n5vfRDgT+hDSx4Jui9Xmnge0nHYaKO5VqThlyuAOnmFX9p5tQST++
+jLkJu8odzcXAu6qaOAVI29/KVg6N31PaWVI/SBPhtq4/2li2p6My3OdndtGm1GUEaMaIZWanPiPY
+6MDd3kfq4Cls/BtuGCvNwIXCFLCCJFCIbBQvoOGhXn0r2W6cBUpYj5AgE3bzVqonXutPW98fpncO
+AGwpQT5Wuor3F2QtNTpl5gzUcjDQQOCVIZuDRLMKtsWGl/as7wDCCCpnRI8auIKm4Ys+JmQVyBNb
+QPuRYQ2+A6PJjLge0FaqEJCdiTbjB2y3I6cstA==
+</ds:SignatureValue>
+<ds:KeyInfo Id="Certificate1277942">
+<ds:X509Data>
+<ds:X509Certificate>
+MIIJOjCCByKgAwIBAgIIAzQNdqFfn+AwDQYJKoZIhvcNAQELBQAwgbgxCzAJBgNVBAYTAkVTMUQw
+QgYDVQQHDDtCYXJjZWxvbmEgKHNlZSBjdXJyZW50IGFkZHJlc3MgYXQgd3d3LnVhbmF0YWNhLmNv
+bS9hZGRyZXNzKTEWMBQGA1UECgwNVUFOQVRBQ0EgUy5BLjEVMBMGA1UECwwMVFNQLVVBTkFUQUNB
+MRowGAYDVQQDDBFVQU5BVEFDQSBDQTEgMjAxNjEYMBYGA1UEYQwPVkFURVMtQTY2NzIxNDk5MB4X
+DTIzMTIwMjEyMDgwMFoXDTI1MTIwMTEyMDgwMFowgdAxCzAJBgNVBAYTAkVDMRowGAYDVQQKDBFJ
+TkRVTE9KQSBDSUEgTFREQTEYMBYGA1UEDAwPR0VSRU5URSBHRU5FUkFMMRcwFQYDVQQEDA5CRVJN
+RU8gQkVMVFJBTjEUMBIGA1UEKgwLSVZBTiBEQU5JTE8xGTAXBgNVBAUTEElEQ0VDLTExMDM3NDU1
+MzMxIzAhBgNVBAMMGklWQU4gREFOSUxPIEJFUk1FTyBCRUxUUkFOMRwwGgYDVQRhDBNWQVRFQy0x
+MTkxNzQzMTk1MDAxMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjFcYLjMKcLa4i5Ao
+Zdg8XG7PhjVrrx5/adxAG1zDwt0LiboajugWrjXHrhHV2xm36886j4mQXLCA1pbpcxbVJnHNW5tR
+qjKICsWwILyft7yhpkXf/0tZ4MCakGvBBJcwFlMVR8CD85Y9kIVge0TbkdJrCJCpHu/DKev0MszU
+yPEkMz3Zft1Fhry9nPTCIdp2FlXkV90Q/JoIFHcwMgfDNrHbpdDT7kHHmHypzJGjQWgAUTfyyHME
+UfmTANdokMFMp++gMvjCkT/h4IZ3CWE/gwgsBYO0v9KWfysKOWp2nAs0FiqRRW2tS66yeBPGT6xH
+/MKp44mSekRBoiS3fDx0awIDAQABo4IELDCCBCgwgdcGCCsGAQUFBwEBBIHKMIHHMFUGCCsGAQUF
+BzAChklodHRwOi8vd3d3LnVhbmF0YWNhLmNvbS9wdWJsaWMvZG93bmxvYWQvdHNwX2NlcnRpZmlj
+YXRlcy9zdWJvcmRpbmF0ZTEuY3J0MDYGCCsGAQUFBzABhipodHRwOi8vb2NzcDEudWFuYXRhY2Eu
+Y29tL3B1YmxpYy9wa2kvb2NzcC8wNgYIKwYBBQUHMAGGKmh0dHA6Ly9vY3NwMi51YW5hdGFjYS5j
+b20vcHVibGljL3BraS9vY3NwLzAdBgNVHQ4EFgQU7UbOg+ZB0bC14PIOCPhEBxpoxWEwDAYDVR0T
+AQH/BAIwADAfBgNVHSMEGDAWgBQtce+wY3/1/eCDIkR/RBAwgU9N5TCBkQYDVR0gBIGJMIGGMIGD
+BgwrBgEEAYO+QQEBAwEwczAtBggrBgEFBQcCARYhaHR0cHM6Ly9maXJtYXMuZWNsaXBzb2Z0LmNv
+bS9kcGMvMEIGCCsGAQUFBwICMDYMNENlcnRpZmljYWRvIGRlIHJlcHJlc2VudGFudGUgZW4gYXJj
+aGl2byBkZSBFQ0xJUFNPRlQwgY8GA1UdHwSBhzCBhDBAoD6gPIY6aHR0cDovL2NybDEudWFuYXRh
+Y2EuY29tL3B1YmxpYy9wa2kvY3JsL0NBMXN1Ym9yZGluYWRhLmNybDBAoD6gPIY6aHR0cDovL2Ny
+bDIudWFuYXRhY2EuY29tL3B1YmxpYy9wa2kvY3JsL0NBMXN1Ym9yZGluYWRhLmNybDAOBgNVHQ8B
+Af8EBAMCBeAwHQYDVR0lBBYwFAYIKwYBBQUHAwIGCCsGAQUFBwMEMIIBpwYDVR0RBIIBnjCCAZqB
+EmluZHVsb2phQGdtYWlsLmNvbaAbBgsrBgEEAYO+QWYDAaAMDAoxMTAzNzQ1NTMzoBwGCysGAQQB
+g75BZgMCoA0MC0lWQU4gREFOSUxPoBcGCysGAQQBg75BZgMDoAgMBkJFUk1FT6AYBgsrBgEEAYO+
+QWYDBKAJDAdCRUxUUkFOoCAGCysGAQQBg75BZgMFoBEMD0dFUkVOVEUgR0VORVJBTKAjBgsrBgEE
+AYO+QWYDB6AUDBJaQU1PUkEgSFVBWUNPIEFMVE+gHwYLKwYBBAGDvkFmAwigEAwOMDA1OTM5ODc4
+NDI3MDCgFQYLKwYBBAGDvkFmAwmgBgwETE9KQaAiBgsrBgEEAYO+QWYDCqATDBFJTkRVTE9KQSBD
+SUEgTFREQaAeBgsrBgEEAYO+QWYDC6APDA0xMTkxNzQzMTk1MDAxoBMGCysGAQQBg75BZgMMoAQM
+AkVDoCQGCysGAQQBg75BZgMyoBUME1JFUFJFU0VOVEFOVEUgTEVHQUygGAYLKwYBBAGDvkFmAzOg
+CQwHQVJDSElWTzANBgkqhkiG9w0BAQsFAAOCAgEAFH0R9GFntvpmI8w93nrv3YTCdsfz3F5VJnAK
+2reuiTZEciuwtgUfAu/xAszGRuJQBWvsBqmSVAwZlHn8Wf/fO+IMJPyve5RzBYZky3unAS+t1J/R
+HkahSifkjSmq0kVWOP0DwUna94wlXqWiZ8/475484nvb/7Rqnbvl35tCPWAKc5baDsP1qvIqgW5L
+47lG2ns6wsiydDwHeDd/c99yf44DRaLXdswSRegbIjkI+KNu595njhp41V2HLE7td/SycwTvu4bZ
+Qqi3nfgqmTJhnD6ScwTn3kL01XlBO+PP6bWJ7K2sQeQUL+gwkZo9akSwFW7KMRoXSTg5nQqW0g64
+H2L/Pz/BAjYcXfGCt4aL3vHzVPTurDv/6SdIchpS1B57jJyUeSuNxhXR8X6FAbmQTw9//ub4BCfm
+lDvgJJoRqNhlD5Luu8eEeNuC9RzN3791pGAUtp2daXgmasbucQKto+dW5RwB4/0meCIn0A/xD/n3
+3DSsYuyqETqsfRU9eWYnN6KrcBCUjjGP5sF24M08Vp5fppJbwI/jncQHLAkLC9qkwIVKdfZ5RzXa
+ZOKBAGBz/LkzibxU9q8pyWpoirOB8UL0ayaRKcgrvjAYgOYNUMxm+88I7xihFrZFfmWIU4ca2WsR
+oPf+UFat9jwcU9ZweXWtYIOtDni9FTSw0zwErPI=
+</ds:X509Certificate>
+</ds:X509Data>
+<ds:KeyValue>
+<ds:RSAKeyValue>
+<ds:Modulus>
+jFcYLjMKcLa4i5AoZdg8XG7PhjVrrx5/adxAG1zDwt0LiboajugWrjXHrhHV2xm36886j4mQXLCA
+1pbpcxbVJnHNW5tRqjKICsWwILyft7yhpkXf/0tZ4MCakGvBBJcwFlMVR8CD85Y9kIVge0TbkdJr
+CJCpHu/DKev0MszUyPEkMz3Zft1Fhry9nPTCIdp2FlXkV90Q/JoIFHcwMgfDNrHbpdDT7kHHmHyp
+zJGjQWgAUTfyyHMEUfmTANdokMFMp++gMvjCkT/h4IZ3CWE/gwgsBYO0v9KWfysKOWp2nAs0FiqR
+RW2tS66yeBPGT6xH/MKp44mSekRBoiS3fDx0aw==
+</ds:Modulus>
+<ds:Exponent>AQAB</ds:Exponent>
+</ds:RSAKeyValue>
+</ds:KeyValue>
+</ds:KeyInfo>
+<ds:Object Id="Signature433212-Object585575"><etsi:QualifyingProperties Target="#Signature433212"><etsi:SignedProperties Id="Signature433212-SignedProperties555486"><etsi:SignedSignatureProperties><etsi:SigningTime>2024-08-10T14:32:10-05:00</etsi:SigningTime><etsi:SigningCertificate><etsi:Cert><etsi:CertDigest><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><ds:DigestValue>EOUdHmdRc4P4L+yQIJM5WHtJYYY=</ds:DigestValue></etsi:CertDigest><etsi:IssuerSerial><ds:X509IssuerName>2.5.4.97=#0c0f56415445532d413636373231343939,CN=UANATACA CA1 2016,OU=TSP-UANATACA,O=UANATACA S.A.,L=Barcelona (see current address at www.uanataca.com/address),C=ES</ds:X509IssuerName><ds:X509SerialNumber>230824284067438560</ds:X509SerialNumber></etsi:IssuerSerial></etsi:Cert></etsi:SigningCertificate></etsi:SignedSignatureProperties><etsi:SignedDataObjectProperties><etsi:DataObjectFormat ObjectReference="#Reference-ID-722036"><etsi:Description>contenido comprobante</etsi:Description><etsi:MimeType>text/xml</etsi:MimeType></etsi:DataObjectFormat></etsi:SignedDataObjectProperties></etsi:SignedProperties></etsi:QualifyingProperties></ds:Object></ds:Signature></factura>]]></comprobante>
+<mensajes/>
+</autorizacion>
+

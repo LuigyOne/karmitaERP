@@ -1,0 +1,376 @@
+<?php
+/**********************************************************************
+    Copyright (C) NotrinosERP.
+    Released under the terms of the GNU General Public License, GPL,
+    as published by the Free Software Foundation, either version 3
+    of the License, or (at your option) any later version.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    See the License here <http://www.gnu.org/licenses/gpl-3.0.html>.
+***********************************************************************/
+$page_security = 'SA_LEAVEREQUEST';
+$path_to_root = "../..";
+include($path_to_root . "/includes/session.inc");
+include_once($path_to_root . '/includes/ui.inc');
+include_once($path_to_root . '/hrm/includes/hrm_ui.inc');
+include_once($path_to_root . '/hrm/includes/db/leave_request_db.inc');
+include_once($path_to_root . '/hrm/includes/db/leave_balance_db.inc');
+include_once($path_to_root . '/hrm/includes/hrm_security.inc');
+include_once($path_to_root . '/hrm/includes/db/employee_person_worker_db.inc');
+
+/**
+ * Calculate leave day count from date range.
+ *
+ * @param string $from_date
+ * @param string $to_date
+ * @param int $half_day
+ * @return float
+ */
+function leave_request_days_between($from_date, $to_date, $half_day=0) {
+    $from_sql = date2sql($from_date);
+    $to_sql = date2sql($to_date);
+    $days = (strtotime($to_sql) - strtotime($from_sql)) / 86400 + 1;
+    if ($days < 0)
+        $days = 0;
+    if ((int)$half_day > 0)
+        $days = min(1, $days) * 0.5;
+
+    return (float)$days;
+}
+
+/**
+ * Validate leave request date boundaries before save.
+ *
+ * @param string $from_date
+ * @param string $to_date
+ * @param int $half_day
+ * @return bool
+ */
+function leave_request_has_valid_date_range($from_date, $to_date, $half_day)
+{
+    if ((int)$half_day > 0 && date2sql($from_date) !== date2sql($to_date)) {
+        display_error(_('Half-day leave requests must use the same From and To date.'));
+        set_focus('to_date');
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Resolve one Leave Request history Employee name at the page-level instant.
+ *
+ * Leave Request remains authorized by SA_LEAVEREQUEST, which is deliberately
+ * not a Person/Worker identity-read capability. Canonical naming is therefore
+ * additive only when the same principal independently holds an existing
+ * approved identity-read area. The approval draft and all write paths continue
+ * using the exact legacy employee_name and employee_id values.
+ *
+ * @param string $employee_ref
+ * @param string $legacy_name
+ * @return string
+ */
+function leave_request_authoritative_history_name($employee_ref, $legacy_name) {
+    global $leave_request_history_as_of;
+
+    $legacy_name = (string)$legacy_name;
+    if (trim((string)$employee_ref) === '' || $leave_request_history_as_of === false)
+        return $legacy_name;
+
+    $identity = get_hrm_person_worker_report_name_as_of(
+        $employee_ref, $leave_request_history_as_of
+    );
+    if (!is_array($identity) || empty($identity['canonical_linked']))
+        return $legacy_name;
+
+    $first_name = isset($identity['first_name']) ? trim((string)$identity['first_name']) : '';
+    $middle_name = isset($identity['middle_name']) ? trim((string)$identity['middle_name']) : '';
+    $last_name = isset($identity['last_name']) ? trim((string)$identity['last_name']) : '';
+    $canonical_name = trim($first_name.' '.($middle_name !== '' ? $middle_name.' ' : '').$last_name);
+
+    return $canonical_name === '' ? $legacy_name : $canonical_name;
+}
+
+/**
+ * Resolve one Leave Request Employee selector label at the page-level instant.
+ *
+ * Leave Request remains authorized by SA_LEAVEREQUEST, which deliberately does
+ * not grant Person/Worker identity-read access. Canonical naming is additive
+ * only when the same principal independently holds an approved identity-read
+ * capability. The shared selector cohort/search/order, submitted employee_id,
+ * approval draft and all leave/workflow mutation keys remain exact legacy
+ * values; this helper changes selector presentation only.
+ *
+ * @param array $row
+ * @return string
+ */
+function leave_request_authoritative_employee_list($row) {
+    global $leave_request_history_as_of;
+
+    $legacy_label = _format_employee_list($row);
+    if (!is_array($row) || !isset($row[0]) || trim((string)$row[0]) === ''
+        || $leave_request_history_as_of === false)
+        return $legacy_label;
+
+    $identity = get_hrm_person_worker_report_name_as_of(
+        $row[0], $leave_request_history_as_of
+    );
+    if (!is_array($identity) || empty($identity['canonical_linked']))
+        return $legacy_label;
+
+    $first_name = isset($identity['first_name']) ? trim((string)$identity['first_name']) : '';
+    $middle_name = isset($identity['middle_name']) ? trim((string)$identity['middle_name']) : '';
+    $last_name = isset($identity['last_name']) ? trim((string)$identity['last_name']) : '';
+    $canonical_name = trim($first_name.' '.($middle_name !== '' ? $middle_name.' ' : '').$last_name);
+    if ($canonical_name === '')
+        return $legacy_label;
+
+    return (user_show_codes() ? ((string)$row[0].' - ') : '').$canonical_name;
+}
+
+$js = '';
+
+if (user_use_date_picker())
+	$js .= get_js_date_picker();
+
+page(_($help_context = "Leave Request"), false, false, '', $js);
+
+simple_page_mode(false);
+
+$status_labels = array(0 => _('Pending'), 1 => _('Approved'), 2 => _('Rejected'), 3 => _('Cancelled'));
+
+if ($Mode == 'ADD_ITEM' || $Mode == 'UPDATE_ITEM') {
+    if ($_POST['employee_id'] == '' || $_POST['employee_id'] == ALL_TEXT) {
+        display_error(_('Employee is required.'));
+        set_focus('employee_id');
+    } elseif ((int)$_POST['leave_id'] <= 0) {
+        display_error(_('Leave type is required.'));
+        set_focus('leave_id');
+    } elseif (!is_date($_POST['from_date']) || !is_date($_POST['to_date'])) {
+        display_error(_('From and To dates are required.'));
+    } elseif (date1_greater_date2($_POST['from_date'], $_POST['to_date'])) {
+        display_error(_('To date must be on or after From date.'));
+    } elseif (!leave_request_has_valid_date_range($_POST['from_date'], $_POST['to_date'], (int)$_POST['half_day'])) {
+    } else {
+        $days = leave_request_days_between($_POST['from_date'], $_POST['to_date'], (int)$_POST['half_day']);
+        if ($days <= 0) {
+            display_error(_('Leave days must be greater than zero.'));
+            set_focus('from_date');
+        } elseif ($selected_id != '') {
+            update_leave_request(
+                $selected_id,
+                (int)$_POST['leave_id'],
+                $_POST['from_date'],
+                $_POST['to_date'],
+                $days,
+                (int)$_POST['half_day'],
+                $_POST['reason']
+            );
+            display_notification(_('Leave request has been updated.'));
+            if (isset($Ajax))
+                $Ajax->activate('_page_body');
+        } else {
+            begin_transaction();
+            $request_id = add_leave_request(
+                $_POST['employee_id'],
+                (int)$_POST['leave_id'],
+                $_POST['from_date'],
+                $_POST['to_date'],
+                $days,
+                (int)$_POST['half_day'],
+                $_POST['reason']
+            );
+
+            // Check if approval workflow is required for leave requests
+            $leave_draft_data = array(
+                'request_id'  => $request_id,
+                'employee_id' => $_POST['employee_id'],
+                'leave_id'    => (int)$_POST['leave_id'],
+                'from_date'   => $_POST['from_date'],
+                'to_date'     => $_POST['to_date'],
+                'days'        => $days,
+                'half_day'    => (int)$_POST['half_day'],
+                'reason'      => $_POST['reason'],
+            );
+
+            // Fetch names for display
+            $leave_request_row = get_leave_request($request_id);
+            if ($leave_request_row) {
+                $leave_draft_data['employee_name'] = $leave_request_row['employee_name'];
+                $leave_draft_data['leave_name']    = $leave_request_row['leave_name'];
+            }
+
+            $approval_service = get_approval_workflow_service();
+            $approval_result = $approval_service->isApprovalRequired(
+                ST_LEAVE_REQUEST,
+                $days
+            ) ? $approval_service->submit(
+                ST_LEAVE_REQUEST,
+                $leave_draft_data,
+                $days,
+                array('summary' => sprintf(_('Leave: %s, %s days'), $_POST['from_date'], $days))
+            ) : false;
+
+            if ($approval_result !== false && $approval_result['status'] === 'auto_approved') {
+                commit_transaction();
+                display_notification(_('Leave request has been created and automatically approved.'));
+                $Mode = 'RESET';
+            } elseif ($approval_result !== false) {
+                if ($approval_result['status'] === 'pending') {
+                    commit_transaction();
+                    display_notification(sprintf(
+                        _('Leave request has been submitted for approval. Draft #%d, Reference: %s'),
+                        $approval_result['draft_id'],
+                        $approval_result['reference']
+                    ));
+                } else {
+                    cancel_transaction();
+                    display_error(_('Leave approval submission failed. No leave request was created.'));
+                }
+            } else {
+                if (execute_approved_leave_request($leave_draft_data, 0, 0) === false) {
+                    cancel_transaction();
+                    display_error(_('Leave approval failed. No leave request was created.'));
+                } else {
+                    commit_transaction();
+                    display_notification(_('Leave request has been created and auto-approved under the direct policy.'));
+                }
+            }
+            if (isset($Ajax))
+                $Ajax->activate('_page_body');
+        }
+        $Mode = 'RESET';
+    }
+}
+
+if ($Mode == 'Delete') {
+    $request = get_leave_request($selected_id);
+    if ($request && (int)$request['status'] != 0) {
+        display_error(_('Only pending requests can be cancelled.'));
+    } elseif ($request) {
+        $core_draft = find_approval_draft_for_hrm_request(
+            ST_LEAVE_REQUEST,
+            (int)$selected_id
+        );
+        if ($core_draft) {
+            $approval_service = get_approval_workflow_service();
+            $result = $approval_service->cancel(
+                (int)$core_draft['draft_id'],
+                _('Cancelled from the leave request page.')
+            );
+            if (!isset($result['status']) || $result['status'] === 'error')
+                display_error(isset($result['message'])
+                    ? $result['message']
+                    : _('The leave request could not be cancelled.'));
+            else
+                display_notification($result['message']);
+        } else {
+            $sql = "DELETE FROM ".TB_PREF."leave_requests WHERE request_id = "
+                .db_escape((int)$selected_id)." AND status = 0";
+            db_query($sql, 'could not delete leave request');
+            display_notification(_('Selected pending request without an approval draft has been deleted.'));
+        }
+    } else {
+        display_error(_('Leave request was not found.'));
+    }
+    if (isset($Ajax))
+        $Ajax->activate('_page_body');
+    $Mode = 'RESET';
+}
+
+if ($Mode == 'RESET') {
+    $selected_id = '';
+    $_POST['selected_id'] = '';
+    $_POST['employee_id'] = '';
+    $_POST['leave_id'] = 0;
+    $_POST['from_date'] = Today();
+    $_POST['to_date'] = Today();
+    $_POST['half_day'] = 0;
+    $_POST['reason'] = '';
+}
+
+$leave_request_history_as_of = hrm_person_worker_utc_now();
+hrm_log_restricted_employee_projection('employee_leave_request_history');
+hrm_log_restricted_employee_projection('employee_leave_request_selector');
+
+start_form();
+
+start_outer_table();
+
+table_section(1);
+if ($selected_id != '' && $Mode == 'Edit') {
+    $myrow = get_leave_request($selected_id);
+    if ($myrow && (int)$myrow['status'] == 0) {
+        $_POST['employee_id'] = $myrow['employee_id'];
+        $_POST['leave_id'] = $myrow['leave_id'];
+        $_POST['from_date'] = sql2date($myrow['from_date']);
+        $_POST['to_date'] = sql2date($myrow['to_date']);
+        $_POST['half_day'] = $myrow['half_day'];
+        $_POST['reason'] = $myrow['reason'];
+        hidden('selected_id', $selected_id);
+    } else {
+        display_error(_('Only pending requests can be edited.'));
+        $Mode = 'RESET';
+    }
+}
+
+start_row();
+label_cell(_('Employee:'));
+employees_list_cells(null, 'employee_id', null, false, false, false, false, array(
+    'layout_class' => 'combo-layout-equal',
+    'format' => 'leave_request_authoritative_employee_list'
+));
+end_row();
+leave_types_list_row(_('Leave Type:'), 'leave_id');
+$half_day_options = array(
+    0 => _('Full Day(s)'),
+    1 => _('First Half'),
+    2 => _('Second Half')
+);
+array_selector_row(_('Half-day option:'), 'half_day', null, $half_day_options);
+
+table_section(2);
+date_row(_('From Date:'), 'from_date');
+date_row(_('To Date:'), 'to_date');
+textarea_row(_('Reason:'), 'reason', null, 50, 3);
+
+end_outer_table();
+submit_add_or_update_center($selected_id == '', '', 'both');
+
+br();
+
+start_table(TABLESTYLE_DATA, 'class="extra-height-data-table"');
+$th = array(_('ID'), _('Employee'), _('Leave Type'), _('From'), _('To'), _('Days'), _('Reason'), _('Status'), _('Requested On'), '', '');
+table_header($th);
+
+$result = get_leave_requests(null, '', '', '');
+$k = 0;
+while ($row = db_fetch($result)) {
+    alt_table_row_color($k);
+    label_cell($row['request_id']);
+    label_cell($row['employee_id'] . ' ' . leave_request_authoritative_history_name(
+        $row['employee_id'], $row['employee_name']
+    ));
+    label_cell($row['leave_name']);
+    label_cell(sql2date($row['from_date']));
+    label_cell(sql2date($row['to_date']));
+    qty_cell($row['days']);
+    // XSS protection for Reason field
+    label_cell(htmlspecialchars(isset($row['reason']) ? (string)$row['reason'] : '', ENT_QUOTES, 'UTF-8'));
+    label_cell($status_labels[(int)$row['status']]);
+    label_cell(sql2date(substr($row['request_date'], 0, 10)));
+    if ((int)$row['status'] == 0) {
+        edit_button_cell('Edit' . $row['request_id'], _('Edit'));
+        delete_button_cell('Delete' . $row['request_id'], _('Cancel'));
+    } else {
+        label_cell('');
+        label_cell('');
+    }
+    end_row();
+}
+end_table(1);
+
+end_form();
+
+end_page();

@@ -1,0 +1,411 @@
+/* ======================================================================
+   Scrollable Data Table Wrapper for TABLESTYLE_DATA
+   Automatically wraps every start_table(TABLESTYLE_DATA) call.
+   ====================================================================== */
+
+:root {
+	--erp-data-table-height: 480px;
+	--erp-data-table-border-color: var(--modern-color-border, #e4e4e7);
+	--erp-data-table-radius: var(--modern-radius-sm, 8px);
+}
+
+/* ── Extra height for data table ── */
+.erp-data-table:has(table.extra-height-data-table) {
+	--erp-data-table-height: 640px;
+}
+
+/*	── FIELDSET ── */
+fieldset {
+	margin: 10px 0;
+	padding: 10px 15px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+}
+
+legend {
+	font-weight: 600;
+}
+
+.erp-data-table {
+	position: relative;
+	max-height: var(--erp-data-table-height);
+	overflow-y: auto;
+	overflow-x: auto;
+	border: 1px solid var(--erp-data-table-border-color);
+	border-radius: var(--erp-data-table-radius);
+	background: var(--modern-color-surface, #fff);
+	margin-bottom: 12px;
+}
+
+.erp-data-table > center {
+	display: contents;
+}
+
+.erp-data-table table {
+	min-width: 100%;
+	margin: 0;
+}
+
+/* ── Sticky header inside scrollable wrapper ── */
+.erp-data-table table thead th,
+.erp-data-table table .tableheader td,
+.erp-data-table table .tableheader th,
+.erp-data-table table tr.tableheader td,
+.erp-data-table table tr.tableheader th {
+	position: sticky;
+	top: 0;
+	z-index: 3;
+	background: #e8eefb;
+	color: #1e293b;
+	font-weight: 700;
+	border-bottom: 1px solid #c7d3ea;
+}
+
+/* ── Hidden scrollbars (Chrome, Edge, Safari) ── */
+.erp-data-table {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+
+.erp-data-table::-webkit-scrollbar,
+.erp-data-table::-webkit-scrollbar-track,
+.erp-data-table::-webkit-scrollbar-thumb,
+.erp-data-table::-webkit-scrollbar-corner,
+.erp-data-table::-webkit-scrollbar-button {
+	display: none;
+	width: 0 !important;
+	height: 0 !important;
+	background: transparent;
+}
+
+/* ── Scroll Hint Overlay ── */
+.erp-data-table-hint {
+	position: sticky;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	z-index: 10;
+	height: 80px;
+	margin-top: -80px;
+	display: none;
+	align-items: flex-end;
+	justify-content: center;
+	pointer-events: none;
+	background: linear-gradient(
+        to top,
+        rgba(30, 41, 59, 0.8) 0%,
+        rgba(30, 41, 59, 0.16) 55%,
+        transparent 100%
+    );
+}
+
+.erp-data-table-hint.is-visible {
+	display: flex;
+}
+
+.erp-data-table-hint-text {
+	padding: 4px 16px 8px;
+	font-size: 15px;
+	font-weight: 600;
+	color: #fff;
+	text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+	letter-spacing: 0.02em;
+	pointer-events: none;
+}
+
+/* ── Custom JS Scrollbar (replaces native) ── */
+.erp-custom-scrollbar-track {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 6px;
+	height: 100%;
+	background: transparent;
+	z-index: 11;
+	pointer-events: none;
+	opacity: 0;
+}
+
+.erp-custom-scrollbar-track.is-visible {
+	opacity: 1 !important;
+}
+
+.erp-custom-scrollbar-thumb {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 6px;
+	min-height: 24px;
+	border-radius: 3px;
+	background: rgba(100, 116, 139, 0.45);
+	transition: background 0.15s ease;
+}
+
+.erp-custom-scrollbar-thumb:hover {
+	background: rgba(71, 85, 105, 0.65);
+}
+
+table {
+	border-collapse: collapse;
+	max-width: 100%;
+}
+
+table td,
+table th {
+	padding: 6px 8px;
+	border-color: #dbe3ef;
+	font-size: 12px;
+}
+
+table td.stickyheader {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+}
+
+table.tablestyle,
+table.tablestyle2,
+table.tablestyle_noborder,
+table.tableheader {
+	background: var(--modern-color-surface);
+	border: 1px solid var(--modern-color-border);
+	border-radius: var(--modern-radius-sm);
+}
+
+.evenrow {
+	background-color: #f7f9fd;
+}
+
+.oddrow {
+	background-color: #ffffff;
+}
+
+.data-grid-container {
+	overflow-x: auto;
+	margin-bottom: 12px;
+	border-radius: 10px;
+}
+
+table.data-grid {
+	width: 100%;
+	min-width: 760px;
+	border-collapse: separate;
+	border-spacing: 0;
+}
+
+table.data-grid tr.tableheader td,
+table.data-grid tr th,
+table.data-grid .tableheader {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	background: #e8eefb;
+	color: #1e293b;
+	font-weight: 700;
+	border-bottom: 1px solid #c7d3ea;
+}
+
+td.tableheader, td.tableheader2 {
+	font-weight: 700;
+	color: var(--modern-color-text);
+	background: #e8eefb;
+}
+
+/* Keep sortable header controls visually identical to plain header labels. */
+table.data-grid tr.tableheader .navibutton,
+table.data-grid .tableheader .navibutton,
+table.data-grid th .navibutton {
+	padding: 0;
+	margin: 0;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	font-weight: 700;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	line-height: 1.2;
+	cursor: pointer;
+}
+
+table.data-grid tr.tableheader .navibutton:hover,
+table.data-grid .tableheader .navibutton:hover,
+table.data-grid th .navibutton:hover {
+	background: transparent;
+	color: inherit;
+	text-decoration: underline;
+}
+
+table.data-grid tr.tableheader .navibutton:focus,
+table.data-grid .tableheader .navibutton:focus,
+table.data-grid th .navibutton:focus {
+	outline: 1px dashed #7c8fb3;
+	outline-offset: 2px;
+}
+
+table.data-grid tr.evenrow td {
+	background-color: #f8faff;
+}
+
+table.data-grid tr.oddrow td {
+	background-color: #ffffff;
+}
+
+#items_table table.tablestyle {
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0;
+	border: 1px solid var(--modern-color-border);
+	border-radius: 10px;
+	overflow: auto;
+}
+
+#items_table input,
+#items_table select,
+#items_table textarea {
+	min-width: 70px;
+}
+
+@media (max-width: 1024px) {
+	#items_table {
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	#items_table table.tablestyle,
+	#items_table table.tablestyle2,
+	#items_table table.tablestyle_noborder,
+	#items_table table.tableheader {
+		display: table;
+		width: max-content;
+		min-width: 100%;
+	}
+
+	#items_table table.tablestyle {
+		overflow: visible;
+	}
+}
+
+#items_table table.tablestyle > tbody > tr:first-child > td {
+	background: #e8eefb;
+	color: #1e293b;
+	font-weight: 700;
+	border-bottom: 1px solid #c7d3ea;
+	padding-top: 8px;
+	padding-bottom: 8px;
+}
+
+#items_table table.tablestyle > tbody > tr:first-child > td:first-child {
+	border-top-left-radius: 10px;
+}
+
+#items_table table.tablestyle > tbody > tr:first-child > td:last-child {
+	border-top-right-radius: 10px;
+}
+
+table.data-grid tr:hover td {
+	background-color: #eef4ff;
+}
+
+table.data-grid tr.overduebg td,
+table.data-grid tr.stockmankobg td,
+table.tablestyle tr.stockmankobg td,
+table.tablestyle td.stockmankofg,
+table.tablestyle tr.stockmankofg td {
+	background-color: #fff1f2;
+	color: #9f1239;
+}
+
+.pager-sort-icon {
+	margin-right: 0;
+	color: #475569;
+	font-size: 0.85em;
+	vertical-align: middle;
+}
+
+.pager-nav {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+	padding: 6px 2px;
+}
+
+.pager-nav-controls {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex-wrap: wrap;
+}
+
+.pager-nav .navibutton {
+	padding: 4px 8px;
+	border-radius: 8px;
+	border: 1px solid #b6c5e3;
+	background: #f4f7ff;
+	color: #1e293b;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.pager-nav .navibutton:hover:not([disabled]) {
+	background: #e6edff;
+}
+
+.pager-nav .navibutton[disabled] {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+
+.pager-select-wrap {
+	display: inline-flex;
+	align-items: center;
+	padding: 0 4px;
+}
+
+.pager-select-wrap .list_container {
+	min-width: 0;
+	width: 5.2em;
+}
+
+.pager-select-wrap select {
+	height: 26px;
+	min-width: 0;
+	width: 100%;
+	padding: 2px 22px 2px 8px;
+	font-size: 11px;
+	line-height: 1.1;
+	border-radius: 6px;
+}
+
+.alert.overduefg,
+.alert.stockmankofg {
+	background: #fff1f2;
+	border-color: #fecdd3;
+	color: #9f1239;
+}
+
+.alert.overduefg a,
+.alert.stockmankofg a {
+	color: #9f1239;
+	font-weight: 600;
+}
+
+.pager-summary {
+	font-size: 11px;
+	color: #334155;
+}
+
+@media (max-width: 768px) {
+	table.data-grid {
+		min-width: 640px;
+	}
+
+	.pager-nav {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+}

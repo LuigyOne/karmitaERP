@@ -1,0 +1,61 @@
+Puedes generar un código de barras Code 128B puro en PHP sin librerías externas utilizando la extensión nativa GD para dibujar las líneas y convirtiendo el texto mediante la tabla de patrones binarios del estándar.
+Código PHP nativo para Code 128B (SVG o HTML/CSS)
+Una forma todavía más fácil y ligera, sin depender de la librería GD de PHP, es generar el código de barras directamente como un contenedor de elementos HTML/CSS (divs) o una imagen SVG incrustada.
+Aquí tienes una función compacta en PHP que genera el patrón Code 128B y lo imprime directamente usando bloques verticales (líneas negras y blancas):
+
+Si necesitas que la salida sea un archivo de imagen real (PNG/JPG) usando la librería GD de PHP en lugar de HTML, dímelo y te adapto el script para guardarlo o renderizarlo directamente con header('Content-Type: image/png').
+
+
+function generarCode128B_HTML($texto) {
+    // Tabla simplificada de patrones Code 128B (valores ASCII 32 a 127)
+    // Cada patrón tiene 6 anchuras de barras/espacios (del 1 al 4)
+    $patrones = [
+        ' ' => '212222', '!' => '222122', '"' => '222221', '#' => '121223', '$' => '121322',
+        '%' => '131222', '&' => '122213', "'" => '122312', '(' => '132212', ')' => '221213',
+        '*' => '221312', '+' => '231212', ',' => '112232', '-' => '122132', '.' => '122231',
+        '/' => '113222', '0' => '123122', '1' => '123221', '2' => '223112', '3' => '223211',
+        '4' => '212312', '5' => '221321', '6' => '312122', '7' => '321122', '8' => '321221',
+        '9' => '211232', ':' => '211331', ';' => '231131', '<' => '213113', '=' => '213311',
+        '>' => '213131', '?' => '311123', '@' => '311321', 'A' => '321131', 'B' => '312213',
+        'C' => '312312', 'D' => '313212', 'E' => '322113', 'F' => '322311', 'G' => '323112',
+        'H' => '311223', 'I' => '311322', 'J' => '321213', 'K' => '321312', 'L' => '312132',
+        'M' => '312231', 'N' => '313122', 'O' => '313221', 'P' => '221132', 'Q' => '221231',
+        'R' => '213212', 'S' => '223112', 'T' => '312113', 'U' => '312311', 'V' => '322112',
+        'W' => '314111', 'X' => '221411', 'Y' => '431111', 'Z' => '111224', '[' => '111422',
+        '\\' => '121124', ']' => '121421', '^' => '141122', '_' => '141221', '`' => '112214',
+        'a' => '112412', 'b' => '122114', 'c' => '122411', 'd' => '114122', 'e' => '114221',
+        'f' => '241112', 'g' => '241211', 'h' => '412112', 'i' => '412211', 'j' => '421112',
+        'k' => '421211', 'l' => '212141', 'm' => '214121', 'n' => '412121', 'o' => '111143',
+        'p' => '111341', 'q' => '131141', 'r' => '114113', 's' => '114311', 't' => '411113',
+        'u' => '411311', 'v' => '113141', 'w' => '114131', 'x' => '311141', 'y' => '411131',
+        'z' => '211412', '{' => '211214', '|' => '211412', '}' => '2331112' 
+    ];
+
+    // Inicio Code 128B (Start B = patrón por defecto aprox. "211412")
+    $binario = "211412"; 
+
+    // Traducir cada carácter
+    $longitud = strlen($texto);
+    for ($i = 0; $i < $longitud; $i++) {
+        $char = $texto[$i];
+        $binario .= $patrones[$char] ?? '212222'; // fallback si no existe
+    }
+
+    // Parada (Stop pattern Code 128 = "23311112") + barra final
+    $binario .= "23311112";
+
+    // Renderizar visualmente con HTML/CSS (líneas alternadas negra/blanca)
+    echo '<div style="display:inline-block; font-size:0; background:white; padding:5px;">';
+    $esNegra = true;
+    for ($i = 0; $i < strlen($binario); $i++) {
+        $ancho = intval($binario[$i]) * 2; // Factor de escala de 2px por módulo
+        $color = $esNegra ? 'black' : 'white';
+        echo "<div style='display:inline-block; width:{$ancho}px; height:50px; background:{$color};'></div>";
+        $esNegra = !$esNegra;
+    }
+    echo '</div>';
+    echo '<div style="font-family:monospace; font-size:14px; letter-spacing:2px; margin-top:2px;">' . htmlspecialchars($texto) . '</div>';
+}
+
+// Ejemplo de uso:
+generarCode128B_HTML("TEST-1234");

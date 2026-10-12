@@ -1,0 +1,50 @@
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "-05:00";
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `pwa_auditar`
+--
+
+CREATE TABLE `pwa_auditar` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uuid` varchar(36) DEFAULT NULL COMMENT 'Identificador único universal para control y sincronización offline',
+  `accion_codigo` varchar(10) NOT NULL DEFAULT '' COMMENT 'Código corto de acción (LG, RT, CC, MV1, GT1, etc.)',
+  `accion_nombre` varchar(60) NOT NULL DEFAULT '' COMMENT 'Descripción de la acción (Login, Escoger Zona, Preventa, etc.)',
+  `usuario` varchar(100) NOT NULL DEFAULT '' COMMENT 'Correo o identificación del usuario / vendedor',
+  `fecha_hora_creacion` datetime NOT NULL COMMENT 'Momento exacto en que ocurrió la acción en campo',
+  `ruta_codigo` varchar(20) DEFAULT NULL COMMENT 'Código de ruta (ej. SDR001)',
+  `ruta_descripcion` varchar(100) DEFAULT NULL COMMENT 'Descripción de la ruta (ej. Santo Domingo 1)',
+  `n_cliente_ruta` int(11) DEFAULT NULL COMMENT 'Número de orden o secuencia del cliente en ruta',
+  `id_cliente` varchar(20) DEFAULT NULL COMMENT 'Identificador o código del cliente',
+  `codigo_sucursal` varchar(20) DEFAULT NULL COMMENT 'Código de sucursal o branch_code',
+  `pedido_factura_ref` varchar(50) DEFAULT NULL COMMENT 'Referencia del documento (Número de orden, factura o recibo)',
+  `valor` decimal(10,2) DEFAULT NULL COMMENT 'Monto financiero asociado (preventas, cobros, gastos)',
+  `anulada` enum('Si','No') DEFAULT 'No' COMMENT 'Indicador de anulación de la operación',
+  `observaciones` text DEFAULT NULL COMMENT 'Detalles, notas o justificaciones de la operación',
+  `foto_url` varchar(255) DEFAULT NULL COMMENT 'Ruta o enlace del archivo fotográfico adjunto',
+  `latitud` decimal(10,8) DEFAULT NULL COMMENT 'Coordenada de latitud GPS',
+  `longitud` decimal(11,8) DEFAULT NULL COMMENT 'Coordenada de longitud GPS',
+  `sync_status` enum('PENDIENTE','SINCRONIZADO','ERROR') DEFAULT 'SINCRONIZADO' COMMENT 'Estado de sincronización PWA offline',
+  `device_info` varchar(255) DEFAULT NULL COMMENT 'Información del dispositivo o navegador del vendedor',
+  `fecha_hora_actualiza` datetime DEFAULT NULL COMMENT 'Última fecha de modificación o consolidación en servidor',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uuid` (`uuid`),
+  KEY `idx_usuario_fecha` (`usuario`, `fecha_hora_creacion`),
+  KEY `idx_accion` (`accion_codigo`),
+  KEY `idx_ruta` (`ruta_codigo`),
+  KEY `idx_sync` (`sync_status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
