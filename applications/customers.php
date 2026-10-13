@@ -36,6 +36,9 @@ class CustomersApp extends application {
 		$this->add_lapp_function(0, _('&Delivery Against Sales Orders'), 'sales/inquiry/sales_orders_view.php?OutstandingOnly=1', 'SA_SALESDELIVERY', MENU_TRANSACTION);
 		$this->add_lapp_function(0, _('&Invoice Against Sales Delivery'), 'sales/inquiry/sales_deliveries_view.php?OutstandingOnly=1', 'SA_SALESINVOICE', MENU_TRANSACTION);
 
+		// === NUEVO MÓDULO DE PREVENTAS PWA ===
+		$this->add_lapp_function(0, _('Procesar &Preventas PWA (Lotes)'), 'sales/preventas_batch.php', 'SA_SALESINVOICE', MENU_TRANSACTION);		
+
 		$this->add_rapp_function(0, _('&Template Delivery'), 'sales/inquiry/sales_orders_view.php?DeliveryTemplates=Yes', 'SA_SALESDELIVERY', MENU_TRANSACTION);
 		$this->add_rapp_function(0, _('&Template Invoice'), 'sales/inquiry/sales_orders_view.php?InvoiceTemplates=Yes', 'SA_SALESINVOICE', MENU_TRANSACTION);
 		$this->add_rapp_function(0, _('&Create and Print Recurrent Invoices'), 'sales/create_recurrent_invoices.php?', 'SA_SALESINVOICE', MENU_TRANSACTION);
