@@ -13,7 +13,7 @@ include_once($path_to_root . "/sales/includes/cart_class.inc");
 include_once($path_to_root . "/includes/data_checks.inc");
 include_once($path_to_root . "/sales/includes/sales_ui.inc"); 
 include_once($path_to_root . "/sales/includes/ui/sales_order_ui.inc");
-include_once($path_to_root . "/inventory/includes/inventory_db.inc"); // Incluido para cálculos de stock nativos
+include_once($path_to_root . "/inventory/includes/inventory_db.inc");
 
 $js = '';
 if ($SysPrefs->use_popup_windows)
@@ -64,7 +64,7 @@ if (isset($_GET['ViewPreventa']) && is_numeric($_GET['ViewPreventa'])) {
         label_cell("<strong>" . _("Bodega Origen:") . "</strong>", "class='label'");
         label_cell($cabecera['bodega_origen']);
         label_cell("<strong>" . _("Estado:") . "</strong>", "class='label'");
-        $estado_txt = ($cabecera['estado'] == 1) ? _('Pendiente') : (($cabecera['estado'] == 2) ? _('Procesado') : _('Cancelado'));
+        $estado_txt = ($cabecera['estado'] == 1) ? _('Pendiente') : (($cabecera['estado'] == 2) ? _('Procesado') : (($cabecera['estado'] == 3) ? _('Anulado') : _('Cancelado')));
         label_cell($estado_txt);
         end_row();
         end_table(1);
@@ -114,7 +114,7 @@ if (isset($_GET['ViewPreventa']) && is_numeric($_GET['ViewPreventa'])) {
 page(_("Procesamiento de Preventas Móviles"), false, false, '', $js);
 
 // ----------------------------------------------------------------------
-// FUNCIÓN CENTRALIZADA DE FACTURACIÓN (USADA PARA INDIVIDUAL Y LOTE)
+// FUNCIÓN CENTRALIZADA DE FACTURACIÓN (SOLO PARA PENDIENTES ESTADO = 1)
 // ----------------------------------------------------------------------
 function procesar_preventa_a_factura($id_orden) {
     $id_orden = (int)$id_orden;
@@ -168,12 +168,24 @@ if (isset($_GET['InvoicePreventa']) && is_numeric($_GET['InvoicePreventa'])) {
     if ($factura_no) {
         meta_forward($path_to_root . "/sales/sales_order_entry.php", "AddedDI=" . $factura_no);
     } else {
-        display_error(_("No se pudo procesar la factura individual. Verifique el stock o los datos del cliente."));
+        display_error(_("No se pudo procesar la factura individual. Verifique que la preventa esté pendiente, el stock o los datos del cliente."));
     }
 }
 
 // ----------------------------------------------------------------------
-// 2. ACCIÓN: VALIDAR LOTE SELECCIONADO (INFORMATIVO OK / NO)
+// 2. ACCIÓN: ANULAR PEDIDO INDIVIDUAL (DESDE ICONO)
+// ----------------------------------------------------------------------
+if (isset($_GET['AnularPreventa']) && is_numeric($_GET['AnularPreventa'])) {
+    $id_orden = (int)$_GET['AnularPreventa'];
+    // Solo permitir anular si está pendiente (estado = 1)
+    $sql_anular = "UPDATE pwa_preventas_cabecera SET estado = 3 WHERE id_orden = " . db_escape($id_orden) . " AND estado = 1";
+    db_query($sql_anular, "No se pudo anular la preventa");
+    display_notification(_("La preventa ha sido marcada como Anulada correctamente."));
+    $Ajax->activate('_page_body');
+}
+
+// ----------------------------------------------------------------------
+// 3. ACCIÓN: VALIDAR LOTE SELECCIONADO (INFORMATIVO OK / NO)
 // ----------------------------------------------------------------------
 if (isset($_POST['ValidateBatch'])) {
     if (isset($_POST['procesar']) && is_array($_POST['procesar'])) {
@@ -213,7 +225,6 @@ if (isset($_POST['ValidateBatch'])) {
                     $req_qty = floatval($item['total_qty']);
                     $nombre_prod = !empty($item['desc_oficial']) ? $item['desc_oficial'] : $cod_item;
                     
-                    // Cálculo de stock oficial del ERP por ubicación
                     $stock_disponible = get_qoh_on_date($cod_item, $bodega_comun);
                     
                     if ($req_qty > $stock_disponible) {
@@ -242,7 +253,7 @@ if (isset($_POST['ValidateBatch'])) {
 }
 
 // ----------------------------------------------------------------------
-// 3. ACCIONES: PROCESAMIENTO POR LOTES Y CANCELACIÓN
+// 4. ACCIONES: PROCESAMIENTO POR LOTES Y CANCELACIÓN
 // ----------------------------------------------------------------------
 if (isset($_POST['ProcessBatch'])) {
     $facturas_generadas = 0;
@@ -268,17 +279,18 @@ if (isset($_POST['CancelOrders'])) {
     if (isset($_POST['procesar']) && is_array($_POST['procesar'])) {
         foreach ($_POST['procesar'] as $id_orden => $value) {
             if ($value == 1) {
-                db_query("UPDATE pwa_preventas_cabecera SET estado = 0 WHERE id_orden = " . db_escape($id_orden), "Error cancelando");
+                // Cambiar estado a Anulado (3)
+                db_query("UPDATE pwa_preventas_cabecera SET estado = 3 WHERE id_orden = " . db_escape($id_orden) . " AND estado = 1", "Error anulando");
                 $canceladas++;
             }
         }
-        display_notification(sprintf(_('%d órdenes seleccionadas han sido canceladas.'), $canceladas));
+        display_notification(sprintf(_('%d órdenes seleccionadas han sido anuladas.'), $canceladas));
     }
     $Ajax->activate('_page_body');
 }
 
 // ----------------------------------------------------------------------
-// 4. FORMULARIO MAESTRO Y FILTROS
+// 5. FORMULARIO MAESTRO Y FILTROS
 // ----------------------------------------------------------------------
 start_form();
 
@@ -309,7 +321,7 @@ echo "<td>" . _("Ruta/Zona:") . "</td><td>" . array_selector('area_id', $area_id
 
 locations_list_cells(_('Bodega:'), 'bodega_id', null, true, true);
 
-echo "<td>" . _("Estado:") . "</td><td>" . array_selector('estado_filtro', $estado_filtro, array('-1' => _('Todos'), '1' => _('Pendientes'), '2' => _('Procesados'), '0' => _('Cancelados')), array('select_submit'=> false)) . "</td>";
+echo "<td>" . _("Estado:") . "</td><td>" . array_selector('estado_filtro', $estado_filtro, array('-1' => _('Todos'), '1' => _('Pendientes'), '2' => _('Procesados'), '3' => _('Anulados'), '0' => _('Cancelados')), array('select_submit'=> false)) . "</td>";
 
 submit_cells('Search', _("Aplicar Filtro"), '', _('Filtrar pedidos'), 'default');
 end_row();
@@ -321,7 +333,7 @@ if (get_post('Search')) {
 }
 
 // ----------------------------------------------------------------------
-// 5. FUNCIONES FORMATEADORAS PARA DB_PAGER
+// 6. FUNCIONES FORMATEADORAS PARA DB_PAGER
 // ----------------------------------------------------------------------
 function fmt_cliente($row) {
     return $row['cod_clien'] . ' - ' . $row['cliente_nombre'];
@@ -348,10 +360,16 @@ function preventa_actions($row) {
     if ($row['estado'] == 1) {
         $edit_link = viewer_link(_("Editar Pedido"), "/sales/preventas_editar.php?EditPreventa=" . $row['id_orden'], "", "", ICON_EDIT);
         $link = pager_link(_('Facturar'), "/sales/preventas_batch.php?InvoicePreventa=" . $row['id_orden'], ICON_DOC);
+        // Botón o enlace de anulación individual
+        $anular_link = pager_link(_('Anular'), "/sales/preventas_batch.php?AnularPreventa=" . $row['id_orden'], ICON_DELETE);
         $chk = "<input type='checkbox' name='procesar[" . $row['id_orden'] . "]' value='1'>";
-        $output .= '&nbsp;&nbsp;' . $edit_link . '&nbsp;&nbsp;' . $link . '&nbsp;&nbsp;' . $chk;
+        $output .= '&nbsp;&nbsp;' . $edit_link . '&nbsp;&nbsp;' . $link . '&nbsp;&nbsp;' . $anular_link . '&nbsp;&nbsp;' . $chk;
+    } elseif ($row['estado'] == 2) {
+        $output .= '&nbsp;&nbsp;<span style="color:#008000; font-weight:bold;">' . _('Procesado') . '</span>';
+    } elseif ($row['estado'] == 3) {
+        $output .= '&nbsp;&nbsp;<span style="color:#cc0000; font-weight:bold;">' . _('Anulado') . '</span>';
     } else {
-        $output .= '&nbsp;&nbsp;<span style="color:#999;">' . _('Procesado') . '</span>';
+        $output .= '&nbsp;&nbsp;<span style="color:#999;">' . _('Cancelado') . '</span>';
     }
     
     $output .= '</div>';
@@ -359,7 +377,7 @@ function preventa_actions($row) {
 }
 
 // ----------------------------------------------------------------------
-// 6. TABLA DB_PAGER CON ORDENAMIENTO FIJO Y FORMATO DE FECHA
+// 7. TABLA DB_PAGER CON ORDENAMIENTO FIJO Y FORMATO DE FECHA
 // ----------------------------------------------------------------------
 $date_from = date2sql($_POST['TransAfterDate']);
 $date_to = date2sql($_POST['TransToDate']);
@@ -417,7 +435,7 @@ start_table(TABLESTYLE2);
 start_row();
 submit_cells('ValidateBatch', _("Validar Lote"), "colspan=1", _('Comprueba bodega y stock disponible del lote marcado'), false);
 submit_cells('ProcessBatch', _("Facturar Seleccionados"), "colspan=1", _('Genera Factura Directa en Lote'), true);
-submit_cells('CancelOrders', _("Cancelar Seleccionados"), "colspan=1", _('Rechaza órdenes marcadas'), true);
+submit_cells('CancelOrders', _("Anular Seleccionados"), "colspan=1", _('Marca las órdenes seleccionadas como anuladas'), true);
 end_row();
 end_table();
 
