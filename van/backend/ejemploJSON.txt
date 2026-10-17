@@ -1,0 +1,292 @@
+{
+    "fechaEmision": "07/02/2026",
+    "emisor": {
+        "ruc": "0000000000001",
+        "razonSocial": "CARLOS ANTONIO MERA LEON",
+        "nombreComercial": "MERA SERVICIOS",
+        "dirMatriz": "Guayaquil, Ecuador",
+        "dirEstablecimiento": "Guayaquil, Local Principal",
+        "establecimiento": "001",
+        "puntoEmision": "001",
+        "obligadoContabilidad": "SI"
+    },
+    "comprador": {
+        "tipoIdentificacion": "05",
+        "identificacion": "0957771397",
+        "razonSocial": "PEDRO GONZALEZ RUIZ",
+        "direccion": "Quito, Ecuador"
+    },
+    "detalles": [
+        {
+            "codigoPrincipal": "SERV001",
+            "codigoAuxiliar": "AUX001",
+            "descripcion": "Consultoría Empresarial 1",
+            "cantidad": 1,
+            "precioUnitario": 50.00,
+            "descuento": 10.00,
+            "impuestos": [
+                {
+                    "codigo": "2",
+                    "codigoPorcentaje": "4",
+                    "tarifa": 15,
+                    "baseImponible": 50.00,
+                    "valor": 7.50
+                }
+            ]
+        },
+        {
+            "codigoPrincipal": "SERV002",
+            "codigoAuxiliar": "AUX002",
+            "descripcion": "Consultoría Empresarial 2",
+            "cantidad": 2,
+            "precioUnitario": 30.00,
+            "descuento": 5.00,
+            "impuestos": [
+                {
+                    "codigo": "2",
+                    "codigoPorcentaje": "4",
+                    "tarifa": 15,
+                    "baseImponible": 55.00,
+                    "valor": 8.25
+                }
+            ]
+        },
+        {
+            "codigoPrincipal": "SERV003",
+            "codigoAuxiliar": "AUX003",
+            "descripcion": "Servicio Técnico 3",
+            "cantidad": 3,
+            "precioUnitario": 20.00,
+            "descuento": 0.00,
+            "impuestos": [
+                {
+                    "codigo": "2",
+                    "codigoPorcentaje": "4",
+                    "tarifa": 15,
+                    "baseImponible": 60.00,
+                    "valor": 9.00
+                }
+            ]
+        },
+        {
+            "codigoPrincipal": "SERV004",
+            "codigoAuxiliar": "AUX004",
+            "descripcion": "Servicio Técnico 4",
+            "cantidad": 1,
+            "precioUnitario": 100.00,
+            "descuento": 10.00,
+            "impuestos": [
+                {
+                    "codigo": "2",
+                    "codigoPorcentaje": "4",
+                    "tarifa": 15,
+                    "baseImponible": 90.00,
+                    "valor": 13.50
+                }
+            ]
+        },
+        {
+            "codigoPrincipal": "SERV005",
+            "codigoAuxiliar": "AUX005",
+            "descripcion": "Desarrollo Software 5",
+            "cantidad": 1,
+            "precioUnitario": 200.00,
+            "descuento": 20.00,
+            "impuestos": [
+                {
+                    "codigo": "2",
+                    "codigoPorcentaje": "4",
+                    "tarifa": 15,
+                    "baseImponible": 180.00,
+                    "valor": 27.00
+                }
+            ]
+        },
+        {
+            "codigoPrincipal": "SERV006",
+            "codigoAuxiliar": "AUX006",
+            "descripcion": "Desarrollo Software 6",
+            "cantidad": 2,
+            "precioUnitario": 80.00,
+            "descuento": 0.00,
+            "impuestos": [
+                {
+                    "codigo": "2",
+                    "codigoPorcentaje": "4",
+                    "tarifa": 15,
+                    "baseImponible": 160.00,
+                    "valor": 24.00
+                }
+            ]
+        },
+        {
+            "codigoPrincipal": "SERV007",
+            "codigoAuxiliar": "AUX007",
+            "descripcion": "Soporte Técnico 7",
+            "cantidad": 5,
+            "precioUnitario": 10.00,
+            "descuento": 0.00,
+            "impuestos": [
+                {
+                    "codigo": "2",
+                    "codigoPorcentaje": "4",
+                    "tarifa": 15,
+                    "baseImponible": 50.00,
+                    "valor": 7.50
+                }
+            ]
+        },
+        {
+            "codigoPrincipal": "SERV008",
+            "codigoAuxiliar": "AUX008",
+            "descripcion": "Soporte Técnico 8",
+            "cantidad": 2,
+            "precioUnitario": 25.00,
+            "descuento": 5.00,
+            "impuestos": [
+                {
+                    "codigo": "2",
+                    "codigoPorcentaje": "4",
+                    "tarifa": 15,
+                    "baseImponible": 45.00,
+                    "valor": 6.75
+                }
+            ]
+        },
+        {
+            "codigoPrincipal": "SERV009",
+            "codigoAuxiliar": "AUX009",
+            "descripcion": "Capacitación 9",
+            "cantidad": 1,
+            "precioUnitario": 150.00,
+            "descuento": 0.00,
+            "impuestos": [
+                {
+                    "codigo": "2",
+                    "codigoPorcentaje": "4",
+                    "tarifa": 15,
+                    "baseImponible": 150.00,
+                    "valor": 22.50
+                }
+            ]
+        },
+        {
+            "codigoPrincipal": "SERV010",
+            "codigoAuxiliar": "AUX010",
+            "descripcion": "Capacitación 10",
+            "cantidad": 1,
+            "precioUnitario": 120.00,
+            "descuento": 20.00,
+            "impuestos": [
+                {
+                    "codigo": "2",
+                    "codigoPorcentaje": "4",
+                    "tarifa": 15,
+                    "baseImponible": 100.00,
+                    "valor": 15.00
+                }
+            ]
+        },
+        {
+            "codigoPrincipal": "SERV011",
+            "codigoAuxiliar": "AUX011",
+            "descripcion": "Mantenimiento 11",
+            "cantidad": 3,
+            "precioUnitario": 40.00,
+            "descuento": 0.00,
+            "impuestos": [
+                {
+                    "codigo": "2",
+                    "codigoPorcentaje": "4",
+                    "tarifa": 15,
+                    "baseImponible": 120.00,
+                    "valor": 18.00
+                }
+            ]
+        },
+        {
+            "codigoPrincipal": "SERV012",
+            "codigoAuxiliar": "AUX012",
+            "descripcion": "Mantenimiento 12",
+            "cantidad": 2,
+            "precioUnitario": 60.00,
+            "descuento": 10.00,
+            "impuestos": [
+                {
+                    "codigo": "2",
+                    "codigoPorcentaje": "4",
+                    "tarifa": 15,
+                    "baseImponible": 110.00,
+                    "valor": 16.50
+                }
+            ]
+        },
+        {
+            "codigoPrincipal": "SERV013",
+            "codigoAuxiliar": "AUX013",
+            "descripcion": "Auditoría 13",
+            "cantidad": 1,
+            "precioUnitario": 300.00,
+            "descuento": 50.00,
+            "impuestos": [
+                {
+                    "codigo": "2",
+                    "codigoPorcentaje": "4",
+                    "tarifa": 15,
+                    "baseImponible": 250.00,
+                    "valor": 37.50
+                }
+            ]
+        },
+        {
+            "codigoPrincipal": "SERV014",
+            "codigoAuxiliar": "AUX014",
+            "descripcion": "Auditoría 14",
+            "cantidad": 1,
+            "precioUnitario": 180.00,
+            "descuento": 0.00,
+            "impuestos": [
+                {
+                    "codigo": "2",
+                    "codigoPorcentaje": "4",
+                    "tarifa": 15,
+                    "baseImponible": 180.00,
+                    "valor": 27.00
+                }
+            ]
+        },
+        {
+            "codigoPrincipal": "SERV015",
+            "codigoAuxiliar": "AUX015",
+            "descripcion": "Consultoría Final 15",
+            "cantidad": 2,
+            "precioUnitario": 75.00,
+            "descuento": 10.00,
+            "impuestos": [
+                {
+                    "codigo": "2",
+                    "codigoPorcentaje": "4",
+                    "tarifa": 15,
+                    "baseImponible": 140.00,
+                    "valor": 21.00
+                }
+            ]
+        }
+    ],
+    "pagos": [
+        {
+            "formaPago": "01",
+            "total": 0
+        }
+    ],
+    "infoAdicional": [
+        {
+            "nombre": "Vendedor",
+            "valor": "Carlos Mera"
+        },
+        {
+            "nombre": "Orden",
+            "valor": "ORD-2026-001"
+        }
+    ]
+}

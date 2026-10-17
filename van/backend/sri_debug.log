@@ -1,0 +1,299 @@
+[2026-10-14 17:53:43] INVOICE #52
+PAYLOAD: {
+    "ambiente": "1",
+    "tipoEmision": "1",
+    "fechaEmision": "14\/10\/2026",
+    "emisor": {
+        "ruc": "1759318114001",
+        "razonSocial": "SANCHEZ ESCOBAR RONALD",
+        "nombreComercial": "SANCHEZ VERA DISTRIBUCION",
+        "dirMatriz": "SANTO DOMINGO DE LOS TSACHILAS \/ SANTO DOMINGO \/ CHIGUILPE \/ CEIBO S\/N",
+        "dirEstablecimiento": "SANTO DOMINGO DE LOS TSACHILAS \/ SANTO DOMINGO \/ CHIGUILPE \/ CEIBO S\/N",
+        "establecimiento": "001",
+        "puntoEmision": "040",
+        "obligadoContabilidad": "SI"
+    },
+    "comprador": {
+        "tipoIdentificacion": "04",
+        "identificacion": "2390002710001",
+        "razonSocial": "CENTRO CRISTIANO NUEVA VIDA",
+        "direccion": "SANTO DOMINGO DE LOS TSACHILAS \/ SANTO DOMINGO \/ ZARACAY \/ MADRID LOTE 17 Y BERLIN"
+    },
+    "detalles": [
+        {
+            "codigoPrincipal": "AG600ML",
+            "codigoAuxiliar": "AG600ML",
+            "descripcion": "AGUA PURIFICADA FOREST 600ML",
+            "cantidad": 30,
+            "precioUnitario": 0.2,
+            "descuento": 0,
+            "impuestos": [
+                {
+                    "codigo": "2",
+                    "codigoPorcentaje": "4",
+                    "tarifa": 15,
+                    "baseImponible": 6,
+                    "valor": 0.9
+                }
+            ]
+        }
+    ],
+    "pagos": [
+        {
+            "formaPago": "01",
+            "total": 6
+        }
+    ],
+    "infoAdicional": [
+        {
+            "nombre": "Vendedor",
+            "valor": "Vendedor M\u00f3vil"
+        },
+        {
+            "nombre": "Tel\u00e9fono",
+            "valor": ""
+        },
+        {
+            "nombre": "Correo",
+            "valor": ""
+        },
+        {
+            "nombre": "Observaciones",
+            "valor": ""
+        }
+    ]
+}
+RESPONSE: {"success":false,"error":["infoAdicional.1.valor should not be empty","infoAdicional.2.valor should not be empty","infoAdicional.3.valor should not be empty"]}
+---------------------------------------------------
+[2026-10-14 18:01:50] INVOICE #53
+PAYLOAD: {
+    "ambiente": "1",
+    "tipoEmision": "1",
+    "fechaEmision": "14\/10\/2026",
+    "emisor": {
+        "ruc": "1759318114001",
+        "razonSocial": "SANCHEZ ESCOBAR RONALD",
+        "nombreComercial": "SANCHEZ VERA DISTRIBUCION",
+        "dirMatriz": "SANTO DOMINGO DE LOS TSACHILAS \/ SANTO DOMINGO \/ CHIGUILPE \/ CEIBO S\/N",
+        "dirEstablecimiento": "SANTO DOMINGO DE LOS TSACHILAS \/ SANTO DOMINGO \/ CHIGUILPE \/ CEIBO S\/N",
+        "establecimiento": "001",
+        "puntoEmision": "040",
+        "obligadoContabilidad": "SI"
+    },
+    "comprador": {
+        "tipoIdentificacion": "05",
+        "identificacion": "1718995762",
+        "razonSocial": "ZAMBRANO PROA\u00d1O JUAN CARLOS",
+        "direccion": "SANTO DOMINGO DE LOS TSACHILAS \/ SANTO DOMINGO \/ ABRAHAM CALAZACON \/ A LOTE 22"
+    },
+    "detalles": [
+        {
+            "codigoPrincipal": "AG600ML",
+            "codigoAuxiliar": "AG600ML",
+            "descripcion": "AGUA PURIFICADA FOREST 600ML",
+            "cantidad": 30,
+            "precioUnitario": 0.2,
+            "descuento": 0,
+            "impuestos": [
+                {
+                    "codigo": "2",
+                    "codigoPorcentaje": "4",
+                    "tarifa": 15,
+                    "baseImponible": 6,
+                    "valor": 0.9
+                }
+            ]
+        }
+    ],
+    "pagos": [
+        {
+            "formaPago": "01",
+            "total": 6
+        }
+    ],
+    "infoAdicional": [
+        {
+            "nombre": "Vendedor",
+            "valor": "Vendedor M\u00f3vil"
+        },
+        {
+            "nombre": "Tel\u00e9fono",
+            "valor": "0959840741"
+        },
+        {
+            "nombre": "Correo",
+            "valor": ""
+        },
+        {
+            "nombre": "Observaciones",
+            "valor": ""
+        }
+    ]
+}
+RESPONSE: {"success":false,"error":["infoAdicional.2.valor should not be empty","infoAdicional.3.valor should not be empty"]}
+---------------------------------------------------
+[2026-10-14 18:09:36] INVOICE #54
+PAYLOAD: {
+    "ambiente": "1",
+    "tipoEmision": "1",
+    "fechaEmision": "14\/10\/2026",
+    "emisor": {
+        "ruc": "1759318114001",
+        "razonSocial": "SANCHEZ ESCOBAR RONALD",
+        "nombreComercial": "SANCHEZ VERA DISTRIBUCION",
+        "dirMatriz": "SANTO DOMINGO DE LOS TSACHILAS \/ SANTO DOMINGO \/ CHIGUILPE \/ CEIBO S\/N",
+        "dirEstablecimiento": "SANTO DOMINGO DE LOS TSACHILAS \/ SANTO DOMINGO \/ CHIGUILPE \/ CEIBO S\/N",
+        "establecimiento": "001",
+        "puntoEmision": "040",
+        "obligadoContabilidad": "SI"
+    },
+    "comprador": {
+        "tipoIdentificacion": "05",
+        "identificacion": "2351148370",
+        "razonSocial": "GUZMAN GUZMAN ROSA MARIA",
+        "direccion": "SANTO DOMINGO DE LOS TSACHILAS \/ SANTO DOMINGO \/ SANTO DOMINGO DE LOS COLORADOS \/ AV ESMERALDAS S\/N Y CALLE RIO ZAMORA"
+    },
+    "detalles": [
+        {
+            "codigoPrincipal": "AG600ML",
+            "codigoAuxiliar": "AG600ML",
+            "descripcion": "AGUA PURIFICADA FOREST 600ML",
+            "cantidad": 15,
+            "precioUnitario": 0.2,
+            "descuento": 0,
+            "impuestos": [
+                {
+                    "codigo": "2",
+                    "codigoPorcentaje": "4",
+                    "tarifa": 15,
+                    "baseImponible": 3,
+                    "valor": 0.45
+                }
+            ]
+        }
+    ],
+    "pagos": [
+        {
+            "formaPago": "01",
+            "total": 3
+        }
+    ],
+    "infoAdicional": [
+        {
+            "nombre": "Vendedor",
+            "valor": "Vendedor M\u00f3vil"
+        }
+    ]
+}
+RESPONSE: {"success":false,"error":"No se puede generar secuencial automático: punto de emisión 001-040 no encontrado para emisor 1759318114001"}
+---------------------------------------------------
+[2026-10-14 18:12:04] INVOICE #55
+PAYLOAD: {
+    "ambiente": "1",
+    "tipoEmision": "1",
+    "fechaEmision": "14\/10\/2026",
+    "emisor": {
+        "ruc": "1759318114001",
+        "razonSocial": "SANCHEZ ESCOBAR RONALD",
+        "nombreComercial": "SANCHEZ VERA DISTRIBUCION",
+        "dirMatriz": "SANTO DOMINGO DE LOS TSACHILAS \/ SANTO DOMINGO \/ CHIGUILPE \/ CEIBO S\/N",
+        "dirEstablecimiento": "SANTO DOMINGO DE LOS TSACHILAS \/ SANTO DOMINGO \/ CHIGUILPE \/ CEIBO S\/N",
+        "establecimiento": "001",
+        "puntoEmision": "010",
+        "obligadoContabilidad": "SI"
+    },
+    "comprador": {
+        "tipoIdentificacion": "04",
+        "identificacion": "2390002710001",
+        "razonSocial": "CENTRO CRISTIANO NUEVA VIDA",
+        "direccion": "SANTO DOMINGO DE LOS TSACHILAS \/ SANTO DOMINGO \/ ZARACAY \/ MADRID LOTE 17 Y BERLIN"
+    },
+    "detalles": [
+        {
+            "codigoPrincipal": "AG600ML",
+            "codigoAuxiliar": "AG600ML",
+            "descripcion": "AGUA PURIFICADA FOREST 600ML",
+            "cantidad": 30,
+            "precioUnitario": 0.2,
+            "descuento": 0,
+            "impuestos": [
+                {
+                    "codigo": "2",
+                    "codigoPorcentaje": "4",
+                    "tarifa": 15,
+                    "baseImponible": 6,
+                    "valor": 0.9
+                }
+            ]
+        }
+    ],
+    "pagos": [
+        {
+            "formaPago": "01",
+            "total": 6
+        }
+    ],
+    "infoAdicional": [
+        {
+            "nombre": "Vendedor",
+            "valor": "Vendedor M\u00f3vil"
+        }
+    ]
+}
+RESPONSE: {"success":true,"claveAcceso":"1410202601175931811400110010100000000624300819515","estado":"AUTORIZADO","fechaAutorizacion":"2026-10-14T23:12:04.000Z","numeroAutorizacion":"1410202601175931811400110010100000000624300819515","xmlAutorizado":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<factura id=\"comprobante\" version=\"1.1.0\">\n  <infoTributaria>\n    <ambiente>1</ambiente>\n    <tipoEmision>1</tipoEmision>\n    <razonSocial>SANCHEZ ESCOBAR RONALD</razonSocial>\n    <nombreComercial>SANCHEZ VERA DISTRIBUCION</nombreComercial>\n    <ruc>1759318114001</ruc>\n    <claveAcceso>1410202601175931811400110010100000000624300819515</claveAcceso>\n    <codDoc>01</codDoc>\n    <estab>001</estab>\n    <ptoEmi>010</ptoEmi>\n    <secuencial>000000062</secuencial>\n    <dirMatriz>SANTO DOMINGO DE LOS TSACHILAS / SANTO DOMINGO / CHIGUILPE / CEIBO S/N</dirMatriz>\n  </infoTributaria>\n  <infoFactura>\n    <fechaEmision>14/10/2026</fechaEmision>\n    <dirEstablecimiento>SANTO DOMINGO DE LOS TSACHILAS / SANTO DOMINGO / CHIGUILPE / CEIBO S/N</dirEstablecimiento>\n    <obligadoContabilidad>SI</obligadoContabilidad>\n    <tipoIdentificacionComprador>04</tipoIdentificacionComprador>\n    <razonSocialComprador>CENTRO CRISTIANO NUEVA VIDA</razonSocialComprador>\n    <identificacionComprador>2390002710001</identificacionComprador>\n    <direccionComprador>SANTO DOMINGO DE LOS TSACHILAS / SANTO DOMINGO / ZARACAY / MADRID LOTE 17 Y BERLIN</direccionComprador>\n    <totalSinImpuestos>6.00</totalSinImpuestos>\n    <totalDescuento>0.00</totalDescuento>\n    <totalConImpuestos>\n      <totalImpuesto>\n        <codigo>2</codigo>\n        <codigoPorcentaje>4</codigoPorcentaje>\n        <baseImponible>6.00</baseImponible>\n        <tarifa>15.00</tarifa>\n        <valor>0.90</valor>\n      </totalImpuesto>\n    </totalConImpuestos>\n    <importeTotal>6.90</importeTotal>\n    <moneda>DOLAR</moneda>\n    <pagos>\n      <pago>\n        <formaPago>01</formaPago>\n        <total>6.00</total>\n      </pago>\n    </pagos>\n  </infoFactura>\n  <detalles>\n    <detalle>\n      <codigoPrincipal>AG600ML</codigoPrincipal>\n      <codigoAuxiliar>AG600ML</codigoAuxiliar>\n      <descripcion>AGUA PURIFICADA FOREST 600ML</descripcion>\n      <cantidad>30.000000</cantidad>\n      <precioUnitario>0.200000</precioUnitario>\n      <descuento>0.00</descuento>\n      <precioTotalSinImpuesto>6.00</precioTotalSinImpuesto>\n      <impuestos>\n        <impuesto>\n          <codigo>2</codigo>\n          <codigoPorcentaje>4</codigoPorcentaje>\n          <tarifa>15.00</tarifa>\n          <baseImponible>6.00</baseImponible>\n          <valor>0.90</valor>\n        </impuesto>\n      </impuestos>\n    </detalle>\n  </detalles>\n  <infoAdicional>\n    <campoAdicional nombre=\"direccion\">SANTO DOMINGO DE LOS TSACHILAS / SANTO DOMINGO / ZARACAY / MADRID LOTE 17 Y BERLIN</campoAdicional>\n    <campoAdicional nombre=\"Vendedor\">Vendedor Móvil</campoAdicional>\n  </infoAdicional>\n<ds:Signature Id=\"id-f9f7ecb35dde\" xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\"/><ds:SignatureMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#rsa-sha1\"/><ds:Reference Id=\"Reference-comprobante\" URI=\"#comprobante\"><ds:Transforms><ds:Transform Algorithm=\"http://www.w3.org/2000/09/xmldsig#enveloped-signature\"/><ds:Transform Algorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\"/></ds:Transforms><ds:DigestMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#sha1\"/><ds:DigestValue>DK8ZtcUa4p6UyoLYrj8W6XYFEtw=</ds:DigestValue></ds:Reference><ds:Reference URI=\"#xades-id-f9f7ecb35dde\" Type=\"http://uri.etsi.org/01903#SignedProperties\"><ds:DigestMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#sha1\"/><ds:DigestValue>oMuh8kgc3bF9OoxxS47xaUS210w=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue>U2OuZURcvZJYXnjuQzxuHFVa+zin4jETqxwdkOQ48wnKYvMnmYU8cC9EJlfYIixaRPA09DjTDPdxHJ76f2/NpUsAh383PoMPtp5OTmsx0rhM16fThR8NcuMqW7O+sWhBtj2mXqcmvCmtsdvMLeiZVujvrJVC0N/XQAVSviPXCU82joEuhG2mq2bAmtSlHvvJjRhlOoRwbtg5S+QQDOnzgEnDugepoX/MmEFs8n9dPAP5CkWdPHaKswYwFGAxyvcYozl6Y30+aEkCc4tJVkrTnSvsJE3kSNlCSYSJh65kHR5VBRNffvJLnhIQ/F1S9mg7Y6Z5MWdWzfeSWjA71xkhLQ==</ds:SignatureValue><ds:KeyInfo><ds:X509Data><ds:X509Certificate>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</ds:X509Certificate></ds:X509Data></ds:KeyInfo><ds:Object><xades:QualifyingProperties Target=\"#id-f9f7ecb35dde\" xmlns:xades=\"http://uri.etsi.org/01903/v1.3.2#\"><xades:SignedProperties Id=\"xades-id-f9f7ecb35dde\"><xades:SignedSignatureProperties><xades:SigningTime>2026-10-14T23:12:04.253Z</xades:SigningTime><xades:SignerRole><xades:ClaimedRoles><xades:ClaimedRole>Emisor</xades:ClaimedRole></xades:ClaimedRoles></xades:SignerRole></xades:SignedSignatureProperties></xades:SignedProperties></xades:QualifyingProperties></ds:Object></ds:Signature></factura>","mensajes":[]}
+---------------------------------------------------
+[2026-10-14 18:32:05] INVOICE #56
+PAYLOAD: {
+    "ambiente": "1",
+    "tipoEmision": "1",
+    "fechaEmision": "14\/10\/2026",
+    "emisor": {
+        "ruc": "1759318114001",
+        "razonSocial": "SANCHEZ ESCOBAR RONALD",
+        "nombreComercial": "SANCHEZ VERA DISTRIBUCION",
+        "dirMatriz": "SANTO DOMINGO DE LOS TSACHILAS \/ SANTO DOMINGO \/ CHIGUILPE \/ CEIBO S\/N",
+        "dirEstablecimiento": "SANTO DOMINGO DE LOS TSACHILAS \/ SANTO DOMINGO \/ CHIGUILPE \/ CEIBO S\/N",
+        "establecimiento": "001",
+        "puntoEmision": "010",
+        "obligadoContabilidad": "SI"
+    },
+    "comprador": {
+        "tipoIdentificacion": "04",
+        "identificacion": "2390002710001",
+        "razonSocial": "CENTRO CRISTIANO NUEVA VIDA",
+        "direccion": "SANTO DOMINGO DE LOS TSACHILAS \/ SANTO DOMINGO \/ ZARACAY \/ MADRID LOTE 17 Y BERLIN"
+    },
+    "detalles": [
+        {
+            "codigoPrincipal": "AG600ML",
+            "codigoAuxiliar": "AG600ML",
+            "descripcion": "AGUA PURIFICADA FOREST 600ML",
+            "cantidad": 30,
+            "precioUnitario": 0.2,
+            "descuento": 0,
+            "impuestos": [
+                {
+                    "codigo": "2",
+                    "codigoPorcentaje": "4",
+                    "tarifa": 15,
+                    "baseImponible": 6,
+                    "valor": 0.9
+                }
+            ]
+        }
+    ],
+    "pagos": [
+        {
+            "formaPago": "01",
+            "total": 6
+        }
+    ],
+    "infoAdicional": [
+        {
+            "nombre": "Vendedor",
+            "valor": "Vendedor M\u00f3vil"
+        }
+    ]
+}
+RESPONSE: {"success":true,"claveAcceso":"1410202601175931811400110010100000000632474686312","estado":"AUTORIZADO","fechaAutorizacion":"2026-10-14T23:32:05.000Z","numeroAutorizacion":"1410202601175931811400110010100000000632474686312","xmlAutorizado":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<factura id=\"comprobante\" version=\"1.1.0\">\n  <infoTributaria>\n    <ambiente>1</ambiente>\n    <tipoEmision>1</tipoEmision>\n    <razonSocial>SANCHEZ ESCOBAR RONALD</razonSocial>\n    <nombreComercial>SANCHEZ VERA DISTRIBUCION</nombreComercial>\n    <ruc>1759318114001</ruc>\n    <claveAcceso>1410202601175931811400110010100000000632474686312</claveAcceso>\n    <codDoc>01</codDoc>\n    <estab>001</estab>\n    <ptoEmi>010</ptoEmi>\n    <secuencial>000000063</secuencial>\n    <dirMatriz>SANTO DOMINGO DE LOS TSACHILAS / SANTO DOMINGO / CHIGUILPE / CEIBO S/N</dirMatriz>\n  </infoTributaria>\n  <infoFactura>\n    <fechaEmision>14/10/2026</fechaEmision>\n    <dirEstablecimiento>SANTO DOMINGO DE LOS TSACHILAS / SANTO DOMINGO / CHIGUILPE / CEIBO S/N</dirEstablecimiento>\n    <obligadoContabilidad>SI</obligadoContabilidad>\n    <tipoIdentificacionComprador>04</tipoIdentificacionComprador>\n    <razonSocialComprador>CENTRO CRISTIANO NUEVA VIDA</razonSocialComprador>\n    <identificacionComprador>2390002710001</identificacionComprador>\n    <direccionComprador>SANTO DOMINGO DE LOS TSACHILAS / SANTO DOMINGO / ZARACAY / MADRID LOTE 17 Y BERLIN</direccionComprador>\n    <totalSinImpuestos>6.00</totalSinImpuestos>\n    <totalDescuento>0.00</totalDescuento>\n    <totalConImpuestos>\n      <totalImpuesto>\n        <codigo>2</codigo>\n        <codigoPorcentaje>4</codigoPorcentaje>\n        <baseImponible>6.00</baseImponible>\n        <tarifa>15.00</tarifa>\n        <valor>0.90</valor>\n      </totalImpuesto>\n    </totalConImpuestos>\n    <importeTotal>6.90</importeTotal>\n    <moneda>DOLAR</moneda>\n    <pagos>\n      <pago>\n        <formaPago>01</formaPago>\n        <total>6.00</total>\n      </pago>\n    </pagos>\n  </infoFactura>\n  <detalles>\n    <detalle>\n      <codigoPrincipal>AG600ML</codigoPrincipal>\n      <codigoAuxiliar>AG600ML</codigoAuxiliar>\n      <descripcion>AGUA PURIFICADA FOREST 600ML</descripcion>\n      <cantidad>30.000000</cantidad>\n      <precioUnitario>0.200000</precioUnitario>\n      <descuento>0.00</descuento>\n      <precioTotalSinImpuesto>6.00</precioTotalSinImpuesto>\n      <impuestos>\n        <impuesto>\n          <codigo>2</codigo>\n          <codigoPorcentaje>4</codigoPorcentaje>\n          <tarifa>15.00</tarifa>\n          <baseImponible>6.00</baseImponible>\n          <valor>0.90</valor>\n        </impuesto>\n      </impuestos>\n    </detalle>\n  </detalles>\n  <infoAdicional>\n    <campoAdicional nombre=\"direccion\">SANTO DOMINGO DE LOS TSACHILAS / SANTO DOMINGO / ZARACAY / MADRID LOTE 17 Y BERLIN</campoAdicional>\n    <campoAdicional nombre=\"Vendedor\">Vendedor Móvil</campoAdicional>\n  </infoAdicional>\n<ds:Signature Id=\"id-b5c0d0864c4b\" xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\"/><ds:SignatureMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#rsa-sha1\"/><ds:Reference Id=\"Reference-comprobante\" URI=\"#comprobante\"><ds:Transforms><ds:Transform Algorithm=\"http://www.w3.org/2000/09/xmldsig#enveloped-signature\"/><ds:Transform Algorithm=\"http://www.w3.org/TR/2001/REC-xml-c14n-20010315\"/></ds:Transforms><ds:DigestMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#sha1\"/><ds:DigestValue>s1xPhF6vFzYXwzS1pGOw8XDSM4c=</ds:DigestValue></ds:Reference><ds:Reference URI=\"#xades-id-b5c0d0864c4b\" Type=\"http://uri.etsi.org/01903#SignedProperties\"><ds:DigestMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#sha1\"/><ds:DigestValue>yk3pqW4JrkFnK247HEepnzdfh3A=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue>imaHXA9jRIqQBArAH88Hq88dBZoytOLf20OmbC0BBQkbeI3AEpalz5Jf2EdDitYQKz1QjiRtCzfzUjnJm/ujiUZnOTN2w/+scfX41sEEbeywHvvBXOr6KQzIvvCPtt1rVwtr9Hrr62D9+qUnWX3i4BX2Bi+++x0oYNo6LwjhagJjlXd6plFr0Ym3EOOambNbUXWmIPgBKl4+lck/5Ar7ogiUafNY3qumqp9qs4gPXQYPcPrtaM0h9XzvnaPKdTcr4L+/WZzCur+KiIve1/9bICwRbFDDzCIuGWc9A8UIWxyoIEyFnF1Ch643lJCmnfUvDsmYz5UC5X9vXpkcP9l3fQ==</ds:SignatureValue><ds:KeyInfo><ds:X509Data><ds:X509Certificate>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</ds:X509Certificate></ds:X509Data></ds:KeyInfo><ds:Object><xades:QualifyingProperties Target=\"#id-b5c0d0864c4b\" xmlns:xades=\"http://uri.etsi.org/01903/v1.3.2#\"><xades:SignedProperties Id=\"xades-id-b5c0d0864c4b\"><xades:SignedSignatureProperties><xades:SigningTime>2026-10-14T23:32:05.266Z</xades:SigningTime><xades:SignerRole><xades:ClaimedRoles><xades:ClaimedRole>Emisor</xades:ClaimedRole></xades:ClaimedRoles></xades:SignerRole></xades:SignedSignatureProperties></xades:SignedProperties></xades:QualifyingProperties></ds:Object></ds:Signature></factura>","mensajes":[]}
+---------------------------------------------------

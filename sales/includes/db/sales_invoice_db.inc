@@ -266,7 +266,7 @@ function write_sales_invoice(&$invoice) {
 		// 2. Instanciar array de detalles de la factura
 		$detalles_sri = array();
 		
-// 1. Instanciar array de detalles
+		// 1. Instanciar array de detalles
 		$detalles_sri = array();
 		
 		foreach ($invoice->line_items as $line_no => $line) {

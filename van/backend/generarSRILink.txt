@@ -1,0 +1,247 @@
+		// =======================================================================
+		// === INTEGRACIÓN AUTOMÁTICA SRI API (DIGITAL NEURON) ===
+		// =======================================================================
+
+		// 1. Validar que el token de sesión exista (generado automáticamente al hacer login)
+		if (!isset($_SESSION['api_token'])) {
+			$sql = "UPDATE ".TB_PREF."debtor_trans SET sri_estado = 0, sri_mensaje = 'Sesión API no iniciada o token expirado' WHERE type = ".ST_SALESINVOICE." AND trans_no = ".db_escape($invoice_no);
+			db_query($sql, "Error actualizando estado SRI por falta de token");
+			return $invoice_no; 
+		}
+
+		// 2. Instanciar array de detalles de la factura
+		$detalles_sri = array();
+		
+		// 1. Instanciar array de detalles
+		$detalles_sri = array();
+		
+		foreach ($invoice->line_items as $line_no => $line) {
+			$qty = $line->qty_dispatched;
+			if ($qty == 0) continue;
+			
+			$precio_total_sin_impuesto = round($line->price * $qty, 2);
+			$descuento = round($line->discount_percent * $precio_total_sin_impuesto, 2);
+			$base_imponible = $precio_total_sin_impuesto - $descuento;
+			
+			// --- AUTOMATIZACIÓN DE TASA E IMPUESTOS SEGÚN LA BBDD ---
+			// Consultamos la tasa (rate) del impuesto asociada al producto en stock_master y tax_types
+			$tax_rate_sql = "SELECT t.rate FROM " . TB_PREF . "stock_master s 
+			                 JOIN " . TB_PREF . "item_tax_types i ON s.tax_type_id = i.id 
+			                 JOIN " . TB_PREF . "tax_types t ON i.id = t.id -- o relacionando por la tasa según tu esquema
+			                 WHERE s.stock_id = " . db_escape($line->stock_id) . " LIMIT 1";
+			
+			// Alternativa directa usando la propiedad del objeto línea si el sistema ya lo carga:
+			// Si $line->tax_type contiene el ID, podemos consultar directamente la tabla tax_types:
+			$tax_rate = 15; // Valor por defecto general
+			if (isset($line->tax_type)) {
+				$t_sql = "SELECT rate FROM " . TB_PREF . "tax_types WHERE id = " . db_escape($line->tax_type);
+				$t_res = db_query($t_sql, "No se pudo obtener la tasa de impuesto");
+				if ($t_row = db_fetch($t_res)) {
+					$tax_rate = (float)$t_row['rate'];
+				}
+			}
+
+			// Definir códigos del SRI según la tabla oficial compartida:
+			// IVA 15% -> codigo: 2, codigoPorcentaje: 4, tarifa: 15
+			// IVA 0%  -> codigo: 2, codigoPorcentaje: 0, tarifa: 0
+			$codigo_porcentaje = ($tax_rate > 0) ? "4" : "0";
+			$tarifa_sri = (int)$tax_rate;
+			
+			$valor_impuesto = round($base_imponible * ($tax_rate / 100), 2);
+			
+			$impuestos_sri = array(
+				array(
+					"codigo" => "2",
+					"codigoPorcentaje" => $codigo_porcentaje,
+					"tarifa" => $tarifa_sri,
+					"baseImponible" => $base_imponible,
+					"valor" => $valor_impuesto
+				)
+			);
+
+			$detalles_sri[] = array(
+				"codigoPrincipal" => $line->stock_id,
+				"codigoAuxiliar" => $line->stock_id,
+				"descripcion" => $line->item_description,
+				"cantidad" => $qty,
+				"precioUnitario" => round($line->price, 6),
+				"descuento" => $descuento,
+				"impuestos" => $impuestos_sri
+			);
+		}
+
+		// Estandarizar fecha al formato dd/mm/yyyy que exige el SRI
+		$fecha_api = date('d/m/Y', strtotime(date2sql($invoice->document_date)));
+		$secuencial = str_pad($invoice_no, 9, "0", STR_PAD_LEFT);
+
+		// Detección automática del tipo de identificación
+		$identificacion_comprador = isset($customer['tax_id']) ? trim($customer['tax_id']) : '9999999999999';
+		$tipo_identificacion = '07'; 
+
+		if ($identificacion_comprador == '9999999999' || $identificacion_comprador == '9999999999999' || empty($identificacion_comprador)) {
+			$identificacion_comprador = '9999999999999';
+			$tipo_identificacion = '07'; 
+		} elseif (strlen($identificacion_comprador) == 10) {
+			$tipo_identificacion = '05'; // Cédula
+		} elseif (strlen($identificacion_comprador) == 13) {
+			$tipo_identificacion = '04'; // RUC
+		} else {
+			$identificacion_comprador = '9999999999999';
+			$tipo_identificacion = '07'; 
+		}
+
+		// Obtener las preferencias de la compañía y la ubicación de la factura
+		$company_prefs = get_company_prefs();
+
+		// Consultar los códigos SRI de la bodega/sucursal seleccionada en la factura ($invoice->Location)
+		$loc_code = isset($invoice->Location) ? $invoice->Location : '';
+		$establecimiento = '001'; // Valor por defecto de respaldo
+		$punto_emision = '010';   // Valor por defecto de respaldo
+
+		if (!empty($loc_code)) {
+			$loc_sql = "SELECT establishment_code, emission_point_code FROM " . TB_PREF . "locations WHERE loc_code = " . db_escape($loc_code);
+			$loc_result = db_query($loc_sql, "No se pudo obtener los códigos de la ubicación");
+			if ($loc_row = db_fetch($loc_result)) {
+				if (!empty($loc_row['establishment_code'])) {
+					// Asegurar formato de 3 dígitos rellenando con ceros a la izquierda
+					$establecimiento = str_pad(trim($loc_row['establishment_code']), 3, "0", STR_PAD_LEFT);
+				}
+				if (!empty($loc_row['emission_point_code'])) {
+					$punto_emision = str_pad(trim($loc_row['emission_point_code']), 3, "0", STR_PAD_LEFT);
+				}
+			}
+		}
+
+		// 3. Construir el Payload JSON principal de manera dinámica
+		$payload = array(
+			"ambiente" => isset($company_prefs['sri_ambiente_emision']) ? (string)$company_prefs['sri_ambiente_emision'] : "1",
+			"tipoEmision" => "1",
+			"fechaEmision" => $fecha_api,
+			"emisor" => array(
+				"ruc" => isset($company_prefs['gst_no']) ? $company_prefs['gst_no'] : "1712666864001", 
+				"razonSocial" => isset($company_prefs['coy_name']) ? $company_prefs['coy_name'] : "SANCHEZ ESCOBAR RONALD",
+				"nombreComercial" => isset($company_prefs['coy_no']) ? $company_prefs['coy_no'] : "SANCHEZ VERA DISTRIBUCION",
+				"dirMatriz" => isset($company_prefs['postal_address']) ? $company_prefs['postal_address'] : "Círculo de los continentes, Av. Quito",
+				"dirEstablecimiento" => isset($company_prefs['postal_address']) ? $company_prefs['postal_address'] : "Círculo de los continentes, Av. Quito",
+				"establecimiento" => $establecimiento,  // Extraído dinámicamente de locations
+				"puntoEmision" => $punto_emision,      // Extraído dinámicamente de locations
+				"obligadoContabilidad" => (isset($company_prefs['sri_obligado_contabilidad']) && $company_prefs['sri_obligado_contabilidad'] == 1) ? "SI" : "NO"
+			),
+			"comprador" => array(
+				"tipoIdentificacion" => $tipo_identificacion, 
+				"identificacion" => $identificacion_comprador, 
+				"razonSocial" => isset($customer['name']) ? $customer['name'] : 'CONSUMIDOR FINAL',
+				"direccion" => !empty($invoice->delivery_address) ? $invoice->delivery_address : 'Sin dirección'
+			),
+			"detalles" => $detalles_sri,
+			"pagos" => array(
+				array(
+					"formaPago" => "01", 
+					"total" => $invoice->get_trans_total()
+				)
+			),
+			"infoAdicional" => array(
+				array("nombre" => "Vendedor", "valor" => "Vendedor Rutero"),
+				array("nombre" => "Orden", "valor" => "Ref: " . $invoice->reference)
+			)
+		);
+
+		// 4. Construcción dinámica de la URL usando la constante URL_PLATAFORMA
+		$api_url = rtrim(URL_PLATAFORMA, '/') . '/sri/emitir/factura';
+
+		// 5. Configuración dinámica de los Headers con el token almacenado en sesión
+		$headers = [
+			'Content-Type: application/json',
+			'Accept: application/json',
+			'Authorization: ' . $_SESSION['api_token_type'] . ' ' . $_SESSION['api_token']
+		];
+
+		// 6. Ejecutar llamada cURL a la API del SRI
+		$ch = curl_init($api_url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 15); 
+		
+		$response = curl_exec($ch);
+		$curl_error = curl_error($ch);
+		curl_close($ch);
+
+		// 7. Registro en Sistema de Logs (sri_debug.log)
+		$log_file = company_path() . '/pdf_files/sri_debug.log';
+		$log_data = "[" . date('Y-m-d H:i:s') . "] INVOICE #{$invoice_no}\n";
+		$log_data .= "PAYLOAD: " . json_encode($payload, JSON_PRETTY_PRINT) . "\n";
+		$log_data .= "RESPONSE: " . ($response ? $response : "CURL ERROR: " . $curl_error) . "\n";
+		$log_data .= "---------------------------------------------------\n";
+		@file_put_contents($log_file, $log_data, FILE_APPEND);
+
+		// 8. Procesar respuesta y actualizar base de datos
+		// 8. Procesar respuesta y actualizar base de datos
+
+		$sri_estado = 0;
+		$sri_clave = '';
+		$sri_fecha_aut = '0000-00-00 00:00:00';
+		$sri_secuencial = ''; 
+		$sri_mensaje = '';
+
+		if ($response) {
+			$api_result = json_decode($response, true);
+
+			if (isset($api_result['success']) && $api_result['success'] == true && isset($api_result['estado']) && $api_result['estado'] == 'AUTORIZADO') {
+				$sri_estado = 1;
+				$sri_clave = $api_result['claveAcceso'];
+				$sri_fecha_aut = date('Y-m-d H:i:s', strtotime($api_result['fechaAutorizacion']));
+				$sri_mensaje = 'AUTORIZADO';
+
+				// Extraer el secuencial oficial directamente del XML autorizado devuelto por la API
+				if (!empty($api_result['xmlAutorizado'])) {
+					$xml = @simplexml_load_string($api_result['xmlAutorizado']);
+					if ($xml && isset($xml->infoTributaria)) {
+						$estab = (string)$xml->infoTributaria->estab;           // ej: 001
+						$ptoEmi = (string)$xml->infoTributaria->ptoEmi;         // ej: 010
+						$secuencial_xml = (string)$xml->infoTributaria->secuencial; // ej: 000000033
+						
+						// Concatenamos el formato completo requerido: 001-010-000000033
+						$sri_secuencial = $estab . '-' . $ptoEmi . '-' . $secuencial_xml;
+					}
+				}
+				
+				// Respaldo de seguridad por si el XML viniera vacío: armarlo con la data local procesada
+				if (empty($sri_secuencial)) {
+					$sri_secuencial = $establecimiento . '-' . $punto_emision . '-' . $secuencial;
+				}
+
+			} else {
+				$sri_estado = 2;
+				$sri_clave = isset($api_result['claveAcceso']) ? $api_result['claveAcceso'] : '';
+
+				if (isset($api_result['mensajes']) && count($api_result['mensajes']) > 0) {
+					$sri_mensaje = $api_result['mensajes'][0]['mensaje'] . ' - ' . $api_result['mensajes'][0]['informacionAdicional'];
+				} elseif (isset($api_result['estado'])) {
+					$sri_mensaje = "Estado API: " . $api_result['estado'];
+				} elseif (isset($api_result['message'])) {
+					$sri_mensaje = is_array($api_result['message']) ? implode(', ', $api_result['message']) : $api_result['message'];
+				} else {
+					$sri_mensaje = substr('RAW: ' . $response, 0, 240);
+				}
+			}
+		} else {
+			$sri_estado = 2;
+			$sri_mensaje = 'Error de conexión HTTP: ' . $curl_error;
+		}
+
+		// Actualización limpia en la base de datos
+		$sql = "UPDATE " . TB_PREF . "debtor_trans SET
+			sri_estado = " . db_escape($sri_estado) . ",
+			sri_clave_acceso = " . db_escape($sri_clave) . ",
+			sri_fecha_autorizacion = " . db_escape($sri_fecha_aut) . ",
+			sri_secuencial = " . db_escape($sri_secuencial) . ",
+			sri_mensaje = " . db_escape($sri_mensaje) . "
+			WHERE type = " . ST_SALESINVOICE . " AND trans_no = " . db_escape($invoice_no);
+
+		db_query($sql, "No se pudo actualizar el estado, clave y secuencial del SRI");
+
+		// =======================================================================
+		// === FIN INTEGRACIÓN AUTOMÁTICA SRI ===
+		// =======================================================================
