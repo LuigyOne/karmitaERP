@@ -99,7 +99,7 @@ try {
     // 5. CONSUMIR LA MINI API MEDIANTE cURL INTERNO
     $protocolo = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
     $host = $_SERVER['HTTP_HOST'];
-    $miniapi_url = "$protocolo://$host/notrinoserp/miniapi/create_invoice.php";
+    $miniapi_url = "$protocolo://$host/iquilqa/miniapi/create_invoice.php";
 
     $ch = curl_init($miniapi_url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
