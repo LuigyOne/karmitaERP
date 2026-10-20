@@ -1,0 +1,45 @@
+[2026-10-20 11:03:42] INICIO de Venta Directa Móvil (Consumiendo Mini API).
+[2026-10-20 11:03:47] Respuesta Mini API HTTP 201: {
+    "success": true,
+    "message": "Factura generada exitosamente en el ERP con sus asientos contables e integraci\u00f3n SRI enlazados",
+    "trans_no_erp": 81,
+    "company_id": "1",
+    "sri": {
+        "sri_estado": 1,
+        "sri_secuencial": "001-010-000000086",
+        "sri_clave_acceso": "2010202601175931811400110010100000000867647162317",
+        "sri_fecha_autorizacion": "2026-10-20 11:03:48",
+        "sri_mensaje": "AUTORIZADO"
+    }
+}
+[2026-10-20 11:03:47] Venta completada con éxito. ERP Invoice: #81 | Secuencial SRI: 001-010-000000086 | Clave: 2010202601175931811400110010100000000867647162317
+[2026-10-20 12:19:29] INICIO de Venta Directa Móvil (Consumiendo Mini API).
+[2026-10-20 12:19:36] Respuesta Mini API HTTP 201: {
+    "success": true,
+    "message": "Factura generada exitosamente en el ERP con sus asientos contables e integraci\u00f3n SRI enlazados",
+    "trans_no_erp": 82,
+    "company_id": "1",
+    "sri": {
+        "sri_estado": 1,
+        "sri_secuencial": "001-010-000000087",
+        "sri_clave_acceso": "2010202601175931811400110010100000000873817237015",
+        "sri_fecha_autorizacion": "2026-10-20 12:19:34",
+        "sri_mensaje": "AUTORIZADO"
+    }
+}
+[2026-10-20 12:19:36] Venta completada con éxito. ERP Invoice: #82 | Secuencial SRI: 001-010-000000087 | Clave: 2010202601175931811400110010100000000873817237015
+[2026-10-20 12:24:49] INICIO de Venta Directa Móvil (Consumiendo Mini API).
+[2026-10-20 12:24:51] Respuesta Mini API HTTP 201: {
+    "success": true,
+    "message": "Factura generada exitosamente en el ERP con sus asientos contables e integraci\u00f3n SRI enlazados",
+    "trans_no_erp": 83,
+    "company_id": "1",
+    "sri": {
+        "sri_estado": 1,
+        "sri_secuencial": "001-010-000000088",
+        "sri_clave_acceso": "2010202601175931811400110010100000000888447774315",
+        "sri_fecha_autorizacion": "2026-10-20 12:24:52",
+        "sri_mensaje": "AUTORIZADO"
+    }
+}
+[2026-10-20 12:24:51] Venta completada con éxito. ERP Invoice: #83 | Secuencial SRI: 001-010-000000088 | Clave: 2010202601175931811400110010100000000888447774315

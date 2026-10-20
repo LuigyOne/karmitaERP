@@ -1,6 +1,7 @@
 <?php
 // pos/backend/catalogo_data.php
 require_once 'conexion.php';
+require_once 'imagen_helper.php';
 
 function obtenerDatosCatologo() {
     $busqueda = isset($_GET['q']) ? trim($_GET['q']) : '';
@@ -46,7 +47,7 @@ function obtenerDatosCatologo() {
             $tasa = floatval($art['tasa_iva']);
             $art['precio_venta'] = round($precio_neto * (1 + ($tasa / 100)), 2);
             $art['stock'] = obtenerStockItem($db, $art['stock_id']);
-            $art['foto_url'] = obtenerImagenProducto($art['stock_id']);
+            $art['foto_url'] = obtenerImagenStockUnificada($art['stock_id']);
         }
         unset($art);
 
@@ -116,16 +117,5 @@ function obtenerStockItem($db, $stock_id) {
     }
 }
 
-function obtenerImagenProducto($stock_id) {
-    $exts = ['jpg', 'png', 'gif'];
-    foreach ($exts as $ext) {
-        $nombre_img = strtolower($stock_id) . '.' . $ext;
-        // Desde pos/backend/ subimos a pos/ y luego a company/
-        $ruta_fisica = __DIR__ . '/../../company/1/images/stock_items/' . $nombre_img;
-        if (file_exists($ruta_fisica)) {
-            return '../company/1/images/stock_items/' . $nombre_img;
-        }
-    }
-    return null;
-}
+
 ?>

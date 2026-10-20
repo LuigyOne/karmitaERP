@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../backend/imagen_helper.php';
+
 // Asegurar el prefijo de tablas vacío para entornos con BBDD separadas
 if (!defined('TB_PREF')) {
     define('TB_PREF', '');
@@ -57,20 +59,8 @@ if (!empty($stock_id)) {
     }
 }
 
-// Función auxiliar para resolver la imagen física del producto
-function obtenerImagenDetalle($stock_id) {
-    $exts = ['jpg', 'png', 'gif', 'JPG', 'PNG', 'GIF'];
-    foreach ($exts as $ext) {
-        $nombre_archivo = strtolower($stock_id) . '.' . $ext;
-        $ruta_fisica = __DIR__ . '/../../company/1/images/stock_items/' . $nombre_archivo;
-        if (file_exists($ruta_fisica)) {
-            return '../company/1/images/stock_items/' . $nombre_archivo;
-        }
-    }
-    return null;
-}
 
-$foto_url = $producto ? obtenerImagenDetalle($producto['stock_id']) : null;
+$foto_url = $producto ? obtenerImagenStockUnificada($producto['stock_id']) : null;
 $tasa_iva = $producto ? floatval($producto['tasa_iva']) : 0;
 $es_kit = $producto ? ($producto['mb_flag'] === 'K' || $producto['mb_flag'] === 'D') : false;
 ?>

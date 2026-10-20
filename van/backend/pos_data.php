@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/imagen_helper.php';
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -13,18 +15,6 @@ $productos_catalogo = [];
 // Obtener la bodega móvil fija de la sesión actual
 $bodega_movil = $_SESSION['bodega_movil'] ?? 'VAN01';
 
-// Función auxiliar para resolver la imagen física del producto
-function obtenerImagenStock($stock_id) {
-    $exts = ['jpg', 'png', 'gif', 'JPG', 'PNG', 'GIF'];
-    foreach ($exts as $ext) {
-        $nombre_archivo = strtolower($stock_id) . '.' . $ext;
-        $ruta_fisica = __DIR__ . '/../../company/1/images/stock_items/' . $nombre_archivo;
-        if (file_exists($ruta_fisica)) {
-            return '../company/1/images/stock_items/' . $nombre_archivo;
-        }
-    }
-    return null;
-}
 
 try {
     $db = BaseDatos::obtenerConexion();
@@ -85,7 +75,7 @@ try {
         $tasa_iva = floatval($it['tasa_iva']);
         $precio_con_iva = round($precio_base * (1 + ($tasa_iva / 100)), 2);
         $es_kit = ($it['mb_flag'] === 'K' || $it['mb_flag'] === 'D');
-        $foto = obtenerImagenStock($it['stock_id']);
+        $foto = obtenerImagenStockUnificada($it['stock_id']);
 
         $productos_catalogo[] = [
             'id' => $it['stock_id'],

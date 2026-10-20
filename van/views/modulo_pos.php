@@ -525,7 +525,14 @@ $GLOBAL_VENDEDOR_CODIGO  = $_SESSION['user_id'] ?? $_SESSION['salesman_code'] ??
             ticket += "      ¡GRACIAS POR SU COMPRA!   \n\n\n\n";
 
             let textoCodificado = encodeURIComponent(ticket);
-            window.location.href = "intent:/" + textoCodificado + "#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;";
+
+            // 3. Obtener el paquete configurado o usar el valor por defecto si está en blanco
+            let defaultPackage = "ru.a402d.rawbtprinter";
+            let customPackage = localStorage.getItem('pos_printer_package');
+            let targetPackage = (customPackage && customPackage !== "") ? customPackage : defaultPackage;
+
+            // 4. Enviar utilizando la sintaxis de esquema nativa con el paquete dinámico
+            window.location.href = `intent:/${textoCodificado}#Intent;scheme=rawbt;package=${targetPackage};end;`;            
         }
 
         function compartirWhatsApp() {

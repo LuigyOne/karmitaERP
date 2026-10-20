@@ -1,4 +1,7 @@
 <?php
+// Requerir el helper unificado de imágenes
+require_once __DIR__ . '/../backend/imagen_helper.php';
+
 // Asegurar el prefijo de tablas vacío
 if (!defined('TB_PREF')) {
     define('TB_PREF', '');
@@ -51,17 +54,6 @@ try {
 
 } catch (Exception $e) {
     $productos_stock = [];$todas_bodegas = [];
-}
-
-// Función auxiliar para imagen
-function obtenerImagenStock($stock_id) {$exts = ['jpg', 'png', 'gif', 'JPG', 'PNG', 'GIF'];
-    foreach ($exts as $ext) {$nombre_archivo = strtolower($stock_id) . '.' .$ext;
-        $ruta_fisica = __DIR__ . '/../../company/1/images/stock_items/' .$nombre_archivo;
-        if (file_exists($ruta_fisica)) {
-            return '../company/1/images/stock_items/' . $nombre_archivo;
-        }
-    }
-    return null;
 }
 ?>
 <!DOCTYPE html>
@@ -132,7 +124,7 @@ function obtenerImagenStock($stock_id) {$exts = ['jpg', 'png', 'gif', 'JPG', 'PN
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 text-xs">
-                            <?php foreach ($productos_stock as $item):$foto = obtenerImagenStock($item['stock_id']);$precio_con_iva = round(floatval($item['precio_base']) * (1 + (floatval($item['tasa_iva']) / 100)), 2);
+                            <?php foreach ($productos_stock as $item):$foto = obtenerImagenStockUnificada($item['stock_id']);$precio_con_iva = round(floatval($item['precio_base']) * (1 + (floatval($item['tasa_iva']) / 100)), 2);
                             ?>
                                 <tr class="hover:bg-slate-50/50 transition-colors">
                                     <td class="p-3 flex items-center gap-3">
@@ -191,7 +183,7 @@ function obtenerImagenStock($stock_id) {$exts = ['jpg', 'png', 'gif', 'JPG', 'PN
                         <i data-lucide="receipt" class="w-4 h-4 text-emerald-600"></i>
                         <div>
                             <span class="block text-slate-900">Impresora de Tickets (58mm)</span>
-                            <span class="text-[9px] text-slate-400 font-normal">Formato estrecho, texto plano</span>
+                            <span class="text-[9px] text-slate-400 font-normal">Formato estrecho (32 col)</span>
                         </div>
                     </div>
                     <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform"></i>
@@ -261,67 +253,49 @@ function obtenerImagenStock($stock_id) {$exts = ['jpg', 'png', 'gif', 'JPG', 'PN
             const ahora = new Date();
             const fechaHoraStr = ahora.toLocaleDateString() + ' ' + ahora.toLocaleTimeString();
 
-            const ventanaImpresion = window.open('', '_blank', tipo === 'ticket' ? 'width=320,height=650' : 'width=800,height=600');
-            
             if (tipo === 'ticket') {
-                // Formato Estrecho 58mm - Texto Plano Optimizado
-                let contenidoHtml = `
-                    <html>
-                        <head>
-                            <title>Inventario Van - Ticket 58mm</title>
-                            <style>
-                                body { font-family: monospace; width: 58mm; margin: 0; padding: 5px; font-size: 11px; color: black; line-height: 1.2; }
-                                .text-center { text-align: center; }
-                                .text-right { text-align: right; }
-                                .border-b { border-bottom: 1px dashed #000; }
-                                table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-                                th, td { text-align: left; padding: 2px 0; font-size: 10px; }
-                            </style>
-                        </head>
-                        <body onload="window.print(); window.close();">
-                            <div class="text-center border-b pb-2">
-                                <h3 style="margin:0; font-size:12px; font-weight:bold;">${nombreEmpresa}</h3>
-                                <p style="margin:2px 0;">RUC: ${rucEmpresa}</p>
-                                <p style="margin:2px 0; font-weight:bold;">STOCK BODEGA MÓVIL</p>
-                                <p style="margin:2px 0;">Van: ${nombreBodega} (${codigoBodega})</p>
-                                <p style="margin:2px 0; font-size:9px;">F. Emisión: ${fechaHoraStr}</p>
-                            </div>
-                            <table>
-                                <thead>
-                                    <tr class="border-b">
-                                        <th>ITEM / DESCRIPCION</th>
-                                        <th class="text-right">QOH</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                `;
+                // GENERACIÓN DE TICKET DE 32 CARACTERES PARA INTENT NATIVO RAWBT
+                let ticket = "";
+                ticket += "     SANCHEZ VERA DISTRIBUCION     \n";
+                ticket += "       RUC: 1759318114001          \n";
+                ticket += "--------------------------------\n";
+                ticket += "INVENTARIO BODEGA MOVIL (VAN)   \n";
+                ticket += "VAN: " + nombreBodega.substring(0, 26).padEnd(26, ' ') + "\n";
+                ticket += "COD: " + codigoBodega.padEnd(26, ' ') + "\n";
+                ticket += "FECHA: " + fechaHoraStr.padEnd(24, ' ') + "\n";
+                ticket += "--------------------------------\n";
+                ticket += "ITEM / DESCRIPCION      QOH P.EST\n";
+                ticket += "--------------------------------\n";
 
                 datosStock.forEach(item => {
-                    contenidoHtml += `
-                        <tr class="border-b">
-                            <td colspan="2" style="padding-top:3px; font-weight:bold;">[${item.stock_id}]</td>
-                        </tr>
-                        <tr class="border-b">
-                            <td>${item.description}</td>
-                            <td class="text-right" style="font-weight:bold; font-size:11px;">${parseFloat(item.qoh).toFixed(0)} ${item.units || 'Und'}</td>
-                        </tr>
-                    `;
+                    let stockId = item.stock_id.substring(0, 10);
+                    let desc = item.description.substring(0, 21).padEnd(21, ' ');
+                    let qoh = Number(item.qoh).toFixed(0).padStart(4, ' ');
+                    let precioIva = Number(item.precio_base) * (1 + (Number(item.tasa_iva) / 100));
+                    let pEst = "$" + precioIva.toFixed(2).padStart(5, ' ');
+
+                    ticket += `[${stockId}]\n`;
+                    ticket += `${desc} ${qoh} ${pEst}\n`;
                 });
 
-                contenidoHtml += `
-                                </tbody>
-                            </table>
-                            <div class="text-center" style="margin-top:10px; font-size:9px; border-top:1px dashed #000; padding-top:5px;">
-                                <p>Control de Inventario en Ruta</p>
-                            </div>
-                        </body>
-                    </html>
-                `;
-                ventanaImpresion.document.write(contenidoHtml);
-                ventanaImpresion.document.close();
+                ticket += "--------------------------------\n";
+                ticket += "   CONTROL DE INVENTARIO RUTA   \n";
+                ticket += "     ¡GRACIAS POR SU GESTION!   \n\n\n\n";
+
+                // Codificar de manera segura para URL
+                let textoCodificado = encodeURIComponent(ticket);
+
+                // Obtener el paquete configurado en localStorage (o usar el default por defecto)
+                let defaultPackage = "ru.a402d.rawbtprinter";
+                let customPackage = localStorage.getItem('pos_printer_package');
+                let targetPackage = (customPackage && customPackage !== "") ? customPackage : defaultPackage;
+
+                // Enviar usando el Intent nativo hacia RawBT
+                window.location.href = `intent:/${textoCodificado}#Intent;scheme=rawbt;package=${targetPackage};end;`;
 
             } else {
-                // Formato Normal / Ancho (A4 / Carta) - Texto Plano Optimizado
+                // Formato Normal / Ancho (A4 / Carta)
+                const ventanaImpresion = window.open('', '_blank', 'width=800,height=600');
                 let contenidoHtml = `
                     <html>
                         <head>

@@ -56,7 +56,7 @@ require_once __DIR__ . '/../backend/ruta_data.php';
 
             </div>
 
-            <!-- Opciones del Menú (Incluyendo Tarjeta de Empresa y Códigos QR) -->
+            <!-- Opciones del Menú -->
             <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-3">
                 <button class="w-full flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors">
                     <i data-lucide="refresh-cw" class="w-4 h-4 text-slate-400"></i> Sincronizar Datos
@@ -70,9 +70,32 @@ require_once __DIR__ . '/../backend/ruta_data.php';
                     <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Caja Chica</span>
                 </button>
 
-                <button class="w-full flex items-center gap-3 px-3 py-3 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors">
-                    <i data-lucide="printer" class="w-4 h-4 text-slate-400"></i> Impresora Bluetooth
-                </button>
+                <!-- CONFIGURACIÓN DE IMPRESORA BLUETOOTH EN ACORDEÓN OCULTO (ESTILO VAN) -->
+                <div class="pt-1 pb-1">
+                    <button onclick="toggleConfigImpresora()" class="w-full flex items-center justify-between px-3 py-3 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="printer" class="w-4 h-4 text-slate-400"></i>
+                            <span>Config. Impresora</span>
+                        </div>
+                        <i id="icono-flecha-printer" data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform text-slate-400"></i>
+                    </button>
+                    
+                    <!-- Panel desplegable protegido/oculto -->
+                    <div id="panel-config-printer" class="hidden mt-2 p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                        <p class="text-[9px] text-amber-600 font-medium leading-tight">⚠️ Uso exclusivo técnico. No modificar a menos que cambie de aplicación de impresión.</p>
+                        <div>
+                            <label class="block text-[9px] text-slate-500 uppercase font-bold mb-1">Nombre del Paquete:</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="input-package-config" placeholder="ru.a402d.rawbtprinter" 
+                                    class="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 font-mono focus:outline-none focus:border-emerald-500 shadow-sm">
+                                <button type="button" onclick="guardarConfigImpresora()" 
+                                        class="bg-emerald-500 text-white font-black text-xs px-3 py-1.5 rounded-lg hover:bg-emerald-600 transition-colors shrink-0 shadow-sm">
+                                    OK
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- 1. TARJETA DETALLADA DE LA EMPRESA -->
                 <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2 shadow-sm">
@@ -323,6 +346,38 @@ require_once __DIR__ . '/../backend/ruta_data.php';
                 panel.classList.add('-translate-x-full');
                 setTimeout(() => contenedor.classList.add('hidden'), 300);
             }
+        }
+
+        // Función para ocultar/mostrar de forma segura la configuración avanzada de la impresora
+        function toggleConfigImpresora() {
+            const panel = document.getElementById('panel-config-printer');
+            const icono = document.getElementById('icono-flecha-printer');
+            if (panel.classList.contains('hidden')) {
+                panel.classList.remove('hidden');
+                icono.style.transform = 'rotate(180deg)';
+            } else {
+                panel.classList.add('hidden');
+                icono.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // Cargar la configuración de impresora guardada al iniciar la vista
+        document.addEventListener("DOMContentLoaded", () => {
+            const savedPackage = localStorage.getItem('pos_printer_package');
+            const inputConfig = document.getElementById('input-package-config');
+            if (inputConfig && savedPackage) {
+                inputConfig.value = savedPackage;
+            }
+        });
+
+        function guardarConfigImpresora() {
+            const inputConfig = document.getElementById('input-package-config');
+            if (!inputConfig) return;
+            
+            let packageName = inputConfig.value.trim();
+            localStorage.setItem('pos_printer_package', packageName);
+            alert("¡Configuración de impresora guardada con éxito!");
+            toggleConfigImpresora(); // Ocultar el panel al guardar con éxito
         }
 
         function abrirModalLogout() {

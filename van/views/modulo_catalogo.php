@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../backend/imagen_helper.php';
+
 // Asegurar el prefijo de tablas vacío para entornos con BBDD separadas
 if (!defined('TB_PREF')) {
     define('TB_PREF', '');
@@ -28,18 +30,6 @@ try {
     $productos = [];
 }
 
-// Función auxiliar para resolver la imagen física del producto
-function obtenerImagenProducto($stock_id) {
-    $exts = ['jpg', 'png', 'gif', 'JPG', 'PNG', 'GIF'];
-    foreach ($exts as $ext) {
-        $nombre_archivo = strtolower($stock_id) . '.' . $ext;
-        $ruta_fisica = __DIR__ . '/../../company/1/images/stock_items/' . $nombre_archivo;
-        if (file_exists($ruta_fisica)) {
-            return '../company/1/images/stock_items/' . $nombre_archivo;
-        }
-    }
-    return null;
-}
 ?>
 <!DOCTYPE html>
 <html lang="es" class="h-full">
@@ -132,7 +122,7 @@ function obtenerImagenProducto($stock_id) {
             <?php else: ?>
                 <?php foreach ($productos as $index => $item): 
                     $es_kit = ($item['mb_flag'] === 'K' || $item['mb_flag'] === 'D');
-                    $foto_url = obtenerImagenProducto($item['stock_id']);
+                    $foto_url = obtenerImagenStockUnificada($item['stock_id']);
                     
                     $precio_base = floatval($item['precio_base']);
                     $tasa_iva = floatval($item['tasa_iva']);
