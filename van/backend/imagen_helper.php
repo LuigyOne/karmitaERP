@@ -2,19 +2,29 @@
 // pos/backend/imagen_helper.php
 
 function obtenerImagenStockUnificada($stock_id) {
-    // Lista completa de extensiones posibles (soporta mayúsculas y minúsculas para servidores Linux/Hosting)
-    $exts = ['jpg', 'png', 'gif', 'JPG', 'PNG', 'GIF', 'jpeg', 'JPEG'];
+    $directorio_fisico = __DIR__ . '/../../company/1/images/stock_items/';
     
-    foreach ($exts as $ext) {
-        $nombre_archivo = strtolower($stock_id) . '.' . $ext;
+    if (!is_dir($directorio_fisico)) {
+        return null;
+    }
+    
+    // Escanear el directorio para hacer una búsqueda case-insensitive real (compatible con Linux/Hosting)
+    $archivos = scandir($directorio_fisico);
+    if ($archivos === false) {
+        return null;
+    }
+    
+    $stock_id_lower = strtolower(trim($stock_id));
+    
+    foreach ($archivos as $archivo) {
+        if ($archivo === '.' || $archivo === '..') continue;
         
-        // __DIR__ se encuentra en pos/backend/
-        // Subimos dos niveles para salir a la raíz del proyecto y buscar la ruta real del ERP
-        $ruta_fisica = __DIR__ . '/../../company/1/images/stock_items/' . $nombre_archivo;
+        // Obtener el nombre del archivo sin la extensión y pasarlo a minúsculas para comparar
+        $nombre_sin_ext = strtolower(pathinfo($archivo, PATHINFO_FILENAME));
         
-        if (file_exists($ruta_fisica)) {
-            // Retornamos la ruta relativa correcta hacia el navegador
-            return '../company/1/images/stock_items/' . $nombre_archivo;
+        if ($nombre_sin_ext === $stock_id_lower) {
+            // Retornamos la ruta relativa y el nombre exacto del archivo tal como está en el servidor
+            return '../company/1/images/stock_items/' . $archivo;
         }
     }
     

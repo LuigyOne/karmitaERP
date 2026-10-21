@@ -11,6 +11,7 @@ require_once __DIR__ . '/../backend/ficha_cliente_data.php';
     <link rel="icon" type="image/png" href="assets/img/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="assets/js/foto_cliente_helper.js"></script>
     <style>
         details > summary { list-style: none; }
         details > summary::-webkit-details-marker { display: none; }
@@ -56,14 +57,14 @@ require_once __DIR__ . '/../backend/ficha_cliente_data.php';
                             <!-- Imagen existente -->
                             <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('<?php echo htmlspecialchars($ruta_img); ?>');"></div>
                             <!-- Botón flotante para cambiar la foto -->
-                            <button onclick="dispararCapturaFoto(<?php echo $branch_code; ?>, <?php echo $i; ?>)" 
+                            <button onclick="abrirCapturaFotoCliente(<?php echo $branch_code; ?>, <?php echo $i; ?>)" 
                                     class="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white cursor-pointer">
                                 <i data-lucide="refresh-cw" class="w-5 h-5 mb-1 text-emerald-400"></i>
                                 <span class="text-[9px] font-bold uppercase tracking-wider">Cambiar #<?php echo $i; ?></span>
                             </button>
                         <?php else: ?>
                             <!-- Espacio vacío para capturar nueva foto -->
-                            <button onclick="dispararCapturaFoto(<?php echo $branch_code; ?>, <?php echo $i; ?>)" 
+                            <button onclick="abrirCapturaFotoCliente(<?php echo $branch_code; ?>, <?php echo $i; ?>)" 
                                     class="w-full h-full flex flex-col items-center justify-center text-slate-400 hover:text-emerald-600 transition-colors cursor-pointer">
                                 <i data-lucide="camera" class="w-5 h-5 mb-1"></i>
                                 <span class="text-[9px] font-bold uppercase tracking-wider">Foto #<?php echo $i; ?></span>
@@ -263,43 +264,7 @@ require_once __DIR__ . '/../backend/ficha_cliente_data.php';
             enviarFormularioConGPS('form-visita', 'visita-lat', 'visita-lon');
         }
 
-        function dispararCapturaFoto(branchCode, numeroFoto) {
-            const inputFile = document.createElement('input');
-            inputFile.type = 'file';
-            inputFile.accept = 'image/*';
-            inputFile.capture = 'environment';
 
-            inputFile.onchange = function(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-
-                const formData = new FormData();
-                formData.append('branch_code', branchCode);
-                formData.append('numero_foto', numeroFoto);
-                formData.append('foto_local', file);
-
-                alert("Subiendo y guardando fotografía #" + numeroFoto + "...");
-
-                fetch('backend/actualizar_foto_cliente.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        window.location.reload();
-                    } else {
-                        alert("Error al guardar la foto: " + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error("Error de red:", error);
-                    alert("No se pudo completar la subida de la fotografía.");
-                });
-            };
-
-            inputFile.click();
-        }
     </script>
 </body>
 </html>

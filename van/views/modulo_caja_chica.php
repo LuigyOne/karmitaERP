@@ -20,6 +20,7 @@ if (!isset($_SESSION['usuario_logueado']) || $_SESSION['usuario_logueado'] !== t
     <link rel="apple-touch-icon" href="assets/img/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="assets/js/caja_chica_foto_helper.js"></script>
 </head>
 <body class="h-full bg-slate-50 text-slate-800 font-sans antialiased select-none flex flex-col">
 
@@ -127,7 +128,7 @@ if (!isset($_SESSION['usuario_logueado']) || $_SESSION['usuario_logueado'] !== t
                         <p class="text-[10px] text-slate-400 mt-0.5">Cámara o Galería</p>
                     </div>
                     
-                    <input type="file" id="foto-recibo" accept="image/*" capture="environment" class="hidden" onchange="previsualizarFoto(event)">
+                    <input type="file" id="foto-recibo" accept="image/*" capture="environment" class="hidden" onchange="procesarFotoComprobante(event, mostrarPrevisualizacion)">
                     
                     <img id="preview-img" class="absolute inset-0 w-full h-full object-cover hidden" alt="Vista previa">
                     
@@ -199,37 +200,31 @@ if (!isset($_SESSION['usuario_logueado']) || $_SESSION['usuario_logueado'] !== t
             }
         }
 
-        function previsualizarFoto(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('zona-texto-foto').classList.add('hidden');
-                    const img = document.getElementById('preview-img');
-                    img.src = e.target.result;
-                    img.classList.remove('hidden');
-                    document.getElementById('btn-cambiar-foto').classList.remove('hidden');
-                }
-                reader.readAsDataURL(file);
-            }
+        // Callback para pintar la previsualización cuando el helper termine de comprimir
+        function mostrarPrevisualizacion(dataUrl) {
+            document.getElementById('zona-texto-foto').classList.add('hidden');
+            const img = document.getElementById('preview-img');
+            img.src = dataUrl;
+            img.classList.remove('hidden');
+            document.getElementById('btn-cambiar-foto').classList.remove('hidden');
         }
 
-        // Guardar Gasto hacia el backend conectado a pwa_auditar
+        // Modificar la función guardarGasto para enviar el blob comprimido
         async function guardarGasto(event) {
             event.preventDefault();
             
             const monto = document.getElementById('monto').value;
             const categoria = document.querySelector('input[name="categoria"]:checked').value;
             const descripcion = document.getElementById('descripcion').value;
-            const inputFile = document.getElementById('foto-recibo');
             
             const formData = new FormData();
             formData.append('monto', monto);
             formData.append('categoria', categoria);
             formData.append('descripcion', descripcion);
             
-            if (inputFile.files.length > 0) {
-                formData.append('foto_recibo', inputFile.files[0]);
+            // Adjuntar el blob comprimido si existe
+            if (blobComprobanteComprimido) {
+                formData.append('foto_recibo', blobComprobanteComprimido, 'comprobante_gasto.jpg');
             }
 
             try {
@@ -240,8 +235,9 @@ if (!isset($_SESSION['usuario_logueado']) || $_SESSION['usuario_logueado'] !== t
                 const resultado = await respuesta.json();
                 
                 if (resultado.success) {
-                    // Resetear formulario
+                    // Resetear formulario y la variable del blob
                     document.getElementById('form-gasto').reset();
+                    blobComprobanteComprimido = null;
                     document.getElementById('zona-texto-foto').classList.remove('hidden');
                     document.getElementById('preview-img').classList.add('hidden');
                     document.getElementById('btn-cambiar-foto').classList.add('hidden');
@@ -258,6 +254,7 @@ if (!isset($_SESSION['usuario_logueado']) || $_SESSION['usuario_logueado'] !== t
                 alert("No se pudo completar la petición de guardado.");
             }
         }
+
 
         // Consultar y renderizar únicamente los movimientos de hoy desde la base de datos
         async function renderizarListaHoy() {
