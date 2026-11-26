@@ -44,6 +44,7 @@ class CrmApp extends application {
 		$this->add_rapp_function(0, _('New Co&ntract'),                'crm/transactions/contract_entry.php?',                'SA_CRM_CONTRACT',     MENU_TRANSACTION);
 		$this->add_rapp_function(0, _('New A&ppointment'),             'crm/transactions/appointment_entry.php?',             'SA_CRM_APPOINTMENT',  MENU_TRANSACTION);
 		$this->add_rapp_function(0, _('&Bulk Operations'),             'crm/transactions/bulk_operations.php?',               'SA_CRM_LEAD',         MENU_TRANSACTION);
+		$this->add_rapp_function(0, _('Configurar geo &rastreo'),      'crm/transactions/geo_tracking_config.php?',           'SA_CRM_SETTINGS',     MENU_TRANSACTION);
 
 		// ═══════════════════════════════════════════════════════════
 		// Module 1: Inquiries and Reports
